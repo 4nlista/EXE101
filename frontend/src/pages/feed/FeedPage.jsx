@@ -97,23 +97,23 @@ export default function FeedPage() {
     <div style={{ display: 'flex', width: '100%', maxWidth: '100%', margin: '0 auto', padding: '0 40px' }}>
 
       {/* ── Left Sidebar: Filters ── */}
-      <aside style={{ width: 260, paddingRight: 24, paddingTop: 32, borderRight: '1px solid var(--border)', minHeight: 'calc(100vh - 65px)', position: 'relative' }}>
+      <aside className="feed-sidebar" style={{ width: 260, paddingRight: 24, paddingTop: 20, paddingBottom: 20, borderRight: '1px solid var(--border)', alignSelf: 'flex-start', position: 'sticky', top: 24, zIndex: 10 }}>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <h3 style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>Bộ lọc</h3>
         </div>
 
         {/* Toggle Target Audience */}
-        <div style={{ display: 'flex', background: 'var(--bg-muted)', borderRadius: 8, padding: 4, marginBottom: 24 }}>
+        <div style={{ display: 'flex', background: 'var(--bg-muted)', borderRadius: 8, padding: 4, marginBottom: 12 }}>
           <button
             onClick={() => setTargetAudience('student')}
-            style={{ flex: 1, padding: '8px 0', fontSize: '0.85rem', fontWeight: 600, borderRadius: 6, transition: 'all 0.2s', background: targetAudience === 'student' ? 'var(--bg)' : 'transparent', color: targetAudience === 'student' ? 'var(--primary)' : 'var(--text-secondary)', boxShadow: targetAudience === 'student' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', cursor: 'pointer' }}
+            style={{ flex: 1, padding: '6px 0', fontSize: '0.8rem', fontWeight: 600, borderRadius: 6, transition: 'all 0.2s', background: targetAudience === 'student' ? 'var(--bg)' : 'transparent', color: targetAudience === 'student' ? 'var(--primary)' : 'var(--text-secondary)', boxShadow: targetAudience === 'student' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', cursor: 'pointer' }}
           >
             Sinh viên
           </button>
           <button
             onClick={() => setTargetAudience('professional')}
-            style={{ flex: 1, padding: '8px 0', fontSize: '0.85rem', fontWeight: 600, borderRadius: 6, transition: 'all 0.2s', background: targetAudience === 'professional' ? 'var(--bg)' : 'transparent', color: targetAudience === 'professional' ? 'var(--primary)' : 'var(--text-secondary)', boxShadow: targetAudience === 'professional' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', cursor: 'pointer' }}
+            style={{ flex: 1, padding: '6px 0', fontSize: '0.8rem', fontWeight: 600, borderRadius: 6, transition: 'all 0.2s', background: targetAudience === 'professional' ? 'var(--bg)' : 'transparent', color: targetAudience === 'professional' ? 'var(--primary)' : 'var(--text-secondary)', boxShadow: targetAudience === 'professional' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', cursor: 'pointer' }}
           >
             Người đi làm
           </button>
@@ -122,18 +122,18 @@ export default function FeedPage() {
         {/* Common Filters: Lĩnh vực & Vai trò (Dropdown Style) */}
 
         {/* Dropdown Lĩnh vực */}
-        <div style={{ position: 'relative', marginBottom: 20 }}>
-          <h4 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: 10 }}>Lĩnh vực</h4>
+        <div style={{ position: 'relative', marginBottom: 12 }}>
+          <h4 style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: 6 }}>Lĩnh vực</h4>
           <div
             onClick={() => handleDropdown('linhvuc')}
-            style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', height: 38, padding: '0 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg)', cursor: 'pointer', fontSize: '0.9rem', color: 'var(--text-primary)' }}
+            style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', height: 34, padding: '0 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg)', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--text-primary)' }}
           >
             <span>{selectedLinhVuc}</span>
             <ChevronDown size={16} color="var(--text-muted)" />
           </div>
 
           {openDropdown === 'linhvuc' && (
-            <div style={{ position: 'absolute', top: 72, left: 0, width: '100%', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 12, boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)', zIndex: 10, padding: '8px 0', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ position: 'absolute', top: 60, left: 0, width: '100%', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 12, boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)', zIndex: 10, padding: '8px 0', display: 'flex', flexDirection: 'column' }}>
               {linhVucOptions.map((opt, i) => (
                 <div
                   key={i}
@@ -158,18 +158,18 @@ export default function FeedPage() {
         </div>
 
         {/* Dropdown Vai trò */}
-        <div style={{ position: 'relative', marginBottom: 20 }}>
-          <h4 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: 10 }}>Vai trò</h4>
+        <div style={{ position: 'relative', marginBottom: 12 }}>
+          <h4 style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: 6 }}>Vai trò</h4>
           <div
             onClick={() => handleDropdown('vaitro')}
-            style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', height: 38, padding: '0 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg)', cursor: 'pointer', fontSize: '0.9rem', color: 'var(--text-primary)' }}
+            style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', height: 34, padding: '0 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg)', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--text-primary)' }}
           >
             <span>{selectedVaiTro}</span>
             <ChevronDown size={16} color="var(--text-muted)" />
           </div>
 
           {openDropdown === 'vaitro' && (
-            <div style={{ position: 'absolute', top: 72, left: 0, width: '100%', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 12, boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)', zIndex: 10, padding: '8px 0', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ position: 'absolute', top: 60, left: 0, width: '100%', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 12, boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)', zIndex: 10, padding: '8px 0', display: 'flex', flexDirection: 'column' }}>
               {vaiTroOptions.map((opt, i) => (
                 <div
                   key={i}
@@ -196,18 +196,18 @@ export default function FeedPage() {
         {/* Student Specific Filters */}
         {targetAudience === 'student' && (
           <>
-            <div style={{ position: 'relative', marginBottom: 20 }}>
-              <h4 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: 10 }}>Trường Đại học</h4>
+            <div style={{ position: 'relative', marginBottom: 12 }}>
+              <h4 style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: 6 }}>Trường Đại học</h4>
               <div
                 onClick={() => handleDropdown('truong')}
-                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', height: 38, padding: '0 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg)', cursor: 'pointer', fontSize: '0.9rem', color: 'var(--text-primary)' }}
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', height: 34, padding: '0 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg)', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--text-primary)' }}
               >
                 <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{selectedTruong}</span>
                 <ChevronDown size={16} color="var(--text-muted)" style={{ flexShrink: 0 }} />
               </div>
 
               {openDropdown === 'truong' && (
-                <div style={{ position: 'absolute', top: 72, left: 0, width: '100%', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 12, boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)', zIndex: 10, padding: '8px 0', display: 'flex', flexDirection: 'column', maxHeight: 300, overflowY: 'auto' }}>
+                <div style={{ position: 'absolute', top: 60, left: 0, width: '100%', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 12, boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)', zIndex: 10, padding: '8px 0', display: 'flex', flexDirection: 'column', maxHeight: 300, overflowY: 'auto' }}>
                   {truongOptions.map((opt, i) => (
                     <div
                       key={i}
@@ -224,24 +224,24 @@ export default function FeedPage() {
               )}
             </div>
 
-            <div style={{ marginBottom: 20 }}>
-              <h4 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: 10 }}>Mục tiêu điểm</h4>
+            <div style={{ marginBottom: 12 }}>
+              <h4 style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: 6 }}>Mục tiêu điểm</h4>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <input type="number" placeholder="Min" style={{ width: '100%', height: 38, padding: '0 12px', borderRadius: 6, border: '1px solid var(--border)', fontSize: '0.9rem', outline: 'none' }} onFocus={(e) => e.target.style.borderColor = 'var(--primary)'} onBlur={(e) => e.target.style.borderColor = 'var(--border)'} />
+                <input type="number" placeholder="Min" style={{ width: '100%', height: 34, padding: '0 12px', borderRadius: 6, border: '1px solid var(--border)', fontSize: '0.85rem', outline: 'none' }} onFocus={(e) => e.target.style.borderColor = 'var(--primary)'} onBlur={(e) => e.target.style.borderColor = 'var(--border)'} />
                 <span style={{ color: 'var(--text-muted)' }}>-</span>
-                <input type="number" placeholder="Max" style={{ width: '100%', height: 38, padding: '0 12px', borderRadius: 6, border: '1px solid var(--border)', fontSize: '0.9rem', outline: 'none' }} onFocus={(e) => e.target.style.borderColor = 'var(--primary)'} onBlur={(e) => e.target.style.borderColor = 'var(--border)'} />
+                <input type="number" placeholder="Max" style={{ width: '100%', height: 34, padding: '0 12px', borderRadius: 6, border: '1px solid var(--border)', fontSize: '0.85rem', outline: 'none' }} onFocus={(e) => e.target.style.borderColor = 'var(--primary)'} onBlur={(e) => e.target.style.borderColor = 'var(--border)'} />
               </div>
             </div>
 
-            <div style={{ marginBottom: 24 }}>
-              <h4 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: 10 }}>Hạn chót</h4>
+            <div style={{ marginBottom: 12 }}>
+              <h4 style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: 6 }}>Hạn chót</h4>
               <div style={{ position: 'relative' }}>
-                <select style={{ width: '100%', height: 38, padding: '0 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg)', fontSize: '0.9rem', appearance: 'none', color: 'var(--text-primary)', outline: 'none' }}>
+                <select style={{ width: '100%', height: 34, padding: '0 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg)', fontSize: '0.85rem', appearance: 'none', color: 'var(--text-primary)', outline: 'none' }}>
                   <option>Bất cứ lúc nào</option>
                   <option>Trong tuần này</option>
                   <option>Trong tháng này</option>
                 </select>
-                <ChevronDown size={16} style={{ position: 'absolute', right: 12, top: 11, color: 'var(--text-muted)', pointerEvents: 'none' }} />
+                <ChevronDown size={16} style={{ position: 'absolute', right: 12, top: 9, color: 'var(--text-muted)', pointerEvents: 'none' }} />
               </div>
             </div>
           </>
@@ -250,10 +250,10 @@ export default function FeedPage() {
         {/* Professional Specific Filters */}
         {targetAudience === 'professional' && (
           <>
-            <div style={{ marginBottom: 20 }}>
-              <h4 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: 10 }}>Kinh nghiệm</h4>
+            <div style={{ marginBottom: 12 }}>
+              <h4 style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: 6 }}>Kinh nghiệm</h4>
               <div style={{ position: 'relative' }}>
-                <select style={{ width: '100%', height: 38, padding: '0 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg)', fontSize: '0.9rem', appearance: 'none', color: 'var(--text-primary)', outline: 'none' }}>
+                <select style={{ width: '100%', height: 34, padding: '0 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg)', fontSize: '0.85rem', appearance: 'none', color: 'var(--text-primary)', outline: 'none' }}>
                   <option>Tất cả cấp bậc</option>
                   <option>Thực tập sinh</option>
                   <option>Dưới 1 năm</option>
@@ -261,33 +261,33 @@ export default function FeedPage() {
                   <option>3 - 5 năm</option>
                   <option>Trên 5 năm</option>
                 </select>
-                <ChevronDown size={16} style={{ position: 'absolute', right: 12, top: 11, color: 'var(--text-muted)', pointerEvents: 'none' }} />
+                <ChevronDown size={16} style={{ position: 'absolute', right: 12, top: 9, color: 'var(--text-muted)', pointerEvents: 'none' }} />
               </div>
             </div>
 
-            <div style={{ marginBottom: 20 }}>
-              <h4 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: 10 }}>Mức lương</h4>
+            <div style={{ marginBottom: 12 }}>
+              <h4 style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: 6 }}>Mức lương</h4>
               <div style={{ position: 'relative' }}>
-                <select style={{ width: '100%', height: 38, padding: '0 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg)', fontSize: '0.9rem', appearance: 'none', color: 'var(--text-primary)', outline: 'none' }}>
+                <select style={{ width: '100%', height: 34, padding: '0 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg)', fontSize: '0.85rem', appearance: 'none', color: 'var(--text-primary)', outline: 'none' }}>
                   <option>Thỏa thuận</option>
                   <option>Dưới 10 triệu</option>
                   <option>10 - 20 triệu</option>
                   <option>20 - 40 triệu</option>
                   <option>Trên 40 triệu</option>
                 </select>
-                <ChevronDown size={16} style={{ position: 'absolute', right: 12, top: 11, color: 'var(--text-muted)', pointerEvents: 'none' }} />
+                <ChevronDown size={16} style={{ position: 'absolute', right: 12, top: 9, color: 'var(--text-muted)', pointerEvents: 'none' }} />
               </div>
             </div>
 
-            <div style={{ marginBottom: 24 }}>
-              <h4 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: 10 }}>Hạn chót</h4>
+            <div style={{ marginBottom: 12 }}>
+              <h4 style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: 6 }}>Hạn chót</h4>
               <div style={{ position: 'relative' }}>
-                <select style={{ width: '100%', height: 38, padding: '0 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg)', fontSize: '0.9rem', appearance: 'none', color: 'var(--text-primary)', outline: 'none' }}>
+                <select style={{ width: '100%', height: 34, padding: '0 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg)', fontSize: '0.85rem', appearance: 'none', color: 'var(--text-primary)', outline: 'none' }}>
                   <option>Bất cứ lúc nào</option>
                   <option>Trong tuần này</option>
                   <option>Trong tháng này</option>
                 </select>
-                <ChevronDown size={16} style={{ position: 'absolute', right: 12, top: 11, color: 'var(--text-muted)', pointerEvents: 'none' }} />
+                <ChevronDown size={16} style={{ position: 'absolute', right: 12, top: 9, color: 'var(--text-muted)', pointerEvents: 'none' }} />
               </div>
             </div>
           </>

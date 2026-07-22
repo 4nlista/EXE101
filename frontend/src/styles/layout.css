@@ -95,9 +95,7 @@
 .feed-sidebar {
   width: 260px; flex-shrink: 0;
   position: sticky; top: 24px;
-  max-height: calc(100vh - 108px); /* 60px nav + 24px padding x2 */
-  overflow-y: auto;
-  display: flex; flex-direction: column; gap: 20px;
+  display: flex; flex-direction: column;
 }
 
 .filter-group h4 {

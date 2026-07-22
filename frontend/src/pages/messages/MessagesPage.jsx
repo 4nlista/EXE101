@@ -3,10 +3,15 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Search, Phone, Video, Info, Paperclip, Smile, ThumbsUp, MoreHorizontal, BellOff, MapPin, Briefcase, ChevronDown, User, Send, Image as ImageIcon, Trash2 } from 'lucide-react';
 import { MOCK_USERS } from '../../constants/mockData';
 
-const initialThreads = [
-  { id: 1, name: 'Trần Minh Quân', msg: 'Oke mình nhận được rồi nhé, tẹo mình check.', time: '24 phút', unread: true },
-  { id: 2, name: 'Hoàng Lê', msg: 'Bạn: Bạn gửi mình báo cáo nhé.', time: '47 phút', unread: false },
-  { id: 3, name: 'Lê Nguyên', msg: 'Bạn ơi cho mình hỏi về tài liệu tối hôm qua thảo luận.', time: '4 giờ', unread: false }
+const initialPersonalThreads = [
+  { id: 1, name: 'Nguyễn Văn A', msg: 'Mình đã xem qua UI, rất ổn nhé.', time: '10:30', unread: true },
+  { id: 2, name: 'Lê Thị B', msg: 'Hẹn bạn chiều nay 2h gặp mặt trao đổi nhé.', time: 'Hôm qua', unread: false },
+  { id: 3, name: 'Công ty Cổ phần XYZ', msg: 'Chúng tôi muốn phỏng vấn bạn vào tuần tới.', time: 'T2', unread: false },
+];
+
+const initialGroupThreads = [
+  { id: 101, name: 'Dự án Tái thiết kế trang Thương mại Điện tử...', msg: 'Nguyễn Văn A: Đã push code lên nhánh main.', time: '09:15', unread: true },
+  { id: 102, name: 'Dự án Hệ thống Quản lý Đào tạo', msg: 'Lê Thị B: Lịch họp tuần này vào thứ 6 nhé.', time: 'Hôm qua', unread: false }
 ];
 
 const initialMessagesData = {
@@ -20,6 +25,12 @@ const initialMessagesData = {
   ],
   3: [
     { id: 1, sender: 'them', type: 'text', content: 'Bạn ơi cho mình hỏi về tài liệu tối hôm qua thảo luận.' }
+  ],
+  101: [
+    { id: 1, sender: 'them', type: 'text', content: 'Chào mọi người, dự án đã bắt đầu.' }
+  ],
+  102: [
+    { id: 1, sender: 'them', type: 'text', content: 'Lịch họp tuần này đã cập nhật nhé.' }
   ]
 };
 
@@ -28,11 +39,13 @@ export default function MessagesPage() {
   const navigate = useNavigate();
   const userId = searchParams.get('userId');
 
-  const [threads, setThreads] = useState(initialThreads);
-  const [activeThreadId, setActiveThreadId] = useState(initialThreads[0].id);
+  const [activeTab, setActiveTab] = useState('personal'); 
+  const [threads, setThreads] = useState(initialPersonalThreads);
+  const [groupThreads, setGroupThreads] = useState(initialGroupThreads);
+  const [activeThreadId, setActiveThreadId] = useState(1);
   const [messagesData, setMessagesData] = useState(initialMessagesData);
   const [msgInput, setMsgInput] = useState('');
-  const messagesEndRef = useRef(null);
+  const chatEndRef = useRef(null);
 
   useEffect(() => {
     if (userId) {
@@ -58,15 +71,14 @@ export default function MessagesPage() {
     }
   }, [userId]);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
   useEffect(() => {
-    scrollToBottom();
-  }, [messagesData, activeThreadId]);
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [activeThreadId, messagesData, activeTab]);
 
-  const activeThread = threads.find(t => t.id === activeThreadId) || threads[0];
+  const activeThreadsList = activeTab === 'personal' ? threads : groupThreads;
+  const activeThread = activeThreadsList.find(t => t.id === activeThreadId) || activeThreadsList[0];
   const currentMessages = messagesData[activeThreadId] || [];
 
   const handleSendText = () => {
@@ -137,12 +149,20 @@ export default function MessagesPage() {
         </div>
 
         <div style={{ padding: 12, display: 'flex', gap: 12, borderBottom: '1px solid var(--border)' }}>
-          <button style={{ padding: '6px 12px', background: 'var(--primary-light)', color: 'var(--primary)', borderRadius: 99, border: 'none', fontWeight: 600, fontSize: '0.85rem' }}>Tất cả</button>
-          <button style={{ padding: '6px 12px', background: 'transparent', color: 'var(--text-secondary)', borderRadius: 99, border: 'none', fontWeight: 600, fontSize: '0.85rem' }}>Chưa đọc</button>
+          <button 
+            onClick={() => { setActiveTab('personal'); setActiveThreadId(threads[0]?.id); }}
+            style={{ padding: '6px 12px', background: activeTab === 'personal' ? 'var(--primary-light)' : 'transparent', color: activeTab === 'personal' ? 'var(--primary)' : 'var(--text-secondary)', borderRadius: 99, border: 'none', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}>
+            Cá nhân
+          </button>
+          <button 
+            onClick={() => { setActiveTab('group'); setActiveThreadId(groupThreads[0]?.id); }}
+            style={{ padding: '6px 12px', background: activeTab === 'group' ? 'var(--primary-light)' : 'transparent', color: activeTab === 'group' ? 'var(--primary)' : 'var(--text-secondary)', borderRadius: 99, border: 'none', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}>
+            Nhóm
+          </button>
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto' }}>
-          {threads.map(t => {
+          {activeThreadsList.map(t => {
             const isActive = t.id === activeThreadId;
             return (
               <div
@@ -155,7 +175,7 @@ export default function MessagesPage() {
                   {isActive && <div style={{ position: 'absolute', bottom: 0, right: 0, width: 14, height: 14, background: '#10B981', border: '2px solid white', borderRadius: '50%' }} />}
                 </div>
                 <div style={{ flex: 1, overflow: 'hidden' }}>
-                  <div style={{ fontSize: '0.95rem', fontWeight: t.unread ? 700 : 500, color: 'var(--text-primary)', marginBottom: 4 }}>{t.name}</div>
+                  <div style={{ fontSize: '0.95rem', fontWeight: t.unread ? 700 : 500, color: 'var(--text-primary)', marginBottom: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.name}</div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: t.unread ? 'var(--text-primary)' : 'var(--text-secondary)', fontWeight: t.unread ? 600 : 400 }}>
                     <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.msg}</span>
                     <span>• {t.time}</span>
@@ -240,7 +260,7 @@ export default function MessagesPage() {
               </div>
             )}
 
-            <div ref={messagesEndRef} />
+            <div ref={chatEndRef} />
           </div>
 
           {/* Chat Input */}
