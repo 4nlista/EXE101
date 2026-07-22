@@ -1,15 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Star, CheckCircle, Shield, Briefcase, MapPin, GraduationCap, Zap, Edit2, ChevronRight, ChevronDown, X, Image as ImageIcon } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { MOCK_USERS } from '../../constants/mockData';
 
 export default function PublicProfilePage() {
-  const { user } = useAuth();
+  const { id } = useParams();
+  const { currentUser } = useAuth();
   const navigate = useNavigate();
-  // Giả lập ID profile. Nếu ID trùng với user hiện tại -> là chủ sở hữu.
-  const isOwner = true; // Hardcode để test giao diện chỉnh sửa
-
+  
+  const [profile, setProfile] = useState(null);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
+
+  useEffect(() => {
+    // Nếu có id từ URL, tìm user trong MOCK_USERS. 
+    // Nếu không có id (truy cập /profile), lấy currentUser.
+    if (id) {
+      const found = MOCK_USERS.find(u => u.id === parseInt(id));
+      if (found) {
+        setProfile(found);
+      } else {
+        // Fallback or 404
+        setProfile(MOCK_USERS[0]); 
+      }
+    } else if (currentUser) {
+      setProfile(currentUser);
+    }
+  }, [id, currentUser]);
+
+  if (!profile) return <div style={{ padding: 40, textAlign: 'center' }}>Đang tải...</div>;
+
+  const isOwner = currentUser && currentUser.id === profile.id;
 
   return (
     <div style={{ maxWidth: 1100, margin: '0 auto', padding: '24px' }}>
@@ -21,7 +42,7 @@ export default function PublicProfilePage() {
           <div style={{ position: 'absolute', bottom: -50, left: 32, width: 140, height: 140, borderRadius: '50%', background: '#fff', padding: 6, display: 'inline-block' }}>
             <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'var(--bg-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', fontWeight: 800, position: 'relative' }}>
               {/* Fake Avatar */}
-              <img src="https://ui-avatars.com/api/?name=Nguyen+Van+A&background=random" style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
+              <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=random`} style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
               
               {isOwner && (
                 <button 
@@ -37,21 +58,21 @@ export default function PublicProfilePage() {
         
         <div style={{ padding: '64px 32px 32px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <h1 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: 8 }}>Nguyễn Văn A.</h1>
+            <h1 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: 8 }}>{profile.name}</h1>
             <p style={{ fontSize: '1rem', color: 'var(--text-secondary)', marginBottom: 16 }}>
-              Sinh viên năm cuối Kỹ thuật phần mềm - HUST
+              {profile.occupation === 'student' ? 'Sinh viên' : 'Người đi làm'} - {profile.organization || 'Freelancer'}
             </p>
             
             <div style={{ display: 'flex', gap: 16, color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><MapPin size={16} /> Hà Nội, Việt Nam</span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><GraduationCap size={16} /> ĐH Bách Khoa</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><MapPin size={16} /> Việt Nam</span>
+              {profile.organization && <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><GraduationCap size={16} /> {profile.organization}</span>}
             </div>
           </div>
           
           {!isOwner && (
             <div style={{ display: 'flex', gap: 12 }}>
               <button className="btn btn-secondary">Đang theo dõi</button>
-              <button className="btn btn-primary" style={{ background: '#B45309', borderColor: '#B45309' }}>Nhắn tin</button>
+              <button className="btn btn-primary" onClick={() => navigate(`/messages?userId=${profile.id}`)} style={{ background: '#B45309', borderColor: '#B45309' }}>Nhắn tin</button>
             </div>
           )}
         </div>

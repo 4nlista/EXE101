@@ -13,6 +13,7 @@ import ProjectHistoryDetail from './pages/profile/ProjectHistoryDetail';
 import MessagesPage from './pages/messages/MessagesPage';
 import AIHubPage from './pages/ai/AIHubPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
+import SettingsPage from './pages/settings/SettingsPage';
 
 // Bảo vệ route: chưa login → redirect về trang chủ
 function ProtectedRoute({ children }) {
@@ -39,9 +40,11 @@ export default function App() {
         <Route path="/feed" element={<FeedPage />} />
         <Route path="/manage" element={<ManageProjectsPage />} />
         <Route path="/profile" element={<PublicProfilePage />} />
+        <Route path="/profile/:id" element={<PublicProfilePage />} />
         <Route path="/profile/project-detail" element={<ProjectHistoryDetail />} />
         <Route path="/messages" element={<MessagesPage />} />
         <Route path="/ai-hub" element={<AIHubPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Route>
       
       <Route path="*" element={<Navigate to="/" replace />} />

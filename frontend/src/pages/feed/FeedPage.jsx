@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Filter, Clock, ChevronDown, ChevronLeft, ChevronRight, X, FileText, CheckCircle, Award, UploadCloud, GraduationCap, Briefcase, Users, Search, Heart, Palette, Code, Target, Cpu, Settings } from 'lucide-react';
 
 const mockProjects = [
@@ -6,8 +7,10 @@ const mockProjects = [
     id: 1,
     title: 'Tái thiết kế trang Thương mại Điện tử',
     author: 'Lê Anh',
+    authorId: 1,
     avatarText: 'LA',
     school: 'ĐH Bách Khoa',
+    target: 'student',
     timeLeft: 'Còn 3 ngày',
     desc: 'Tìm kiếm UI/UX Designer sáng tạo và Frontend Developer để cải tiến trang web thương mại điện t...',
     roles: [
@@ -19,8 +22,10 @@ const mockProjects = [
     id: 2,
     title: 'Tài liệu Pitching Startup Công nghệ',
     author: 'Minh Tuấn',
+    authorId: 2,
     avatarText: 'MT',
     school: 'RMIT VN',
+    target: 'student',
     match: 'Phù hợp 92%',
     timeLeft: 'Còn 1 tuần',
     desc: 'Cần một trưởng nhóm có tư duy kinh doanh và một designer để giúp xây dựng bộ tài liệu pitching và...',
@@ -33,8 +38,10 @@ const mockProjects = [
     id: 3,
     title: 'Hệ thống Tạo Portfolio Tự động bằng AI',
     author: 'Hoàng Long',
+    authorId: 1,
     avatarText: 'HL',
     school: 'ĐH FPT',
+    target: 'student',
     timeLeft: 'Còn 2 tuần',
     desc: 'Chúng tôi đang xây dựng một nền tảng sử dụng AI để tự động tạo một trang web portfolio chuyên nghiệp...',
     roles: [
@@ -46,8 +53,10 @@ const mockProjects = [
     id: 4,
     title: 'App quản lý chi tiêu cá nhân (Startup)',
     author: 'Trần Thị B',
+    authorId: 2,
     avatarText: 'TB',
     school: 'ĐH Kinh tế',
+    target: 'professional',
     timeLeft: 'Còn 4 ngày',
     desc: 'Team đang có 3 người (1 Business, 1 UI, 1 Mobile). Cần tuyển gấp 1 bạn làm Backend Node.js có kinh nghiệm.',
     roles: [
@@ -58,7 +67,9 @@ const mockProjects = [
     id: 5,
     title: 'Freelance - Cắt HTML/CSS Landing Page',
     author: 'Công ty ABC',
+    authorId: 3,
     avatarText: 'AB',
+    target: 'professional',
     timeLeft: 'Còn 5 ngày',
     desc: 'Cần một bạn cắt HTML/CSS/JS thuần cho 5 trang Landing page quảng cáo. Yêu cầu pixel-perfect và responsive tốt.',
     roles: [
@@ -69,8 +80,9 @@ const mockProjects = [
     id: 6,
     title: 'Thiết kế Logo và Brand Identity',
     author: 'Startup XYZ',
+    authorId: 3,
     avatarText: 'XY',
-    school: 'Mỹ thuật CN',
+    target: 'student',
     timeLeft: 'Còn 1 tuần',
     desc: 'Cần một bạn sinh viên thiết kế bộ nhận diện thương hiệu cho quán cafe mới mở, phong cách minimal.',
     roles: [
@@ -80,16 +92,63 @@ const mockProjects = [
 ];
 
 export default function FeedPage() {
+  const navigate = useNavigate();
   const [selectedProject, setSelectedProject] = useState(null);
   const [targetAudience, setTargetAudience] = useState('student'); // 'student' | 'professional'
   const [openDropdown, setOpenDropdown] = useState(null); // 'linhvuc' | 'vaitro' | null
+  const [projects, setProjects] = useState(mockProjects);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newPost, setNewPost] = useState({ title: '', overview: '', requirements: '', benefits: '', members: '', package: 'free' });
 
-  const linhVucOptions = ['Kinh doanh/Bán hàng', 'Marketing/PR', 'Chăm sóc khách hàng', 'Nhân sự/Hành chính', 'Công nghệ Thông tin'];
-  const vaiTroOptions = ['Thiết kế UI/UX', 'Lập trình viên', 'Trưởng nhóm', 'Kiểm thử (Tester)', 'Phân tích dữ liệu'];
+  // Filter state
+  const [selectedLinhVuc, setSelectedLinhVuc] = useState('Tất cả lĩnh vực');
+  const [selectedVaiTro, setSelectedVaiTro] = useState('Tất cả vai trò');
+
+  const linhVucOptions = ['Tất cả lĩnh vực', 'Kinh doanh/Bán hàng', 'Marketing/PR', 'Chăm sóc khách hàng', 'Nhân sự/Hành chính', 'Công nghệ Thông tin'];
+  const vaiTroOptions = ['Tất cả vai trò', 'Thiết kế UI/UX', 'Lập trình viên', 'Trưởng nhóm', 'Kiểm thử (Tester)', 'Phân tích dữ liệu'];
 
   const handleDropdown = (name) => {
     setOpenDropdown(openDropdown === name ? null : name);
   };
+
+  const handleClearFilter = () => {
+    setSelectedLinhVuc('Tất cả lĩnh vực');
+    setSelectedVaiTro('Tất cả vai trò');
+  };
+
+  const handleCreatePost = () => {
+    if (!newPost.title || !newPost.overview || !newPost.requirements || !newPost.benefits || !newPost.members) {
+      alert("Vui lòng điền đầy đủ các thông tin bắt buộc!");
+      return;
+    }
+
+    const createdPost = {
+      id: Date.now(),
+      title: newPost.title,
+      author: 'Tôi',
+      authorId: 999,
+      avatarText: 'T',
+      target: targetAudience,
+      timeLeft: 'Vừa xong',
+      desc: newPost.overview,
+      package: newPost.package,
+      roles: newPost.members.split(',').map(m => ({ name: m.trim(), icon: <Target size={14} /> }))
+    };
+
+    // Theo logic sort: bài premium lên top, rồi đến vip, rồi bài thường
+    // Nên mock logic insert lên đầu danh sách
+    setProjects(prev => [createdPost, ...prev]);
+    setShowCreateModal(false);
+    setNewPost({ title: '', overview: '', requirements: '', benefits: '', members: '', package: 'free' });
+    alert("Tạo bài đăng thành công!");
+  };
+
+  const filteredProjects = projects.filter(p => {
+    return p.target === targetAudience;
+  }).sort((a, b) => {
+    const score = p => p.package === 'premium' ? 3 : p.package === 'vip' ? 2 : 1;
+    return score(b) - score(a);
+  });
 
   return (
     <div style={{ display: 'flex', width: '100%', maxWidth: 1440, margin: '0 auto', padding: '0 32px' }}>
@@ -126,7 +185,7 @@ export default function FeedPage() {
             onClick={() => handleDropdown('linhvuc')}
             style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', height: 38, padding: '0 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg)', cursor: 'pointer', fontSize: '0.9rem', color: 'var(--text-primary)' }}
           >
-            <span>Tất cả lĩnh vực</span>
+            <span>{selectedLinhVuc}</span>
             <ChevronDown size={16} color="var(--text-muted)" />
           </div>
 
@@ -135,9 +194,10 @@ export default function FeedPage() {
               {linhVucOptions.map((opt, i) => (
                 <div
                   key={i}
-                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px', cursor: 'pointer', fontSize: '0.9rem', color: 'var(--text-primary)', transition: 'background 0.2s, color 0.2s' }}
+                  onClick={() => { setSelectedLinhVuc(opt); setOpenDropdown(null); }}
+                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px', cursor: 'pointer', fontSize: '0.9rem', color: selectedLinhVuc === opt ? 'var(--primary)' : 'var(--text-primary)', transition: 'background 0.2s, color 0.2s' }}
                   onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--primary)'; e.currentTarget.style.background = 'var(--bg-subtle)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.background = 'transparent'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = selectedLinhVuc === opt ? 'var(--primary)' : 'var(--text-primary)'; e.currentTarget.style.background = 'transparent'; }}
                 >
                   <span>{opt}</span>
                   <ChevronRight size={16} color="var(--text-muted)" />
@@ -161,7 +221,7 @@ export default function FeedPage() {
             onClick={() => handleDropdown('vaitro')}
             style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', height: 38, padding: '0 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg)', cursor: 'pointer', fontSize: '0.9rem', color: 'var(--text-primary)' }}
           >
-            <span>Tất cả vai trò</span>
+            <span>{selectedVaiTro}</span>
             <ChevronDown size={16} color="var(--text-muted)" />
           </div>
 
@@ -170,9 +230,10 @@ export default function FeedPage() {
               {vaiTroOptions.map((opt, i) => (
                 <div
                   key={i}
-                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px', cursor: 'pointer', fontSize: '0.9rem', color: 'var(--text-primary)', transition: 'background 0.2s, color 0.2s' }}
+                  onClick={() => { setSelectedVaiTro(opt); setOpenDropdown(null); }}
+                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px', cursor: 'pointer', fontSize: '0.9rem', color: selectedVaiTro === opt ? 'var(--primary)' : 'var(--text-primary)', transition: 'background 0.2s, color 0.2s' }}
                   onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--primary)'; e.currentTarget.style.background = 'var(--bg-subtle)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.background = 'transparent'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = selectedVaiTro === opt ? 'var(--primary)' : 'var(--text-primary)'; e.currentTarget.style.background = 'transparent'; }}
                 >
                   <span>{opt}</span>
                   <ChevronRight size={16} color="var(--text-muted)" />
@@ -262,10 +323,10 @@ export default function FeedPage() {
         )}
 
         <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
-          <button className="btn btn-secondary" style={{ flex: 1, borderRadius: 6, fontWeight: 600, justifyContent: 'center' }}>
+          <button className="btn btn-secondary" onClick={handleClearFilter} style={{ flex: 1, borderRadius: 6, fontWeight: 600, justifyContent: 'center' }}>
             Xóa
           </button>
-          <button className="btn btn-primary" style={{ flex: 1, borderRadius: 6, fontWeight: 600, justifyContent: 'center' }}>
+          <button className="btn btn-primary" onClick={() => setOpenDropdown(null)} style={{ flex: 1, borderRadius: 6, fontWeight: 600, justifyContent: 'center' }}>
             Lọc
           </button>
         </div>
@@ -286,7 +347,7 @@ export default function FeedPage() {
               <input
                 type="text"
                 placeholder="Tìm kiếm tên dự án..."
-                style={{ width: '100%', height: 38, padding: '0 12px 0 36px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg)', fontSize: '0.9rem', outline: 'none' }}
+                style={{ width: '100%', height: 38, padding: '0 12px 0 36px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg)', fontSize: '0.9rem', outline: 'none', color: 'var(--text-primary)' }}
                 onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
                 onBlur={(e) => e.target.style.borderColor = 'var(--border)'}
               />
@@ -296,24 +357,40 @@ export default function FeedPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--bg-subtle)', padding: '6px 14px', borderRadius: 99, fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', cursor: 'pointer', height: 38 }}>
               Sắp xếp: Mới nhất <ChevronDown size={14} />
             </div>
+
+            <button 
+              onClick={() => setShowCreateModal(true)}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#F97316', color: 'white', padding: '0 16px', borderRadius: 8, height: 38, fontSize: '0.9rem', fontWeight: 700, border: 'none', cursor: 'pointer', boxShadow: '0 2px 4px rgba(249, 115, 22, 0.2)' }}
+            >
+              + Tạo bài đăng
+            </button>
           </div>
         </div>
 
-        {/* Grid (3x2) */}
+        {/* Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
-          {mockProjects.map(p => (
+          {filteredProjects.map(p => (
             <div
               key={p.id}
-              style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 10, padding: '16px 20px', position: 'relative', display: 'flex', flexDirection: 'column', cursor: 'pointer', transition: 'box-shadow 0.2s ease, transform 0.2s ease', height: '100%' }}
+              style={{ background: 'var(--bg)', border: p.package === 'premium' ? '2px solid #F59E0B' : p.package === 'vip' ? '1px solid #10B981' : '1px solid var(--border)', borderRadius: 10, padding: '16px 20px', position: 'relative', display: 'flex', flexDirection: 'column', cursor: 'pointer', transition: 'box-shadow 0.2s ease, transform 0.2s ease', height: '100%' }}
               onClick={() => setSelectedProject(p)}
               onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(0,0,0,0.1)'}
               onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'none'}
             >
-
-              <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 4, background: p.topColor, borderRadius: '10px 10px 0 0', opacity: p.id === 2 ? 1 : 0.5 }} />
+              <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 4, background: p.topColor || (p.package === 'premium' ? '#F59E0B' : p.package === 'vip' ? '#10B981' : 'var(--primary)'), borderRadius: '10px 10px 0 0', opacity: 1 }} />
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                 <div style={{ display: 'flex', gap: 6 }}>
+                  {p.package === 'premium' && (
+                    <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#92400E', background: 'linear-gradient(90deg, #FDE68A 0%, #F59E0B 100%)', padding: '2px 8px', borderRadius: 99, display: 'flex', alignItems: 'center', gap: 4, boxShadow: '0 0 8px rgba(245,158,11,0.5)' }}>
+                      <Award size={12} /> PREMIUM
+                    </span>
+                  )}
+                  {p.package === 'vip' && (
+                    <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#064E3B', background: 'linear-gradient(90deg, #A7F3D0 0%, #10B981 100%)', padding: '2px 8px', borderRadius: 99, display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <Award size={12} /> VIP
+                    </span>
+                  )}
                   {p.school && <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#9A3412', background: '#FFEDD5', padding: '2px 8px', borderRadius: 99 }}>{p.school}</span>}
                   {p.match && <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#4F46E5', background: '#EEF2FF', padding: '2px 8px', borderRadius: 99 }}>{p.match}</span>}
                 </div>
@@ -334,7 +411,7 @@ export default function FeedPage() {
                 <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 6 }}>Vị trí đang tuyển</div>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                   {p.roles.map((r, idx) => (
-                    <span key={idx} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: r.bg, color: r.color, padding: '4px 10px', borderRadius: 6, fontSize: '0.8rem', fontWeight: 600 }}>
+                    <span key={idx} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: r.bg || 'var(--bg-muted)', color: r.color || 'var(--text-primary)', padding: '4px 10px', borderRadius: 6, fontSize: '0.8rem', fontWeight: 600 }}>
                       <span style={{ fontSize: '0.9rem' }}>{r.icon}</span> {r.name}
                     </span>
                   ))}
@@ -342,11 +419,19 @@ export default function FeedPage() {
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border)', paddingTop: 12 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div 
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/profile/${p.authorId}`);
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.querySelector('span').style.color = 'var(--primary)'}
+                  onMouseLeave={(e) => e.currentTarget.querySelector('span').style.color = 'var(--text-primary)'}
+                >
                   <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#FFF7ED', color: '#9A3412', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 700 }}>
                     {p.avatarText}
                   </div>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-primary)' }}>{p.author}</span>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-primary)', transition: 'color 0.2s' }}>{p.author}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <button
@@ -377,16 +462,95 @@ export default function FeedPage() {
 
       </div>
 
+      {/* ── Modal Tạo Bài Đăng ── */}
+      {showCreateModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, backdropFilter: 'blur(2px)' }}>
+          <div style={{ background: 'var(--bg)', borderRadius: 12, width: '100%', maxWidth: 750, maxHeight: '90vh', overflowY: 'auto', position: 'relative', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}>
+            <div style={{ padding: '20px 32px', background: 'var(--bg)', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 10 }}>
+              <h2 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-primary)' }}>Tạo bài đăng mới</h2>
+              <button onClick={() => setShowCreateModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-primary)' }}><X size={24} /></button>
+            </div>
+            
+            <div style={{ padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: 'var(--text-primary)' }}>Tiêu đề dự án *</label>
+                <input type="text" value={newPost.title} onChange={e => setNewPost({...newPost, title: e.target.value})} style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', color: 'var(--text-primary)' }} placeholder="Nhập tiêu đề ngắn gọn..." />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: 'var(--text-primary)' }}>Tổng quan dự án * <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 400 }}>(tối đa 500 từ)</span></label>
+                <textarea value={newPost.overview} onChange={e => setNewPost({...newPost, overview: e.target.value})} rows={4} style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', resize: 'vertical', color: 'var(--text-primary)' }} placeholder="Mô tả dự án của bạn..." />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: 'var(--text-primary)' }}>Yêu cầu ứng viên *</label>
+                  <textarea value={newPost.requirements} onChange={e => setNewPost({...newPost, requirements: e.target.value})} rows={4} style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', resize: 'vertical', color: 'var(--text-primary)' }} placeholder="Kỹ năng, kinh nghiệm..." />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: 'var(--text-primary)' }}>Quyền lợi *</label>
+                  <textarea value={newPost.benefits} onChange={e => setNewPost({...newPost, benefits: e.target.value})} rows={4} style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', resize: 'vertical', color: 'var(--text-primary)' }} placeholder="Lương, thưởng, chứng nhận..." />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: 'var(--text-primary)' }}>Thành viên & Vai trò *</label>
+                <input type="text" value={newPost.members} onChange={e => setNewPost({...newPost, members: e.target.value})} style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', color: 'var(--text-primary)' }} placeholder="Ví dụ: 1 Thiết kế, 2 Lập trình viên..." />
+              </div>
+
+              <div style={{ marginTop: 12 }}>
+                <label style={{ display: 'block', marginBottom: 12, fontWeight: 600, color: 'var(--text-primary)' }}>Chọn gói đăng tin</label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+                  <div 
+                    onClick={() => setNewPost({...newPost, package: 'free'})}
+                    style={{ border: newPost.package === 'free' ? '2px solid var(--primary)' : '1px solid var(--border)', borderRadius: 8, padding: 16, cursor: 'pointer', background: 'var(--bg)', textAlign: 'center' }}
+                  >
+                    <div style={{ fontWeight: 700, marginBottom: 8, color: 'var(--text-primary)' }}>Miễn phí</div>
+                    <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Hiển thị tiêu chuẩn</div>
+                  </div>
+                  <div 
+                    onClick={() => setNewPost({...newPost, package: 'vip'})}
+                    style={{ border: newPost.package === 'vip' ? '2px solid #10B981' : '1px solid var(--border)', borderRadius: 8, padding: 16, cursor: 'pointer', background: 'var(--bg)', textAlign: 'center', position: 'relative', overflow: 'hidden' }}
+                  >
+                    <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 4, background: '#10B981' }} />
+                    <div style={{ fontWeight: 800, color: '#10B981', marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><Award size={16} /> VIP</div>
+                    <div style={{ color: 'var(--text-primary)', fontWeight: 700, marginBottom: 4 }}>50,000đ</div>
+                    <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Ưu tiên hiển thị 3 ngày</div>
+                  </div>
+                  <div 
+                    onClick={() => setNewPost({...newPost, package: 'premium'})}
+                    style={{ border: newPost.package === 'premium' ? '2px solid #F59E0B' : '1px solid var(--border)', borderRadius: 8, padding: 16, cursor: 'pointer', background: 'var(--bg)', textAlign: 'center', position: 'relative', overflow: 'hidden', boxShadow: newPost.package === 'premium' ? '0 4px 12px rgba(245, 158, 11, 0.2)' : 'none' }}
+                  >
+                    <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 4, background: '#F59E0B' }} />
+                    <div style={{ fontWeight: 800, color: '#F59E0B', marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><Award size={16} /> PREMIUM</div>
+                    <div style={{ color: 'var(--text-primary)', fontWeight: 700, marginBottom: 4 }}>100,000đ</div>
+                    <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Luôn hiển thị đầu trang</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <div style={{ padding: '20px 32px', background: 'var(--bg-subtle)', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end', gap: 12, position: 'sticky', bottom: 0 }}>
+              <button className="btn btn-secondary" onClick={() => setShowCreateModal(false)}>Hủy</button>
+              <button className="btn btn-primary" onClick={handleCreatePost}>Đăng bài ngay</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Modal Chi Tiết Dự Án ── */}
       {selectedProject && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, backdropFilter: 'blur(2px)' }}>
-          <div style={{ background: '#FAFAFA', borderRadius: 12, width: '100%', maxWidth: 750, maxHeight: '90vh', overflowY: 'auto', position: 'relative', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}>
+          <div style={{ background: 'var(--bg)', borderRadius: 12, width: '100%', maxWidth: 750, maxHeight: '90vh', overflowY: 'auto', position: 'relative', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}>
 
             {/* Modal Header */}
             <div style={{ padding: '24px 32px', background: 'var(--bg)', borderBottom: '1px solid var(--border)', borderRadius: '12px 12px 0 0' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 600, background: 'var(--primary)', color: 'white', padding: '4px 8px', borderRadius: 4 }}>Dự án Công nghệ</span>
+                  {selectedProject.package === 'premium' && <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#92400E', background: 'linear-gradient(90deg, #FDE68A 0%, #F59E0B 100%)', padding: '4px 8px', borderRadius: 4, display: 'flex', alignItems: 'center', gap: 4 }}><Award size={12} /> PREMIUM</span>}
+                  {selectedProject.package === 'vip' && <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#064E3B', background: 'linear-gradient(90deg, #A7F3D0 0%, #10B981 100%)', padding: '4px 8px', borderRadius: 4, display: 'flex', alignItems: 'center', gap: 4 }}><Award size={12} /> VIP</span>}
+                  {!selectedProject.package && <span style={{ fontSize: '0.75rem', fontWeight: 600, background: 'var(--primary)', color: 'white', padding: '4px 8px', borderRadius: 4 }}>Dự án Công nghệ</span>}
                   <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}><Clock size={14} /> Đăng 2 ngày trước</span>
                 </div>
                 <button onClick={() => setSelectedProject(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
@@ -405,7 +569,7 @@ export default function FeedPage() {
                   <FileText size={18} /> Tổng quan Dự án
                 </h3>
                 <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 24 }}>
-                  {selectedProject.desc} Dự án yêu cầu sự kết hợp giữa phát triển frontend (React/Next.js) và tích hợp API backend với các mô hình ngôn ngữ lớn (LLMs).
+                  {selectedProject.desc} Dự án yêu cầu sự kết hợp giữa phát triển frontend (React/Next.js) và tích hợp API backend.
                 </p>
 
                 <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--primary-dark)', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>

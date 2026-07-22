@@ -65,7 +65,11 @@ export default function AppLayout() {
                 </div>
                 <div style={{ padding: '6px 0' }}>
                   <button className="drop-item" onClick={() => {navigate('/profile'); setShowDrop(false);}}><User size={16} /> Hồ sơ cá nhân</button>
-                  <button className="drop-item"><Settings size={16} /> Cài đặt tài khoản</button>
+                  <button className="drop-item" onClick={() => {navigate('/settings'); setShowDrop(false);}}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+                    Ví: <span style={{ fontWeight: 800, color: 'var(--primary)', marginLeft: 4 }}>50,000đ</span>
+                  </button>
+                  <button className="drop-item" onClick={() => {navigate('/settings'); setShowDrop(false);}}><Settings size={16} /> Cài đặt</button>
                   <div className="drop-sep" />
                   <button className="drop-item danger" onClick={handleLogout}><LogOut size={16} /> Đăng xuất</button>
                 </div>
