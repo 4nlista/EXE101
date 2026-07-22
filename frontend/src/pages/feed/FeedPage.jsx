@@ -1,47 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Filter, Clock, ChevronDown, ChevronLeft, ChevronRight, X, FileText, CheckCircle, Award, UploadCloud, GraduationCap, Briefcase, Users, Search, Heart, Palette, Code, Target, Cpu, Settings } from 'lucide-react';
-
-const mockProjects = [
-  // Premium - Sinh Viên
-  { id: 101, package: 'premium', title: 'Phân tích Data Customer', author: 'Team DataV', authorId: 1, avatarText: 'DV', school: 'ĐH Bách Khoa', target: 'student', match: 'Phù hợp 98%', timeLeft: 'Còn 1 ngày', desc: 'Cần bạn làm Data Analyst, có khả năng dùng Python/R để clean data và viz bằng PowerBI.', roles: [{ name: '1 Data Analyst', icon: <Cpu size={14} /> }] },
-  { id: 102, package: 'premium', title: 'Thiết kế Game Mobile 2D', author: 'Studio X', authorId: 2, avatarText: 'SX', school: 'RMIT VN', target: 'student', timeLeft: 'Còn 3 ngày', desc: 'Tuyển 2D Artist vẽ nhân vật phong cách Anime/Chibi. Làm remote part-time.', roles: [{ name: '1 2D Artist', icon: <Palette size={14} /> }] },
-  { id: 103, package: 'premium', title: 'Fullstack Dev - Web3 Dapp', author: 'Lê Nguyên', authorId: 3, avatarText: 'LN', target: 'student', match: 'Phù hợp 85%', timeLeft: 'Còn 5 ngày', desc: 'Khởi nghiệp Web3 cần Dev làm Nodejs/React. Trả lương hoặc shares.', roles: [{ name: '2 Fullstack', icon: <Code size={14} /> }] },
-  // VIP - Sinh viên
-  { id: 104, package: 'vip', title: 'Trợ lý Marketing Sinh Viên', author: 'CLB Truyền thông', authorId: 4, avatarText: 'TT', school: 'ĐH KHXH&NV', target: 'student', timeLeft: 'Còn 2 ngày', desc: 'Lên kế hoạch content fanpage và tổ chức event nội bộ.', roles: [{ name: '1 Content', icon: <Target size={14} /> }] },
-  { id: 105, package: 'vip', title: 'Nghiên cứu thị trường F&B', author: 'Hoàng Lan', authorId: 5, avatarText: 'HL', school: 'ĐH Kinh tế', target: 'student', match: 'Phù hợp 90%', timeLeft: 'Còn 1 tuần', desc: 'Đi khảo sát, gọi điện thoại lấy insight khách hàng cho chuỗi cafe mới.', roles: [{ name: '1 Research', icon: <Users size={14} /> }] },
-  // Normal - Sinh Viên
-  { id: 1, title: 'Tái thiết kế trang Thương mại Điện tử', author: 'Lê Anh', authorId: 1, avatarText: 'LA', school: 'ĐH Bách Khoa', target: 'student', timeLeft: 'Còn 3 ngày', desc: 'Tìm kiếm UI/UX Designer sáng tạo và Frontend Developer để cải tiến trang web.', roles: [{ name: '1 Thiết kế', icon: <Palette size={14} /> }, { name: '2 Frontend', icon: <Code size={14} /> }] },
-  { id: 2, title: 'Tài liệu Pitching Startup Công nghệ', author: 'Minh Tuấn', authorId: 2, avatarText: 'MT', school: 'RMIT VN', target: 'student', match: 'Phù hợp 92%', timeLeft: 'Còn 1 tuần', desc: 'Cần một trưởng nhóm có tư duy kinh doanh và một designer để giúp xây dựng bộ tài liệu pitching.', roles: [{ name: '1 Trưởng nhóm', icon: <Target size={14} /> }, { name: '1 Thiết kế', icon: <Palette size={14} /> }] },
-  { id: 3, title: 'Hệ thống Tạo Portfolio Tự động bằng AI', author: 'Hoàng Long', authorId: 1, avatarText: 'HL', school: 'ĐH FPT', target: 'student', timeLeft: 'Còn 2 tuần', desc: 'Chúng tôi đang xây dựng một nền tảng sử dụng AI để tự động tạo một trang web portfolio chuyên nghiệp.', roles: [{ name: '2 Frontend', icon: <Code size={14} /> }, { name: '1 AI', icon: <Cpu size={14} /> }] },
-  { id: 6, title: 'Thiết kế Logo và Brand Identity', author: 'Startup XYZ', authorId: 3, avatarText: 'XY', target: 'student', timeLeft: 'Còn 1 tuần', desc: 'Cần một bạn sinh viên thiết kế bộ nhận diện thương hiệu cho quán cafe mới mở, phong cách minimal.', roles: [{ name: '1 Thiết kế', icon: <Palette size={14} /> }] },
-
-  // Premium - Đi làm
-  { id: 201, package: 'premium', title: 'Lead Backend Engineer (Go/Nodejs)', author: 'Tech Corp', authorId: 4, avatarText: 'TC', target: 'professional', match: 'Phù hợp 99%', timeLeft: 'Còn 2 ngày', desc: 'Tuyển gấp Lead Backend. Range lương 2000-3000$. Làm việc tại Quận 1, TPHCM.', roles: [{ name: '1 Lead Backend', icon: <Settings size={14} /> }] },
-  { id: 202, package: 'premium', title: 'Product Manager - EdTech', author: 'EduTech Inc.', authorId: 5, avatarText: 'ET', target: 'professional', timeLeft: 'Còn 4 ngày', desc: 'Cần PM có kinh nghiệm làm các sản phẩm Edtech. Lương thỏa thuận.', roles: [{ name: '1 PM', icon: <Target size={14} /> }] },
-  // VIP - Đi làm
-  { id: 203, package: 'vip', title: 'Mobile Dev (Flutter/React Native)', author: 'AppVn', authorId: 6, avatarText: 'AV', target: 'professional', match: 'Phù hợp 88%', timeLeft: 'Còn 1 tuần', desc: 'Dự án outsource ngắn hạn (3 tháng). Remote 100%. Lương theo giờ.', roles: [{ name: '1 Mobile Dev', icon: <Code size={14} /> }] },
-  { id: 204, package: 'vip', title: 'Chuyên viên SEO / Digital Marketing', author: 'BDS Group', authorId: 7, avatarText: 'BD', target: 'professional', timeLeft: 'Còn 10 ngày', desc: 'Đẩy top từ khóa mảng Bất động sản. Cần rank top 5 Google trong 3 tháng.', roles: [{ name: '1 SEO', icon: <Users size={14} /> }] },
-  // Normal - Đi làm
-  { id: 4, title: 'App quản lý chi tiêu cá nhân (Startup)', author: 'Trần Thị B', authorId: 2, avatarText: 'TB', target: 'professional', timeLeft: 'Còn 4 ngày', desc: 'Team đang có 3 người (1 Business, 1 UI, 1 Mobile). Cần tuyển gấp 1 bạn làm Backend Node.js có kinh nghiệm.', roles: [{ name: '1 Backend', icon: <Settings size={14} /> }] },
-  { id: 5, title: 'Freelance - Cắt HTML/CSS Landing Page', author: 'Công ty ABC', authorId: 3, avatarText: 'AB', target: 'professional', timeLeft: 'Còn 5 ngày', desc: 'Cần một bạn cắt HTML/CSS/JS thuần cho 5 trang Landing page quảng cáo. Yêu cầu pixel-perfect và responsive tốt.', roles: [{ name: '1 Frontend', icon: <Code size={14} /> }] }
-];
+import { ENUM_MAJORS, ENUM_UNIVERSITIES } from '../../constants/mockData';
+import { getProjects, saveProject, getUsers } from '../../utils/storage';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function FeedPage() {
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
+
   const [selectedProject, setSelectedProject] = useState(null);
   const [targetAudience, setTargetAudience] = useState('student'); // 'student' | 'professional'
-  const [openDropdown, setOpenDropdown] = useState(null); // 'linhvuc' | 'vaitro' | null
-  const [projects, setProjects] = useState(mockProjects);
+  const [openDropdown, setOpenDropdown] = useState(null); // 'linhvuc' | 'vaitro' | 'truong' | null
+  const [projects, setProjects] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 16;
+
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newPost, setNewPost] = useState({ title: '', overview: '', requirements: '', benefits: '', members: '', package: 'free' });
+  const [newPost, setNewPost] = useState({ title: '', overview: '', requirements: '', benefits: '', members: '', package: 'free', deadline: '', school: '', field: '', targetScore: '', salary: '' });
 
   // Filter state
   const [selectedLinhVuc, setSelectedLinhVuc] = useState('Tất cả lĩnh vực');
   const [selectedVaiTro, setSelectedVaiTro] = useState('Tất cả vai trò');
+  const [selectedTruong, setSelectedTruong] = useState('Tất cả trường');
 
-  const linhVucOptions = ['Tất cả lĩnh vực', 'Kinh doanh/Bán hàng', 'Marketing/PR', 'Chăm sóc khách hàng', 'Nhân sự/Hành chính', 'Công nghệ Thông tin'];
+  const linhVucOptions = ['Tất cả lĩnh vực', ...ENUM_MAJORS];
+  const truongOptions = ['Tất cả trường', ...ENUM_UNIVERSITIES];
   const vaiTroOptions = ['Tất cả vai trò', 'Thiết kế UI/UX', 'Lập trình viên', 'Trưởng nhóm', 'Kiểm thử (Tester)', 'Phân tích dữ liệu'];
+
+  useEffect(() => {
+    setProjects(getProjects());
+    setUsers(getUsers());
+  }, []);
 
   const handleDropdown = (name) => {
     setOpenDropdown(openDropdown === name ? null : name);
@@ -50,6 +41,7 @@ export default function FeedPage() {
   const handleClearFilter = () => {
     setSelectedLinhVuc('Tất cả lĩnh vực');
     setSelectedVaiTro('Tất cả vai trò');
+    setSelectedTruong('Tất cả trường');
   };
 
   const handleCreatePost = () => {
@@ -61,21 +53,33 @@ export default function FeedPage() {
     const createdPost = {
       id: Date.now(),
       title: newPost.title,
-      author: 'Tôi',
-      authorId: 999,
-      avatarText: 'T',
+      author: currentUser ? currentUser.name : 'Người Dùng Hiện Tại',
+      authorId: currentUser ? currentUser.id : 999,
+      avatarText: currentUser ? currentUser.avatarText : 'ND',
+      school: newPost.school || '',
       target: targetAudience,
-      timeLeft: 'Vừa xong',
+      timeLeft: newPost.deadline || 'Vừa xong',
       desc: newPost.overview,
+      requirements: newPost.requirements,
+      benefits: newPost.benefits,
+      field: newPost.field,
+      targetScore: newPost.targetScore,
+      salary: newPost.salary,
       package: newPost.package,
-      roles: newPost.members.split(',').map(m => ({ name: m.trim(), icon: <Target size={14} /> }))
+      roles: newPost.members.split(',').map(m => {
+        const parts = m.trim().split(' ');
+        const qty = parseInt(parts[0]);
+        if (!isNaN(qty)) {
+          return { name: parts.slice(1).join(' '), quantity: qty, icon: <Target size={14} /> };
+        }
+        return { name: m.trim(), quantity: 1, icon: <Target size={14} /> };
+      })
     };
 
-    // Theo logic sort: bài premium lên top, rồi đến vip, rồi bài thường
-    // Nên mock logic insert lên đầu danh sách
-    setProjects(prev => [createdPost, ...prev]);
+    saveProject(createdPost);
+    setProjects(getProjects()); // Refresh from storage
     setShowCreateModal(false);
-    setNewPost({ title: '', overview: '', requirements: '', benefits: '', members: '', package: 'free' });
+    setNewPost({ title: '', overview: '', requirements: '', benefits: '', members: '', package: 'free', deadline: '', school: '' });
     alert("Tạo bài đăng thành công!");
   };
 
@@ -85,6 +89,9 @@ export default function FeedPage() {
     const score = p => p.package === 'premium' ? 3 : p.package === 'vip' ? 2 : 1;
     return score(b) - score(a);
   });
+
+  const totalPages = Math.ceil(filteredProjects.length / PAGE_SIZE) || 1;
+  const currentProjects = filteredProjects.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   return (
     <div style={{ display: 'flex', width: '100%', maxWidth: '100%', margin: '0 auto', padding: '0 40px' }}>
@@ -189,6 +196,34 @@ export default function FeedPage() {
         {/* Student Specific Filters */}
         {targetAudience === 'student' && (
           <>
+            <div style={{ position: 'relative', marginBottom: 20 }}>
+              <h4 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: 10 }}>Trường Đại học</h4>
+              <div
+                onClick={() => handleDropdown('truong')}
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', height: 38, padding: '0 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg)', cursor: 'pointer', fontSize: '0.9rem', color: 'var(--text-primary)' }}
+              >
+                <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{selectedTruong}</span>
+                <ChevronDown size={16} color="var(--text-muted)" style={{ flexShrink: 0 }} />
+              </div>
+
+              {openDropdown === 'truong' && (
+                <div style={{ position: 'absolute', top: 72, left: 0, width: '100%', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 12, boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)', zIndex: 10, padding: '8px 0', display: 'flex', flexDirection: 'column', maxHeight: 300, overflowY: 'auto' }}>
+                  {truongOptions.map((opt, i) => (
+                    <div
+                      key={i}
+                      onClick={() => { setSelectedTruong(opt); setOpenDropdown(null); }}
+                      style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px', cursor: 'pointer', fontSize: '0.9rem', color: selectedTruong === opt ? 'var(--primary)' : 'var(--text-primary)', transition: 'background 0.2s, color 0.2s' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--primary)'; e.currentTarget.style.background = 'var(--bg-subtle)'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.color = selectedTruong === opt ? 'var(--primary)' : 'var(--text-primary)'; e.currentTarget.style.background = 'transparent'; }}
+                    >
+                      <span style={{ display: 'block', maxWidth: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{opt}</span>
+                      <ChevronRight size={16} color="var(--text-muted)" style={{ flexShrink: 0 }} />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div style={{ marginBottom: 20 }}>
               <h4 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: 10 }}>Mục tiêu điểm</h4>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -304,93 +339,118 @@ export default function FeedPage() {
         </div>
 
         {/* Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24, paddingRight: 32 }}>
-          {filteredProjects.map(p => (
-            <div
-              key={p.id}
-              style={{ background: 'var(--bg)', border: p.package === 'premium' ? '2px solid #F59E0B' : p.package === 'vip' ? '1px solid #10B981' : '1px solid var(--border)', borderRadius: 10, padding: '12px 14px', position: 'relative', display: 'flex', flexDirection: 'column', cursor: 'pointer', transition: 'box-shadow 0.2s ease, transform 0.2s ease', height: '100%' }}
-              onClick={() => setSelectedProject(p)}
-              onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(0,0,0,0.1)'}
-              onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'none'}
-            >
-              <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 4, background: p.topColor || (p.package === 'premium' ? '#F59E0B' : p.package === 'vip' ? '#10B981' : 'var(--primary)'), borderRadius: '10px 10px 0 0', opacity: 1 }} />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24, paddingRight: 0 }}>
+          {currentProjects.map(p => {
+            const authorData = users.find(u => u.id === p.authorId) || {};
+            return (
+              <div
+                key={p.id}
+                style={{ background: 'var(--bg)', border: p.package === 'premium' ? '2px solid #F59E0B' : p.package === 'vip' ? '1px solid #10B981' : '1px solid var(--border)', borderRadius: 10, padding: '16px', position: 'relative', display: 'flex', flexDirection: 'column', cursor: 'pointer', transition: 'box-shadow 0.2s ease, transform 0.2s ease', height: '100%' }}
+                onClick={() => setSelectedProject(p)}
+                onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(0,0,0,0.1)'}
+                onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'none'}
+              >
+                <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 4, background: p.topColor || (p.package === 'premium' ? '#F59E0B' : p.package === 'vip' ? '#10B981' : 'var(--primary)'), borderRadius: '10px 10px 0 0', opacity: 1 }} />
 
-              {p.package === 'premium' && (
-                <div style={{ position: 'absolute', top: 4, left: 0, background: 'linear-gradient(90deg, #FDE68A 0%, #F59E0B 100%)', color: '#92400E', padding: '2px 8px', borderRadius: '0 4px 4px 0', fontSize: '0.65rem', fontWeight: 800, zIndex: 10, boxShadow: '0 2px 4px rgba(245,158,11,0.3)' }}>
-                  PRE.
-                </div>
-              )}
-              {p.package === 'vip' && (
-                <div style={{ position: 'absolute', top: 4, left: 0, background: 'linear-gradient(90deg, #A7F3D0 0%, #10B981 100%)', color: '#064E3B', padding: '2px 8px', borderRadius: '0 4px 4px 0', fontSize: '0.65rem', fontWeight: 800, zIndex: 10, boxShadow: '0 2px 4px rgba(16,185,129,0.3)' }}>
-                  VIP
-                </div>
-              )}
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 12, marginTop: (p.package === 'premium' || p.package === 'vip') ? 16 : 0 }}>
-                <div style={{ display: 'flex', gap: 6, flex: 1 }}>
-                  {p.school && <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#9A3412', background: '#FFEDD5', padding: '2px 8px', borderRadius: 99 }}>{p.school}</span>}
-                  {p.match && <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#4F46E5', background: '#EEF2FF', padding: '2px 8px', borderRadius: 99 }}>{p.match}</span>}
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                  <Clock size={12} /> {p.timeLeft}
-                </div>
-              </div>
-
-              <h3 style={{ fontSize: '0.95rem', fontWeight: 700, lineHeight: 1.3, color: 'var(--text-primary)', marginBottom: 8, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                {p.title}
-              </h3>
-
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 16, flex: 1, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                {p.desc}
-              </p>
-
-              <div style={{ marginBottom: 16 }}>
-                <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-                  Số lượng tuyển: <span style={{ color: 'var(--primary)' }}>{p.roles ? p.roles.reduce((a, r) => a + (parseInt(r.name) || 1), 0) : 1} ứng viên</span>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border)', paddingTop: 12 }}>
-                <div
-                  style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate(`/profile/${p.authorId}`);
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.querySelector('span').style.color = 'var(--primary)'}
-                  onMouseLeave={(e) => e.currentTarget.querySelector('span').style.color = 'var(--text-primary)'}
-                >
-                  <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#FFF7ED', color: '#9A3412', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 700 }}>
-                    {p.avatarText}
+                {p.package === 'premium' && (
+                  <div style={{ position: 'absolute', top: 0, left: 0, background: 'linear-gradient(90deg, #FDE68A 0%, #F59E0B 100%)', color: '#92400E', padding: '2px 6px', borderRadius: '8px 0 8px 0', fontSize: '0.65rem', fontWeight: 800, zIndex: 10, boxShadow: '0 2px 4px rgba(245,158,11,0.3)' }}>
+                    PRE
                   </div>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-primary)', transition: 'color 0.2s' }}>{p.author}</span>
+                )}
+                {p.package === 'vip' && (
+                  <div style={{ position: 'absolute', top: 0, left: 0, background: 'linear-gradient(90deg, #A7F3D0 0%, #10B981 100%)', color: '#064E3B', padding: '2px 6px', borderRadius: '8px 0 8px 0', fontSize: '0.65rem', fontWeight: 800, zIndex: 10, boxShadow: '0 2px 4px rgba(16,185,129,0.3)' }}>
+                    VIP
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 12, marginTop: 4 }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, flex: 1 }}>
+                    {p.school && <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#9A3412', background: '#FFEDD5', padding: '2px 8px', borderRadius: 99 }}>{p.school}</span>}
+                    {p.match && <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#4F46E5', background: '#EEF2FF', padding: '2px 8px', borderRadius: 99 }}>{p.match}</span>}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                    <Clock size={12} /> <span style={{ fontWeight: 700 }}>{p.timeLeft}</span>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <button
-                    style={{ width: 34, height: 34, borderRadius: '50%', border: '1px solid var(--border)', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-muted)', transition: 'all 0.2s' }}
-                    onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--primary)'; e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.background = 'rgba(234, 88, 12, 0.1)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--bg)'; }}
-                    onClick={(e) => { e.stopPropagation(); /* Save logic */ }}
+
+                <h3 style={{ fontSize: '0.95rem', fontWeight: 700, lineHeight: 1.3, color: 'var(--text-primary)', marginBottom: 8, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                  {p.title}
+                </h3>
+
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 16, flex: 1, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                  {p.desc}
+                </p>
+
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                    Số lượng tuyển: <span style={{ color: 'var(--primary)', fontWeight: 800 }}>{p.roles ? p.roles.reduce((a, r) => a + (parseInt(r.quantity) || 1), 0) : 1} ứng viên</span>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border)', paddingTop: 12 }}>
+                  <div
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/profile/${p.authorId}`);
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.querySelector('span').style.color = 'var(--primary)'}
+                    onMouseLeave={(e) => e.currentTarget.querySelector('span').style.color = 'var(--text-primary)'}
                   >
-                    <Heart size={16} />
-                  </button>
-                  <button className="btn btn-primary" style={{ background: '#B45309', borderColor: '#B45309', borderRadius: 6, fontWeight: 600, padding: '0 16px', height: 34, fontSize: '0.85rem' }}>
-                    Chi tiết
-                  </button>
+                    <div style={{ width: 26, height: 26, borderRadius: '50%', background: '#FFF7ED', color: '#9A3412', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', fontWeight: 700 }}>
+                      {authorData.avatarText || 'ND'}
+                    </div>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-primary)', transition: 'color 0.2s' }}>{authorData.name || 'Người Dùng'}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <button
+                      style={{ width: 20, height: 20, borderRadius: '50%', border: '1px solid var(--border)', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-muted)', transition: 'all 0.2s' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--primary)'; e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.background = 'rgba(234, 88, 12, 0.1)'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--bg)'; }}
+                      onClick={(e) => { e.stopPropagation(); /* Save logic */ }}
+                    >
+                      <Heart size={15} />
+                    </button>
+                    <button className="btn btn-primary" style={{ background: '#B45309', borderColor: '#B45309', borderRadius: 6, fontWeight: 20, padding: '0 16px', height: 28, fontSize: '0.85rem' }}>
+                      Chi tiết
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
 
         {/* Pagination Bottom Center */}
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8, marginTop: 'auto' }}>
-          <button style={{ width: 36, height: 36, borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-muted)' }}><ChevronLeft size={18} /></button>
-          <button style={{ width: 36, height: 36, borderRadius: 6, border: '1px solid var(--primary)', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white', fontWeight: 600 }}>1</button>
-          <button style={{ width: 36, height: 36, borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-primary)', fontWeight: 600 }}>2</button>
-          <button style={{ width: 36, height: 36, borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-primary)', fontWeight: 600 }}>3</button>
-          <button style={{ width: 36, height: 36, borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-muted)' }}><ChevronRight size={18} /></button>
-        </div>
+        {totalPages > 1 && (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8, marginTop: 'auto' }}>
+            <button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              style={{ width: 36, height: 36, borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.5 : 1, color: 'var(--text-muted)' }}
+            >
+              <ChevronLeft size={18} />
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                style={{ width: 36, height: 36, borderRadius: 6, border: page === currentPage ? '1px solid var(--primary)' : '1px solid var(--border)', background: page === currentPage ? 'var(--primary)' : 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: page === currentPage ? 'white' : 'var(--text-primary)', fontWeight: 600 }}
+              >
+                {page}
+              </button>
+            ))}
+
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              style={{ width: 36, height: 36, borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.5 : 1, color: 'var(--text-muted)' }}
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
+        )}
 
       </div>
 
@@ -429,25 +489,46 @@ export default function FeedPage() {
                 {targetAudience === 'student' ? (
                   <div>
                     <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: 'var(--text-primary)' }}>Chuyên ngành *</label>
-                    <input type="text" style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', color: 'var(--text-primary)' }} placeholder="Nhập chuyên ngành (vd: CNTT, Kinh tế...)" />
+                    <select value={newPost.field} onChange={e => setNewPost({ ...newPost, field: e.target.value })} style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', color: 'var(--text-primary)', appearance: 'none' }}>
+                      <option value="">Chọn chuyên ngành</option>
+                      {ENUM_MAJORS.map(m => <option key={m} value={m}>{m}</option>)}
+                    </select>
                   </div>
                 ) : (
                   <div>
                     <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: 'var(--text-primary)' }}>Lĩnh vực *</label>
-                    <input type="text" style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', color: 'var(--text-primary)' }} placeholder="Nhập lĩnh vực..." />
+                    <select value={newPost.field} onChange={e => setNewPost({ ...newPost, field: e.target.value })} style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', color: 'var(--text-primary)', appearance: 'none' }}>
+                      <option value="">Chọn lĩnh vực</option>
+                      {ENUM_MAJORS.map(m => <option key={m} value={m}>{m}</option>)}
+                    </select>
+                  </div>
+                )}
+
+                {targetAudience === 'student' ? (
+                  <div>
+                    <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: 'var(--text-primary)' }}>Mục tiêu điểm *</label>
+                    <input type="text" value={newPost.targetScore} onChange={e => setNewPost({ ...newPost, targetScore: e.target.value })} style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', color: 'var(--text-primary)' }} placeholder="Ví dụ: Giỏi, Xuất sắc..." />
+                  </div>
+                ) : (
+                  <div>
+                    <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: 'var(--text-primary)' }}>Mức lương *</label>
+                    <input type="text" value={newPost.salary} onChange={e => setNewPost({ ...newPost, salary: e.target.value })} style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', color: 'var(--text-primary)' }} placeholder="Ví dụ: 10 - 20 triệu" />
                   </div>
                 )}
 
                 {targetAudience === 'student' && (
                   <div>
                     <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: 'var(--text-primary)' }}>Trường đại học *</label>
-                    <input type="text" style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', color: 'var(--text-primary)' }} placeholder="Nhập trường đại học..." />
+                    <select value={newPost.school} onChange={e => setNewPost({ ...newPost, school: e.target.value })} style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', color: 'var(--text-primary)', appearance: 'none' }}>
+                      <option value="">Chọn trường đại học</option>
+                      {ENUM_UNIVERSITIES.map(u => <option key={u} value={u}>{u}</option>)}
+                    </select>
                   </div>
                 )}
 
                 <div>
                   <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: 'var(--text-primary)' }}>Hạn chót (Ngày kết thúc) *</label>
-                  <input type="text" style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', color: 'var(--text-primary)' }} placeholder="hh:mm dd/mm/yyyy" />
+                  <input type="date" value={newPost.deadline} onChange={e => setNewPost({ ...newPost, deadline: e.target.value })} style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', color: 'var(--text-primary)' }} />
                 </div>
 
                 <div>
@@ -528,49 +609,89 @@ export default function FeedPage() {
 
               <div style={{ background: 'var(--bg)', borderRadius: 8, border: '1px solid var(--border)', padding: 24 }}>
 
+                {selectedProject.target === 'student' ? (
+                  <>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--primary-dark)', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                      <GraduationCap size={18} /> Trường đại học
+                    </h3>
+                    <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 24 }}>
+                      {selectedProject.school || 'Không yêu cầu'}
+                    </p>
+
+                    <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--primary-dark)', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                      <Target size={18} /> Mục tiêu điểm
+                    </h3>
+                    <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 24 }}>
+                      <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{selectedProject.targetScore || 'Không yêu cầu'}</span>
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--primary-dark)', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                      <Briefcase size={18} /> Mức lương
+                    </h3>
+                    <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 24 }}>
+                      <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{selectedProject.salary || 'Thỏa thuận'}</span>
+                    </p>
+                  </>
+                )}
+
                 <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--primary-dark)', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                   <FileText size={18} /> Tổng quan Dự án
                 </h3>
-                <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 24 }}>
-                  {selectedProject.desc} Dự án yêu cầu sự kết hợp giữa phát triển frontend (React/Next.js) và tích hợp API backend.
+                <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 24, whiteSpace: 'pre-wrap' }}>
+                  {selectedProject.desc || 'Chưa có thông tin tổng quan.'}
                 </p>
 
                 <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--primary-dark)', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                   <CheckCircle size={18} /> Yêu cầu Ứng viên
                 </h3>
-                <ul style={{ paddingLeft: 24, color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.8, marginBottom: 24 }}>
-                  <li>Thành thạo React hoặc Next.js.</li>
-                  <li>Có kiến thức cơ bản về RESTful APIs và xử lý dữ liệu JSON.</li>
-                  <li>Cam kết ít nhất 15 giờ mỗi tuần trong 8 tuần tới.</li>
-                  <li>Có thái độ chủ động trong việc học hỏi các kỹ thuật tích hợp AI mới.</li>
-                </ul>
+                {selectedProject.requirements ? (
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.8, marginBottom: 24, whiteSpace: 'pre-wrap' }}>
+                    {selectedProject.requirements}
+                  </p>
+                ) : (
+                  <ul style={{ paddingLeft: 24, color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.8, marginBottom: 24 }}>
+                    <li>Thành thạo chuyên môn yêu cầu.</li>
+                    <li>Có kiến thức cơ bản về quy trình làm việc.</li>
+                    <li>Cam kết thời gian tham gia đầy đủ.</li>
+                    <li>Có thái độ chủ động trong việc học hỏi.</li>
+                  </ul>
+                )}
 
                 <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--primary-dark)', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                  <Users size={18} /> Chi tiết số lượng thành viên ({selectedProject.roles ? selectedProject.roles.reduce((a, r) => a + (parseInt(r.name) || 1), 0) : 1} ứng viên)
+                  <Users size={18} /> Chi tiết số lượng thành viên
                 </h3>
                 <ul style={{ paddingLeft: 24, color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.8, marginBottom: 24 }}>
-                  {selectedProject.roles ? selectedProject.roles.map((r, i) => <li key={i}>{r.name}</li>) : <li>1 Thành viên</li>}
+                  {selectedProject.roles ? selectedProject.roles.map((r, i) => <li key={i}><span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{r.quantity || 1}</span> {r.name}</li>) : <li><span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>1</span> Thành viên</li>}
                 </ul>
 
                 <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--primary-dark)', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                   <Award size={18} /> Quyền lợi Thành viên
                 </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
-                  <div style={{ border: '1px solid var(--border)', borderRadius: 6, padding: 16, display: 'flex', gap: 12 }}>
-                    <div style={{ color: 'var(--primary)' }}><GraduationCap size={20} /></div>
-                    <div>
-                      <div style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: 4, color: 'var(--text-primary)' }}>Chứng nhận Kinh nghiệm</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Được cấp chứng nhận tham gia dự án thực tế quốc gia.</div>
+                {selectedProject.benefits ? (
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.8, marginBottom: 24, whiteSpace: 'pre-wrap' }}>
+                    {selectedProject.benefits}
+                  </p>
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
+                    <div style={{ border: '1px solid var(--border)', borderRadius: 6, padding: 16, display: 'flex', gap: 12 }}>
+                      <div style={{ color: 'var(--primary)' }}><GraduationCap size={20} /></div>
+                      <div>
+                        <div style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: 4, color: 'var(--text-primary)' }}>Chứng nhận Kinh nghiệm</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Được cấp chứng nhận tham gia dự án thực tế.</div>
+                      </div>
+                    </div>
+                    <div style={{ border: '1px solid var(--border)', borderRadius: 6, padding: 16, display: 'flex', gap: 12 }}>
+                      <div style={{ color: 'var(--primary)' }}><Briefcase size={20} /></div>
+                      <div>
+                        <div style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: 4, color: 'var(--text-primary)' }}>Phát triển Kỹ năng</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Kinh nghiệm thực tế và mở rộng network.</div>
+                      </div>
                     </div>
                   </div>
-                  <div style={{ border: '1px solid var(--border)', borderRadius: 6, padding: 16, display: 'flex', gap: 12 }}>
-                    <div style={{ color: 'var(--primary)' }}><Briefcase size={20} /></div>
-                    <div>
-                      <div style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: 4, color: 'var(--text-primary)' }}>Phát triển Kỹ năng</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Kinh nghiệm thực tế với các API AI hiện đại và Next.js.</div>
-                    </div>
-                  </div>
-                </div>
+                )}
+
 
               </div>
 

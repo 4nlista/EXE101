@@ -88,10 +88,6 @@ Quản lý các lời mời ghép nhóm, tin nhắn liên hệ hoặc yêu cầu
 
 ---
 
-
-
-
-
 ### Các đầu việc tiếp theo cho Backend:
 
 1. **Thiết lập thư mục Backend**: Tạo các folder `models`, `controllers`, `routes`, `middlewares`, `config`.

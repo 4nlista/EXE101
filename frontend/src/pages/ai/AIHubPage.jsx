@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Paperclip, Send, Bot, User as UserIcon, Plus, MessageSquare, X, File, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { getUsers } from '../../utils/storage';
 
 export default function AIHubPage() {
   const { user } = useAuth();
@@ -15,22 +16,30 @@ export default function AIHubPage() {
   const [showReasonModal, setShowReasonModal] = useState(null); // store candidate info to show reasons
   const messagesEndRef = useRef(null);
 
-  const candidates = [
-    { id: 1, name: 'Minh Anh Nguyễn', school: 'Đại học Quốc gia Hà Nội', match: '95', avatar: 'Minh+Anh' },
-    { id: 2, name: 'Tuấn Lê', school: 'Đại học Bách khoa TP.HCM', match: '92', avatar: 'Tuan+Le' },
-    { id: 3, name: 'Lan Phạm', school: 'Đại học FPT', match: '88', avatar: 'Lan+Pham' }
-  ];
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    setUsers(getUsers());
+  }, []);
+
+  const candidates = users.slice(0, 3).map(u => ({
+    id: u.id,
+    name: u.name,
+    school: u.organization,
+    match: Math.floor(Math.random() * 15) + 85, // Mock match 85-99%
+    avatar: encodeURIComponent(u.name)
+  }));
 
   const handleSend = () => {
     if (!inputMsg.trim() && uploadedFiles.length === 0) return;
-    
+
     const newUserMsg = {
       id: Date.now(),
       sender: 'user',
       text: inputMsg,
       files: [...uploadedFiles]
     };
-    
+
     setMessages(prev => [...prev, newUserMsg]);
     setInputMsg('');
     setUploadedFiles([]);
@@ -56,7 +65,7 @@ export default function AIHubPage() {
 
   return (
     <div style={{ height: 'calc(100vh - 65px)', display: 'flex', background: 'var(--bg)', width: '100%', overflow: 'hidden' }}>
-      
+
       {/* ── Left Sidebar: Chat History (1/5 ~ 260px) ── */}
       <div style={{ width: 280, borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', background: 'var(--bg-subtle)' }}>
         <div style={{ padding: '20px 16px' }}>
@@ -64,16 +73,16 @@ export default function AIHubPage() {
             <Plus size={18} /> Chat mới
           </button>
         </div>
-        
+
         <div style={{ flex: 1, overflowY: 'auto', padding: '0 12px' }}>
           <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 12, paddingLeft: 8 }}>Gần đây</div>
-          
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', background: 'var(--bg)', borderRadius: 8, cursor: 'pointer', border: '1px solid var(--border)' }}>
               <MessageSquare size={16} color="var(--primary)" />
               <span style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Tìm chuyên gia UI/UX</span>
             </div>
-            
+
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 8, cursor: 'pointer' }} className="hover-bg">
               <MessageSquare size={16} color="var(--text-muted)" />
               <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Sửa lỗi Code ReactJS</span>
@@ -89,7 +98,7 @@ export default function AIHubPage() {
 
       {/* ── Right Content: Current Chat ── */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
-        
+
         {/* Header */}
         <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -97,7 +106,7 @@ export default function AIHubPage() {
               <Bot size={24} />
             </div>
             <div>
-              <h2 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Trợ lý AI NexLink</h2>
+              <h2 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Trợ lý AI</h2>
               <div style={{ fontSize: '0.8rem', color: '#10B981', display: 'flex', alignItems: 'center', gap: 4 }}>
                 <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10B981' }} /> Trực tuyến
               </div>
@@ -107,10 +116,10 @@ export default function AIHubPage() {
 
         {/* Chat Messages */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '24px 10%', display: 'flex', flexDirection: 'column', gap: 32 }}>
-          
+
           {messages.map((msg) => (
             <div key={msg.id} style={{ alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start', maxWidth: '90%', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-              
+
               {msg.sender === 'ai' && (
                 <div style={{ width: 32, height: 32, borderRadius: 8, background: '#8B5CF6', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <Bot size={18} />
@@ -119,14 +128,14 @@ export default function AIHubPage() {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: msg.sender === 'user' ? 'flex-end' : 'flex-start' }}>
                 {msg.text && (
-                  <div style={{ 
-                    background: msg.sender === 'user' ? '#B45309' : 'var(--bg)', 
-                    color: msg.sender === 'user' ? 'white' : 'var(--text-primary)', 
-                    padding: '12px 16px', 
-                    borderRadius: msg.sender === 'user' ? '12px 0 12px 12px' : '0 12px 12px 12px', 
+                  <div style={{
+                    background: msg.sender === 'user' ? '#B45309' : 'var(--bg)',
+                    color: msg.sender === 'user' ? 'white' : 'var(--text-primary)',
+                    padding: '12px 16px',
+                    borderRadius: msg.sender === 'user' ? '12px 0 12px 12px' : '0 12px 12px 12px',
                     border: msg.sender === 'ai' ? '1px solid var(--border)' : 'none',
-                    fontSize: '0.95rem', 
-                    lineHeight: 1.5 
+                    fontSize: '0.95rem',
+                    lineHeight: 1.5
                   }}>
                     {msg.text}
                   </div>
@@ -148,8 +157,8 @@ export default function AIHubPage() {
                     {candidates.map(c => (
                       <div key={c.id} style={{ width: 280, border: '1px solid var(--border)', borderRadius: 12, padding: 16, flexShrink: 0, background: 'var(--bg)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-                          <img src={`https://ui-avatars.com/api/?name=${c.avatar}&background=random`} style={{ width: 48, height: 48, borderRadius: '50%' }} />
-                          <button 
+                          <img src={`https://ui-avatars.com/api/?name=${c.avatar}&background=random`} style={{ width: 48, height: 48, borderRadius: '50%' }} alt="avatar" />
+                          <button
                             onClick={() => setShowReasonModal(c)}
                             style={{ fontSize: '0.75rem', background: '#EEF2FF', color: '#4F46E5', padding: '4px 8px', borderRadius: 99, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4, border: '1px solid #C7D2FE', cursor: 'pointer' }}
                           >
@@ -198,9 +207,9 @@ export default function AIHubPage() {
             <button onClick={handleFileUpload} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 8, color: 'var(--text-muted)' }}>
               <Paperclip size={20} />
             </button>
-            
-            <input 
-              type="text" 
+
+            <input
+              type="text"
               placeholder="Hỏi Trợ lý AI..."
               value={inputMsg}
               onChange={e => setInputMsg(e.target.value)}
