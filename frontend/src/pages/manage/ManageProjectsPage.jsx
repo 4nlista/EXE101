@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, CheckCircle, MessageSquare, X, ChevronRight, User, Eye, Filter } from 'lucide-react';
+import { Users, CheckCircle, MessageSquare, X, ChevronRight, User, Eye, Filter, Briefcase, MapPin, GraduationCap, Award } from 'lucide-react';
 
 const mockMyProjects = [
   {

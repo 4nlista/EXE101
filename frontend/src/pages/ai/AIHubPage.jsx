@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Paperclip, Send, Bot, User as UserIcon, Plus, MessageSquare, X, File, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 export default function AIHubPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [inputMsg, setInputMsg] = useState('');
   const [messages, setMessages] = useState([
     { id: 1, sender: 'user', text: 'Tôi đang tìm một chuyên gia thiết kế UI/UX cho dự án khởi nghiệp về giáo dục.' },
@@ -158,7 +160,7 @@ export default function AIHubPage() {
                         <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: 12 }}>{c.school}</div>
                         <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>Kỹ năng nổi bật</div>
                         <span className="proj-role-tag design" style={{ marginBottom: 16 }}>Thiết kế UI/UX</span>
-                        <button className="btn btn-secondary" style={{ width: '100%' }}>Kết nối ngay</button>
+                        <button className="btn btn-secondary" style={{ width: '100%' }} onClick={() => navigate('/profile/' + c.id)}>Kết nối ngay</button>
                       </div>
                     ))}
                   </div>

@@ -25,27 +25,27 @@ export default function SettingsPage() {
 
   return (
     <div style={{ padding: '32px 40px', maxWidth: 1000, margin: '0 auto', display: 'flex', gap: 32, minHeight: 'calc(100vh - 65px)' }}>
-      
+
       {/* Sidebar Settings */}
       <div style={{ width: 250 }}>
         <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: 24, color: 'var(--text-primary)' }}>Cài đặt</h1>
-        
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <button 
+          <button
             onClick={() => setActiveTab('general')}
             style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderRadius: 8, border: 'none', background: activeTab === 'general' ? 'var(--bg-subtle)' : 'transparent', color: activeTab === 'general' ? 'var(--primary)' : 'var(--text-secondary)', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', textAlign: 'left' }}
           >
-            <Settings size={18} /> Cài đặt chung
+            <Settings size={18} /> Đổi mật khẩu
           </button>
 
-          <button 
+          <button
             onClick={() => setActiveTab('theme')}
             style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderRadius: 8, border: 'none', background: activeTab === 'theme' ? 'var(--bg-subtle)' : 'transparent', color: activeTab === 'theme' ? 'var(--primary)' : 'var(--text-secondary)', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', textAlign: 'left' }}
           >
             <Sun size={18} /> Giao diện
           </button>
 
-          <button 
+          <button
             onClick={() => setActiveTab('wallet')}
             style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderRadius: 8, border: 'none', background: activeTab === 'wallet' ? 'var(--bg-subtle)' : 'transparent', color: activeTab === 'wallet' ? 'var(--primary)' : 'var(--text-secondary)', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', textAlign: 'left' }}
           >
@@ -56,27 +56,51 @@ export default function SettingsPage() {
 
       {/* Main Content */}
       <div style={{ flex: 1, padding: 32, background: 'var(--bg)', borderRadius: 12, border: '1px solid var(--border)', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-        
+
         {activeTab === 'general' && (
           <div>
-            <h2 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: 16 }}>Cài đặt chung</h2>
-            <p style={{ color: 'var(--text-secondary)' }}>Tính năng này đang được phát triển...</p>
+            <h2 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: 16, color: 'var(--text-primary)' }}>Cài đặt chung</h2>
+
+            <div style={{ background: 'var(--bg-subtle)', padding: 24, borderRadius: 12, border: '1px solid var(--border)', marginBottom: 24 }}>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: 16 }}>Đổi mật khẩu</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>Mật khẩu hiện tại</label>
+                  <input type="password" placeholder="Nhập mật khẩu hiện tại" style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text-primary)', outline: 'none' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>Mật khẩu mới</label>
+                  <input type="password" placeholder="Nhập mật khẩu mới" style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text-primary)', outline: 'none' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>Xác nhận mật khẩu mới</label>
+                  <input type="password" placeholder="Nhập lại mật khẩu mới" style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text-primary)', outline: 'none' }} />
+                </div>
+                <button className="btn btn-primary" style={{ width: 'max-content', marginTop: 8 }}>Cập nhật mật khẩu</button>
+              </div>
+            </div>
           </div>
         )}
 
         {activeTab === 'theme' && (
           <div>
-            <h2 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: 16 }}>Giao diện</h2>
+            <h2 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: 16, color: 'var(--text-primary)' }}>Giao diện</h2>
             <p style={{ color: 'var(--text-secondary)', marginBottom: 24 }}>Tùy chỉnh giao diện Sáng / Tối.</p>
             <div style={{ display: 'flex', gap: 16 }}>
-               <button style={{ flex: 1, padding: 20, borderRadius: 12, border: '2px solid var(--primary)', background: '#fff', color: '#1f2937', fontWeight: 600, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
-                  <Sun size={24} /> Giao diện Sáng
-               </button>
-               <button style={{ flex: 1, padding: 20, borderRadius: 12, border: '1px solid var(--border)', background: '#111827', color: '#fff', fontWeight: 600, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, cursor: 'pointer', opacity: 0.8 }}>
-                  <Moon size={24} /> Giao diện Tối
-               </button>
+              <button
+                onClick={() => document.documentElement.removeAttribute('data-theme')}
+                style={{ flex: 1, padding: 20, borderRadius: 12, border: '2px solid var(--primary)', background: '#fff', color: '#1f2937', fontWeight: 600, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, cursor: 'pointer' }}
+              >
+                <Sun size={24} /> Giao diện Sáng
+              </button>
+              <button
+                onClick={() => document.documentElement.setAttribute('data-theme', 'dark')}
+                style={{ flex: 1, padding: 20, borderRadius: 12, border: '1px solid var(--border)', background: '#111827', color: '#fff', fontWeight: 600, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, cursor: 'pointer' }}
+              >
+                <Moon size={24} /> Giao diện Tối
+              </button>
             </div>
-            <p style={{ marginTop: 12, fontSize: '0.85rem', color: 'var(--text-muted)' }}>* Dark mode đang trong giai đoạn Beta.</p>
+            <p style={{ marginTop: 12, fontSize: '0.85rem', color: 'var(--text-muted)' }}>* Dark mode áp dụng lên toàn bộ hệ thống.</p>
           </div>
         )}
 
@@ -87,19 +111,19 @@ export default function SettingsPage() {
 
             {/* Balance Card */}
             <div style={{ background: 'linear-gradient(135deg, var(--primary) 0%, #C2410C 100%)', borderRadius: 16, padding: 32, color: 'white', position: 'relative', overflow: 'hidden', marginBottom: 32, boxShadow: '0 10px 25px -5px rgba(234, 88, 12, 0.4)' }}>
-              
+
               <div style={{ position: 'absolute', right: -20, top: -20, width: 150, height: 150, background: 'rgba(255,255,255,0.1)', borderRadius: '50%' }} />
               <div style={{ position: 'absolute', right: 80, bottom: -40, width: 100, height: 100, background: 'rgba(255,255,255,0.1)', borderRadius: '50%' }} />
-              
+
               <div style={{ position: 'relative', zIndex: 1 }}>
                 <div style={{ fontSize: '0.95rem', fontWeight: 600, opacity: 0.9, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
-                   <CreditCard size={18} /> Số dư khả dụng
+                  <CreditCard size={18} /> Số dư khả dụng
                 </div>
                 <div style={{ fontSize: '2.5rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 24 }}>
                   {balance.toLocaleString()}đ
                 </div>
 
-                <button 
+                <button
                   onClick={() => setShowTopup(true)}
                   style={{ background: 'white', color: 'var(--primary-dark)', border: 'none', padding: '10px 20px', borderRadius: 8, fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
                 >
@@ -146,10 +170,10 @@ export default function SettingsPage() {
           <div style={{ background: 'var(--bg)', width: 400, borderRadius: 16, padding: 32, boxShadow: '0 25px 50px -12px rgba(0,0,0,0.3)', position: 'relative' }}>
             <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: 8 }}>Nạp tiền vào ví</h3>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: 24 }}>Chọn mệnh giá bạn muốn nạp. Thanh toán an toàn qua VNPay.</p>
-            
+
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 24 }}>
               {[50000, 100000, 200000, 500000].map(amt => (
-                <button 
+                <button
                   key={amt}
                   onClick={() => setTopupAmount(amt)}
                   style={{ padding: '12px 0', borderRadius: 8, border: topupAmount === amt ? '2px solid var(--primary)' : '1px solid var(--border)', background: topupAmount === amt ? 'rgba(234, 88, 12, 0.05)' : 'var(--bg)', color: topupAmount === amt ? 'var(--primary)' : 'var(--text-primary)', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }}
@@ -160,13 +184,13 @@ export default function SettingsPage() {
             </div>
 
             <div style={{ display: 'flex', gap: 12 }}>
-              <button 
+              <button
                 onClick={() => setShowTopup(false)}
                 style={{ flex: 1, padding: 12, borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text-secondary)', fontWeight: 600, cursor: 'pointer' }}
               >
                 Hủy
               </button>
-              <button 
+              <button
                 onClick={handleTopup}
                 style={{ flex: 2, padding: 12, borderRadius: 8, border: 'none', background: 'var(--primary)', color: 'white', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
               >

@@ -3,92 +3,28 @@ import { useNavigate } from 'react-router-dom';
 import { Filter, Clock, ChevronDown, ChevronLeft, ChevronRight, X, FileText, CheckCircle, Award, UploadCloud, GraduationCap, Briefcase, Users, Search, Heart, Palette, Code, Target, Cpu, Settings } from 'lucide-react';
 
 const mockProjects = [
-  {
-    id: 1,
-    title: 'Tái thiết kế trang Thương mại Điện tử',
-    author: 'Lê Anh',
-    authorId: 1,
-    avatarText: 'LA',
-    school: 'ĐH Bách Khoa',
-    target: 'student',
-    timeLeft: 'Còn 3 ngày',
-    desc: 'Tìm kiếm UI/UX Designer sáng tạo và Frontend Developer để cải tiến trang web thương mại điện t...',
-    roles: [
-      { name: '1 Thiết kế', icon: <Palette size={14} /> },
-      { name: '2 Lập trình viên', icon: <Code size={14} /> }
-    ]
-  },
-  {
-    id: 2,
-    title: 'Tài liệu Pitching Startup Công nghệ',
-    author: 'Minh Tuấn',
-    authorId: 2,
-    avatarText: 'MT',
-    school: 'RMIT VN',
-    target: 'student',
-    match: 'Phù hợp 92%',
-    timeLeft: 'Còn 1 tuần',
-    desc: 'Cần một trưởng nhóm có tư duy kinh doanh và một designer để giúp xây dựng bộ tài liệu pitching và...',
-    roles: [
-      { name: '1 Trưởng nhóm', icon: <Target size={14} /> },
-      { name: '1 Thiết kế', icon: <Palette size={14} /> }
-    ]
-  },
-  {
-    id: 3,
-    title: 'Hệ thống Tạo Portfolio Tự động bằng AI',
-    author: 'Hoàng Long',
-    authorId: 1,
-    avatarText: 'HL',
-    school: 'ĐH FPT',
-    target: 'student',
-    timeLeft: 'Còn 2 tuần',
-    desc: 'Chúng tôi đang xây dựng một nền tảng sử dụng AI để tự động tạo một trang web portfolio chuyên nghiệp...',
-    roles: [
-      { name: '2 Frontend', icon: <Code size={14} /> },
-      { name: '1 AI Engineer', icon: <Cpu size={14} /> }
-    ]
-  },
-  {
-    id: 4,
-    title: 'App quản lý chi tiêu cá nhân (Startup)',
-    author: 'Trần Thị B',
-    authorId: 2,
-    avatarText: 'TB',
-    school: 'ĐH Kinh tế',
-    target: 'professional',
-    timeLeft: 'Còn 4 ngày',
-    desc: 'Team đang có 3 người (1 Business, 1 UI, 1 Mobile). Cần tuyển gấp 1 bạn làm Backend Node.js có kinh nghiệm.',
-    roles: [
-      { name: '1 Backend', icon: <Settings size={14} /> }
-    ]
-  },
-  {
-    id: 5,
-    title: 'Freelance - Cắt HTML/CSS Landing Page',
-    author: 'Công ty ABC',
-    authorId: 3,
-    avatarText: 'AB',
-    target: 'professional',
-    timeLeft: 'Còn 5 ngày',
-    desc: 'Cần một bạn cắt HTML/CSS/JS thuần cho 5 trang Landing page quảng cáo. Yêu cầu pixel-perfect và responsive tốt.',
-    roles: [
-      { name: '1 Frontend', icon: <Code size={14} /> }
-    ]
-  },
-  {
-    id: 6,
-    title: 'Thiết kế Logo và Brand Identity',
-    author: 'Startup XYZ',
-    authorId: 3,
-    avatarText: 'XY',
-    target: 'student',
-    timeLeft: 'Còn 1 tuần',
-    desc: 'Cần một bạn sinh viên thiết kế bộ nhận diện thương hiệu cho quán cafe mới mở, phong cách minimal.',
-    roles: [
-      { name: '1 Thiết kế', icon: <Palette size={14} /> }
-    ]
-  }
+  // Premium - Sinh Viên
+  { id: 101, package: 'premium', title: 'Phân tích Data Customer', author: 'Team DataV', authorId: 1, avatarText: 'DV', school: 'ĐH Bách Khoa', target: 'student', match: 'Phù hợp 98%', timeLeft: 'Còn 1 ngày', desc: 'Cần bạn làm Data Analyst, có khả năng dùng Python/R để clean data và viz bằng PowerBI.', roles: [{ name: '1 Data Analyst', icon: <Cpu size={14} /> }] },
+  { id: 102, package: 'premium', title: 'Thiết kế Game Mobile 2D', author: 'Studio X', authorId: 2, avatarText: 'SX', school: 'RMIT VN', target: 'student', timeLeft: 'Còn 3 ngày', desc: 'Tuyển 2D Artist vẽ nhân vật phong cách Anime/Chibi. Làm remote part-time.', roles: [{ name: '1 2D Artist', icon: <Palette size={14} /> }] },
+  { id: 103, package: 'premium', title: 'Fullstack Dev - Web3 Dapp', author: 'Lê Nguyên', authorId: 3, avatarText: 'LN', target: 'student', match: 'Phù hợp 85%', timeLeft: 'Còn 5 ngày', desc: 'Khởi nghiệp Web3 cần Dev làm Nodejs/React. Trả lương hoặc shares.', roles: [{ name: '2 Fullstack', icon: <Code size={14} /> }] },
+  // VIP - Sinh viên
+  { id: 104, package: 'vip', title: 'Trợ lý Marketing Sinh Viên', author: 'CLB Truyền thông', authorId: 4, avatarText: 'TT', school: 'ĐH KHXH&NV', target: 'student', timeLeft: 'Còn 2 ngày', desc: 'Lên kế hoạch content fanpage và tổ chức event nội bộ.', roles: [{ name: '1 Content', icon: <Target size={14} /> }] },
+  { id: 105, package: 'vip', title: 'Nghiên cứu thị trường F&B', author: 'Hoàng Lan', authorId: 5, avatarText: 'HL', school: 'ĐH Kinh tế', target: 'student', match: 'Phù hợp 90%', timeLeft: 'Còn 1 tuần', desc: 'Đi khảo sát, gọi điện thoại lấy insight khách hàng cho chuỗi cafe mới.', roles: [{ name: '1 Research', icon: <Users size={14} /> }] },
+  // Normal - Sinh Viên
+  { id: 1, title: 'Tái thiết kế trang Thương mại Điện tử', author: 'Lê Anh', authorId: 1, avatarText: 'LA', school: 'ĐH Bách Khoa', target: 'student', timeLeft: 'Còn 3 ngày', desc: 'Tìm kiếm UI/UX Designer sáng tạo và Frontend Developer để cải tiến trang web.', roles: [{ name: '1 Thiết kế', icon: <Palette size={14} /> }, { name: '2 Frontend', icon: <Code size={14} /> }] },
+  { id: 2, title: 'Tài liệu Pitching Startup Công nghệ', author: 'Minh Tuấn', authorId: 2, avatarText: 'MT', school: 'RMIT VN', target: 'student', match: 'Phù hợp 92%', timeLeft: 'Còn 1 tuần', desc: 'Cần một trưởng nhóm có tư duy kinh doanh và một designer để giúp xây dựng bộ tài liệu pitching.', roles: [{ name: '1 Trưởng nhóm', icon: <Target size={14} /> }, { name: '1 Thiết kế', icon: <Palette size={14} /> }] },
+  { id: 3, title: 'Hệ thống Tạo Portfolio Tự động bằng AI', author: 'Hoàng Long', authorId: 1, avatarText: 'HL', school: 'ĐH FPT', target: 'student', timeLeft: 'Còn 2 tuần', desc: 'Chúng tôi đang xây dựng một nền tảng sử dụng AI để tự động tạo một trang web portfolio chuyên nghiệp.', roles: [{ name: '2 Frontend', icon: <Code size={14} /> }, { name: '1 AI', icon: <Cpu size={14} /> }] },
+  { id: 6, title: 'Thiết kế Logo và Brand Identity', author: 'Startup XYZ', authorId: 3, avatarText: 'XY', target: 'student', timeLeft: 'Còn 1 tuần', desc: 'Cần một bạn sinh viên thiết kế bộ nhận diện thương hiệu cho quán cafe mới mở, phong cách minimal.', roles: [{ name: '1 Thiết kế', icon: <Palette size={14} /> }] },
+
+  // Premium - Đi làm
+  { id: 201, package: 'premium', title: 'Lead Backend Engineer (Go/Nodejs)', author: 'Tech Corp', authorId: 4, avatarText: 'TC', target: 'professional', match: 'Phù hợp 99%', timeLeft: 'Còn 2 ngày', desc: 'Tuyển gấp Lead Backend. Range lương 2000-3000$. Làm việc tại Quận 1, TPHCM.', roles: [{ name: '1 Lead Backend', icon: <Settings size={14} /> }] },
+  { id: 202, package: 'premium', title: 'Product Manager - EdTech', author: 'EduTech Inc.', authorId: 5, avatarText: 'ET', target: 'professional', timeLeft: 'Còn 4 ngày', desc: 'Cần PM có kinh nghiệm làm các sản phẩm Edtech. Lương thỏa thuận.', roles: [{ name: '1 PM', icon: <Target size={14} /> }] },
+  // VIP - Đi làm
+  { id: 203, package: 'vip', title: 'Mobile Dev (Flutter/React Native)', author: 'AppVn', authorId: 6, avatarText: 'AV', target: 'professional', match: 'Phù hợp 88%', timeLeft: 'Còn 1 tuần', desc: 'Dự án outsource ngắn hạn (3 tháng). Remote 100%. Lương theo giờ.', roles: [{ name: '1 Mobile Dev', icon: <Code size={14} /> }] },
+  { id: 204, package: 'vip', title: 'Chuyên viên SEO / Digital Marketing', author: 'BDS Group', authorId: 7, avatarText: 'BD', target: 'professional', timeLeft: 'Còn 10 ngày', desc: 'Đẩy top từ khóa mảng Bất động sản. Cần rank top 5 Google trong 3 tháng.', roles: [{ name: '1 SEO', icon: <Users size={14} /> }] },
+  // Normal - Đi làm
+  { id: 4, title: 'App quản lý chi tiêu cá nhân (Startup)', author: 'Trần Thị B', authorId: 2, avatarText: 'TB', target: 'professional', timeLeft: 'Còn 4 ngày', desc: 'Team đang có 3 người (1 Business, 1 UI, 1 Mobile). Cần tuyển gấp 1 bạn làm Backend Node.js có kinh nghiệm.', roles: [{ name: '1 Backend', icon: <Settings size={14} /> }] },
+  { id: 5, title: 'Freelance - Cắt HTML/CSS Landing Page', author: 'Công ty ABC', authorId: 3, avatarText: 'AB', target: 'professional', timeLeft: 'Còn 5 ngày', desc: 'Cần một bạn cắt HTML/CSS/JS thuần cho 5 trang Landing page quảng cáo. Yêu cầu pixel-perfect và responsive tốt.', roles: [{ name: '1 Frontend', icon: <Code size={14} /> }] }
 ];
 
 export default function FeedPage() {
@@ -151,7 +87,7 @@ export default function FeedPage() {
   });
 
   return (
-    <div style={{ display: 'flex', width: '100%', maxWidth: 1440, margin: '0 auto', padding: '0 32px' }}>
+    <div style={{ display: 'flex', width: '100%', maxWidth: '100%', margin: '0 auto', padding: '0 40px' }}>
 
       {/* ── Left Sidebar: Filters ── */}
       <aside style={{ width: 260, paddingRight: 24, paddingTop: 32, borderRight: '1px solid var(--border)', minHeight: 'calc(100vh - 65px)', position: 'relative' }}>
@@ -333,7 +269,7 @@ export default function FeedPage() {
       </aside>
 
       {/* ── Main Content ── */}
-      <div style={{ flex: 1, padding: '24px 0 24px 32px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div style={{ flex: 1, padding: '24px 0 24px 32px', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
 
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
@@ -358,7 +294,7 @@ export default function FeedPage() {
               Sắp xếp: Mới nhất <ChevronDown size={14} />
             </div>
 
-            <button 
+            <button
               onClick={() => setShowCreateModal(true)}
               style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#F97316', color: 'white', padding: '0 16px', borderRadius: 8, height: 38, fontSize: '0.9rem', fontWeight: 700, border: 'none', cursor: 'pointer', boxShadow: '0 2px 4px rgba(249, 115, 22, 0.2)' }}
             >
@@ -368,29 +304,30 @@ export default function FeedPage() {
         </div>
 
         {/* Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24, paddingRight: 32 }}>
           {filteredProjects.map(p => (
             <div
               key={p.id}
-              style={{ background: 'var(--bg)', border: p.package === 'premium' ? '2px solid #F59E0B' : p.package === 'vip' ? '1px solid #10B981' : '1px solid var(--border)', borderRadius: 10, padding: '16px 20px', position: 'relative', display: 'flex', flexDirection: 'column', cursor: 'pointer', transition: 'box-shadow 0.2s ease, transform 0.2s ease', height: '100%' }}
+              style={{ background: 'var(--bg)', border: p.package === 'premium' ? '2px solid #F59E0B' : p.package === 'vip' ? '1px solid #10B981' : '1px solid var(--border)', borderRadius: 10, padding: '12px 14px', position: 'relative', display: 'flex', flexDirection: 'column', cursor: 'pointer', transition: 'box-shadow 0.2s ease, transform 0.2s ease', height: '100%' }}
               onClick={() => setSelectedProject(p)}
               onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(0,0,0,0.1)'}
               onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'none'}
             >
               <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 4, background: p.topColor || (p.package === 'premium' ? '#F59E0B' : p.package === 'vip' ? '#10B981' : 'var(--primary)'), borderRadius: '10px 10px 0 0', opacity: 1 }} />
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  {p.package === 'premium' && (
-                    <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#92400E', background: 'linear-gradient(90deg, #FDE68A 0%, #F59E0B 100%)', padding: '2px 8px', borderRadius: 99, display: 'flex', alignItems: 'center', gap: 4, boxShadow: '0 0 8px rgba(245,158,11,0.5)' }}>
-                      <Award size={12} /> PREMIUM
-                    </span>
-                  )}
-                  {p.package === 'vip' && (
-                    <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#064E3B', background: 'linear-gradient(90deg, #A7F3D0 0%, #10B981 100%)', padding: '2px 8px', borderRadius: 99, display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <Award size={12} /> VIP
-                    </span>
-                  )}
+              {p.package === 'premium' && (
+                <div style={{ position: 'absolute', top: 4, left: 0, background: 'linear-gradient(90deg, #FDE68A 0%, #F59E0B 100%)', color: '#92400E', padding: '2px 8px', borderRadius: '0 4px 4px 0', fontSize: '0.65rem', fontWeight: 800, zIndex: 10, boxShadow: '0 2px 4px rgba(245,158,11,0.3)' }}>
+                  PRE.
+                </div>
+              )}
+              {p.package === 'vip' && (
+                <div style={{ position: 'absolute', top: 4, left: 0, background: 'linear-gradient(90deg, #A7F3D0 0%, #10B981 100%)', color: '#064E3B', padding: '2px 8px', borderRadius: '0 4px 4px 0', fontSize: '0.65rem', fontWeight: 800, zIndex: 10, boxShadow: '0 2px 4px rgba(16,185,129,0.3)' }}>
+                  VIP
+                </div>
+              )}
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 12, marginTop: (p.package === 'premium' || p.package === 'vip') ? 16 : 0 }}>
+                <div style={{ display: 'flex', gap: 6, flex: 1 }}>
                   {p.school && <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#9A3412', background: '#FFEDD5', padding: '2px 8px', borderRadius: 99 }}>{p.school}</span>}
                   {p.match && <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#4F46E5', background: '#EEF2FF', padding: '2px 8px', borderRadius: 99 }}>{p.match}</span>}
                 </div>
@@ -399,7 +336,7 @@ export default function FeedPage() {
                 </div>
               </div>
 
-              <h3 style={{ fontSize: '1.05rem', fontWeight: 700, lineHeight: 1.3, color: 'var(--text-primary)', marginBottom: 8, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+              <h3 style={{ fontSize: '0.95rem', fontWeight: 700, lineHeight: 1.3, color: 'var(--text-primary)', marginBottom: 8, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                 {p.title}
               </h3>
 
@@ -408,18 +345,13 @@ export default function FeedPage() {
               </p>
 
               <div style={{ marginBottom: 16 }}>
-                <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 6 }}>Vị trí đang tuyển</div>
-                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                  {p.roles.map((r, idx) => (
-                    <span key={idx} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: r.bg || 'var(--bg-muted)', color: r.color || 'var(--text-primary)', padding: '4px 10px', borderRadius: 6, fontSize: '0.8rem', fontWeight: 600 }}>
-                      <span style={{ fontSize: '0.9rem' }}>{r.icon}</span> {r.name}
-                    </span>
-                  ))}
+                <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                  Số lượng tuyển: <span style={{ color: 'var(--primary)' }}>{p.roles ? p.roles.reduce((a, r) => a + (parseInt(r.name) || 1), 0) : 1} ứng viên</span>
                 </div>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border)', paddingTop: 12 }}>
-                <div 
+                <div
                   style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -470,46 +402,77 @@ export default function FeedPage() {
               <h2 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-primary)' }}>Tạo bài đăng mới</h2>
               <button onClick={() => setShowCreateModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-primary)' }}><X size={24} /></button>
             </div>
-            
+
             <div style={{ padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: 20 }}>
               <div>
                 <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: 'var(--text-primary)' }}>Tiêu đề dự án *</label>
-                <input type="text" value={newPost.title} onChange={e => setNewPost({...newPost, title: e.target.value})} style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', color: 'var(--text-primary)' }} placeholder="Nhập tiêu đề ngắn gọn..." />
+                <input type="text" value={newPost.title} onChange={e => setNewPost({ ...newPost, title: e.target.value })} style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', color: 'var(--text-primary)' }} placeholder="Nhập tiêu đề ngắn gọn..." />
               </div>
 
               <div>
                 <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: 'var(--text-primary)' }}>Tổng quan dự án * <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 400 }}>(tối đa 500 từ)</span></label>
-                <textarea value={newPost.overview} onChange={e => setNewPost({...newPost, overview: e.target.value})} rows={4} style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', resize: 'vertical', color: 'var(--text-primary)' }} placeholder="Mô tả dự án của bạn..." />
+                <textarea value={newPost.overview} onChange={e => setNewPost({ ...newPost, overview: e.target.value })} rows={4} style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', resize: 'vertical', color: 'var(--text-primary)' }} placeholder="Mô tả dự án của bạn..." />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
                 <div>
                   <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: 'var(--text-primary)' }}>Yêu cầu ứng viên *</label>
-                  <textarea value={newPost.requirements} onChange={e => setNewPost({...newPost, requirements: e.target.value})} rows={4} style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', resize: 'vertical', color: 'var(--text-primary)' }} placeholder="Kỹ năng, kinh nghiệm..." />
+                  <textarea value={newPost.requirements} onChange={e => setNewPost({ ...newPost, requirements: e.target.value })} rows={4} style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', resize: 'vertical', color: 'var(--text-primary)' }} placeholder="Kỹ năng, kinh nghiệm..." />
                 </div>
                 <div>
                   <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: 'var(--text-primary)' }}>Quyền lợi *</label>
-                  <textarea value={newPost.benefits} onChange={e => setNewPost({...newPost, benefits: e.target.value})} rows={4} style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', resize: 'vertical', color: 'var(--text-primary)' }} placeholder="Lương, thưởng, chứng nhận..." />
+                  <textarea value={newPost.benefits} onChange={e => setNewPost({ ...newPost, benefits: e.target.value })} rows={4} style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', resize: 'vertical', color: 'var(--text-primary)' }} placeholder="Lương, thưởng, chứng nhận..." />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+                {targetAudience === 'student' ? (
+                  <div>
+                    <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: 'var(--text-primary)' }}>Chuyên ngành *</label>
+                    <input type="text" style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', color: 'var(--text-primary)' }} placeholder="Nhập chuyên ngành (vd: CNTT, Kinh tế...)" />
+                  </div>
+                ) : (
+                  <div>
+                    <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: 'var(--text-primary)' }}>Lĩnh vực *</label>
+                    <input type="text" style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', color: 'var(--text-primary)' }} placeholder="Nhập lĩnh vực..." />
+                  </div>
+                )}
+
+                {targetAudience === 'student' && (
+                  <div>
+                    <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: 'var(--text-primary)' }}>Trường đại học *</label>
+                    <input type="text" style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', color: 'var(--text-primary)' }} placeholder="Nhập trường đại học..." />
+                  </div>
+                )}
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: 'var(--text-primary)' }}>Hạn chót (Ngày kết thúc) *</label>
+                  <input type="text" style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', color: 'var(--text-primary)' }} placeholder="hh:mm dd/mm/yyyy" />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: 'var(--text-primary)' }}>Số lượng tuyển *</label>
+                  <input type="number" min="1" max="100" style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', color: 'var(--text-primary)' }} placeholder="Ví dụ: 3" />
                 </div>
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: 'var(--text-primary)' }}>Thành viên & Vai trò *</label>
-                <input type="text" value={newPost.members} onChange={e => setNewPost({...newPost, members: e.target.value})} style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', color: 'var(--text-primary)' }} placeholder="Ví dụ: 1 Thiết kế, 2 Lập trình viên..." />
+                <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: 'var(--text-primary)' }}>Chi tiết vị trí (Thành viên & Vai trò) *</label>
+                <input type="text" value={newPost.members} onChange={e => setNewPost({ ...newPost, members: e.target.value })} style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', color: 'var(--text-primary)' }} placeholder="Ví dụ: 1 Thiết kế, 2 Lập trình viên..." />
               </div>
 
               <div style={{ marginTop: 12 }}>
                 <label style={{ display: 'block', marginBottom: 12, fontWeight: 600, color: 'var(--text-primary)' }}>Chọn gói đăng tin</label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
-                  <div 
-                    onClick={() => setNewPost({...newPost, package: 'free'})}
+                  <div
+                    onClick={() => setNewPost({ ...newPost, package: 'free' })}
                     style={{ border: newPost.package === 'free' ? '2px solid var(--primary)' : '1px solid var(--border)', borderRadius: 8, padding: 16, cursor: 'pointer', background: 'var(--bg)', textAlign: 'center' }}
                   >
                     <div style={{ fontWeight: 700, marginBottom: 8, color: 'var(--text-primary)' }}>Miễn phí</div>
                     <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Hiển thị tiêu chuẩn</div>
                   </div>
-                  <div 
-                    onClick={() => setNewPost({...newPost, package: 'vip'})}
+                  <div
+                    onClick={() => setNewPost({ ...newPost, package: 'vip' })}
                     style={{ border: newPost.package === 'vip' ? '2px solid #10B981' : '1px solid var(--border)', borderRadius: 8, padding: 16, cursor: 'pointer', background: 'var(--bg)', textAlign: 'center', position: 'relative', overflow: 'hidden' }}
                   >
                     <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 4, background: '#10B981' }} />
@@ -517,8 +480,8 @@ export default function FeedPage() {
                     <div style={{ color: 'var(--text-primary)', fontWeight: 700, marginBottom: 4 }}>50,000đ</div>
                     <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Ưu tiên hiển thị 3 ngày</div>
                   </div>
-                  <div 
-                    onClick={() => setNewPost({...newPost, package: 'premium'})}
+                  <div
+                    onClick={() => setNewPost({ ...newPost, package: 'premium' })}
                     style={{ border: newPost.package === 'premium' ? '2px solid #F59E0B' : '1px solid var(--border)', borderRadius: 8, padding: 16, cursor: 'pointer', background: 'var(--bg)', textAlign: 'center', position: 'relative', overflow: 'hidden', boxShadow: newPost.package === 'premium' ? '0 4px 12px rgba(245, 158, 11, 0.2)' : 'none' }}
                   >
                     <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 4, background: '#F59E0B' }} />
@@ -580,6 +543,13 @@ export default function FeedPage() {
                   <li>Có kiến thức cơ bản về RESTful APIs và xử lý dữ liệu JSON.</li>
                   <li>Cam kết ít nhất 15 giờ mỗi tuần trong 8 tuần tới.</li>
                   <li>Có thái độ chủ động trong việc học hỏi các kỹ thuật tích hợp AI mới.</li>
+                </ul>
+
+                <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--primary-dark)', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                  <Users size={18} /> Chi tiết số lượng thành viên ({selectedProject.roles ? selectedProject.roles.reduce((a, r) => a + (parseInt(r.name) || 1), 0) : 1} ứng viên)
+                </h3>
+                <ul style={{ paddingLeft: 24, color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.8, marginBottom: 24 }}>
+                  {selectedProject.roles ? selectedProject.roles.map((r, i) => <li key={i}>{r.name}</li>) : <li>1 Thành viên</li>}
                 </ul>
 
                 <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--primary-dark)', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
