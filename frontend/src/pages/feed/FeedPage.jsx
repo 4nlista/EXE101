@@ -18,7 +18,7 @@ export default function FeedPage() {
   const PAGE_SIZE = 16;
 
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newPost, setNewPost] = useState({ title: '', overview: '', requirements: '', benefits: '', members: '', package: 'free', deadline: '', school: '', field: '', targetScore: '', salary: '' });
+  const [newPost, setNewPost] = useState({ title: '', overview: '', requirements: '', benefits: '', members: '', package: 'free', deadline: '', school: '', field: [], targetScore: '', salary: '' });
 
   // Filter state
   const [selectedLinhVuc, setSelectedLinhVuc] = useState('Tất cả lĩnh vực');
@@ -97,7 +97,7 @@ export default function FeedPage() {
     <div style={{ display: 'flex', width: '100%', maxWidth: '100%', margin: '0 auto', padding: '0 40px' }}>
 
       {/* ── Left Sidebar: Filters ── */}
-      <aside className="feed-sidebar" style={{ width: 260, paddingRight: 24, paddingTop: 20, paddingBottom: 20, borderRight: '1px solid var(--border)', alignSelf: 'flex-start', position: 'sticky', top: 24, zIndex: 10 }}>
+      <aside className="feed-sidebar" style={{ width: 260, paddingRight: 24, paddingTop: 24, paddingBottom: 20, borderRight: '1px solid var(--border)', alignSelf: 'flex-start', position: 'sticky', top: 0, zIndex: 10 }}>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <h3 style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>Bộ lọc</h3>
@@ -123,12 +123,14 @@ export default function FeedPage() {
 
         {/* Dropdown Lĩnh vực */}
         <div style={{ position: 'relative', marginBottom: 12 }}>
-          <h4 style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: 6 }}>Lĩnh vực</h4>
+          <h4 style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: 6 }}>
+            {targetAudience === 'student' ? 'Chuyên ngành' : 'Lĩnh vực'}
+          </h4>
           <div
             onClick={() => handleDropdown('linhvuc')}
             style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', height: 34, padding: '0 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg)', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--text-primary)' }}
           >
-            <span>{selectedLinhVuc}</span>
+            <span>{selectedLinhVuc === 'Tất cả lĩnh vực' && targetAudience === 'student' ? 'Tất cả chuyên ngành' : selectedLinhVuc}</span>
             <ChevronDown size={16} color="var(--text-muted)" />
           </div>
 
@@ -142,7 +144,7 @@ export default function FeedPage() {
                   onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--primary)'; e.currentTarget.style.background = 'var(--bg-subtle)'; }}
                   onMouseLeave={(e) => { e.currentTarget.style.color = selectedLinhVuc === opt ? 'var(--primary)' : 'var(--text-primary)'; e.currentTarget.style.background = 'transparent'; }}
                 >
-                  <span>{opt}</span>
+                  <span>{opt === 'Tất cả lĩnh vực' && targetAudience === 'student' ? 'Tất cả chuyên ngành' : opt}</span>
                   <ChevronRight size={16} color="var(--text-muted)" />
                 </div>
               ))}
@@ -486,23 +488,46 @@ export default function FeedPage() {
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-                {targetAudience === 'student' ? (
-                  <div>
-                    <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: 'var(--text-primary)' }}>Chuyên ngành *</label>
-                    <select value={newPost.field} onChange={e => setNewPost({ ...newPost, field: e.target.value })} style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', color: 'var(--text-primary)', appearance: 'none' }}>
-                      <option value="">Chọn chuyên ngành</option>
-                      {ENUM_MAJORS.map(m => <option key={m} value={m}>{m}</option>)}
-                    </select>
+                <div style={{ position: 'relative' }}>
+                  <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: 'var(--text-primary)' }}>
+                    {targetAudience === 'student' ? 'Chuyên ngành *' : 'Lĩnh vực *'}
+                  </label>
+                  <div
+                    onClick={() => handleDropdown('formLinhVuc')}
+                    style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                  >
+                    <span style={{ color: newPost.field && newPost.field.length > 0 ? 'var(--text-primary)' : 'var(--text-muted)' }}>
+                      {newPost.field && newPost.field.length > 0
+                        ? newPost.field.join(', ')
+                        : (targetAudience === 'student' ? 'Chọn chuyên ngành...' : 'Chọn lĩnh vực...')}
+                    </span>
+                    <ChevronDown size={18} color="var(--text-muted)" />
                   </div>
-                ) : (
-                  <div>
-                    <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: 'var(--text-primary)' }}>Lĩnh vực *</label>
-                    <select value={newPost.field} onChange={e => setNewPost({ ...newPost, field: e.target.value })} style={{ width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', outline: 'none', color: 'var(--text-primary)', appearance: 'none' }}>
-                      <option value="">Chọn lĩnh vực</option>
-                      {ENUM_MAJORS.map(m => <option key={m} value={m}>{m}</option>)}
-                    </select>
-                  </div>
-                )}
+
+                  {openDropdown === 'formLinhVuc' && (
+                    <div style={{ position: 'absolute', top: 85, left: 0, width: '100%', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)', zIndex: 100, maxHeight: 250, overflowY: 'auto' }}>
+                      {ENUM_MAJORS.map(m => {
+                        const isSelected = newPost.field && newPost.field.includes(m);
+                        return (
+                          <div
+                            key={m}
+                            onClick={() => {
+                              const currentFields = newPost.field || [];
+                              const newFields = isSelected ? currentFields.filter(f => f !== m) : [...currentFields, m];
+                              setNewPost({ ...newPost, field: newFields });
+                            }}
+                            style={{ display: 'flex', alignItems: 'center', padding: '10px 16px', cursor: 'pointer', borderBottom: '1px solid var(--border)' }}
+                            onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-subtle)'}
+                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                          >
+                            <input type="checkbox" checked={isSelected} readOnly style={{ marginRight: 12, width: 16, height: 16, accentColor: 'var(--primary)', cursor: 'pointer' }} />
+                            <span style={{ fontSize: '0.9rem', color: isSelected ? 'var(--primary)' : 'var(--text-primary)' }}>{m}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
 
                 {targetAudience === 'student' ? (
                   <div>
