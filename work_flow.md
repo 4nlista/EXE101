@@ -2,34 +2,54 @@
 
 ## 1. Giới thiệu Tổng quan
 
-**UniVerse AI** là một nền tảng kết nối nhân sự và dự án công nghệ, được thiết kế để giải quyết bài toán tìm kiếm đồng đội, cộng tác viên và cơ hội việc làm. Nền tảng hướng đến hai nhóm đối tượng chính: **Sinh viên** (cần tìm người làm đồ án, bài tập lớn, nghiên cứu khoa học) và **Người đi làm/Freelancer** (tìm kiếm cơ hội việc làm part-time, freelance, hoặc tìm co-founder cho startup).
+**UniVerse AI** là một nền tảng kết nối nhân sự và dự án công nghệ, được thiết kế để giải quyết bài toán tìm kiếm đồng đội, thành viên, cộng tác viên. Nền tảng hướng đến nhóm đối tượng chính: **Sinh viên** (cần tìm người làm đồ án, bài tập lớn, nghiên cứu khoa học và cần tham khảo các tài liệu học tập)
 
-Đặc biệt, hệ thống tích hợp công nghệ AI (AI Hub) để hỗ trợ phân tích độ phù hợp của ứng viên và tối ưu hóa quá trình ghép nhóm.
+Đặc biệt, hệ thống tích hợp công nghệ AI (AI Hub) để hỗ trợ phân tích độ phù hợp của ứng viên và tối ưu hóa quá trình ghép nhóm và đồng thời tìm các tài liệu hỗ trợ cho việc học.
 
 ## 2. Các Vai trò (Roles) trong hệ thống
 
-Hệ thống phân chia người dùng thành 2 nhóm đối tượng chính với các luồng trải nghiệm (UX) và bộ lọc riêng biệt:
+Hệ thống phân chia người dùng thành 2 nhóm đối tượng chính với các luồng hoạt động, các tính năng và bộ lọc filter hỗ trợ người dùng.
 
-### 2.1. Sinh viên (Students)
+### 2.1. Sinh viên - Student
 
-- **Mục tiêu:** Tìm kiếm đồng đội làm bài tập lớn, đồ án tốt nghiệp, đồ án môn học hoặc tìm nhóm nghiên cứu khoa học.
-- **Đặc điểm:** Quan tâm đến trường đại học, chuyên ngành, và mục tiêu điểm số.
+- **Mục tiêu:** Tìm kiếm đồng đội hoặc thành viên để tập hợp thành một nhóm làm bài tập lớn, đồ án tốt nghiệp, đồ án môn học hoặc tìm nhóm nghiên cứu dự án khoa học.
+- **Đặc điểm:** Quan tâm đến trường đại học, [ chuyên ngành-chuyên ngành hẹp (chuyên ngành hẹp là những chuyên ngành con của "Chuyên ngành". Ví dụ : Chuyên ngành Thiết kế đồ họa gồm : chuyên ngành hẹp X, Y, Z, chuyên ngành Kỹ thuật phần mềm gồm : chuyên ngành hẹp NodeJS, Topic on Java, Kỹ sư cầu nối Nhật Bản....)] và có mục tiêu điểm số của dự án/đồ án hoặc phần thưởng trong các kỳ thi dự án.
 
-### 2.2. Người đi làm / Freelancer (Professionals)
+### 2.2. Quản trị viên - Admin
 
-- **Mục tiêu:** Tìm kiếm cơ hội việc làm (freelance, part-time), tham gia startup, hoặc tìm cộng sự có chuyên môn cao.
-- **Đặc điểm:** Quan tâm đến mức lương, số năm kinh nghiệm, lĩnh vực chuyên môn và vai trò cụ thể.
+- **Mục tiêu:** Quản trị dự án, xem báo cáo thống kê doanh thu, quản lý người dùng, giám sát và vận hành hệ thống, thống kê các data như : số môn học, file tài liệu upload, nội dung các file tài liệu.
+- **Đặc điểm:** Quyền hạn tối cao, giao diện riêng biệt khác so với Student và có trách nhiệm bảo mật toàn vẹn thông tin và dữ liệu người dùng (users).
 
 ## 3. Luồng Hoạt động (User Flow)
 
-### 3.1: Đăng ký & Định danh (Onboarding)
+### 3.1: Đăng nhập, Đăng ký & Quên mật khẩu (**Authentication - Authorization** ) và Thiết lập hồ sơ thông tin người dùng.
 
-- Người dùng tạo tài khoản mới qua hệ thống xác thực.
-- Thiết lập hồ sơ (Profile Setup): Chọn vai trò (Sinh viên hay Người đi làm), cập nhật kỹ năng chuyên môn (Skills), định hướng mục tiêu (Goals) và thông tin tổ chức/trường học.
+- Người dùng ĐĂNG NHẬP vào hệ thống:
+  - Cách 1: Nhập đúng Email và Mật khẩu (có ẩn / hiện để thấy được mật khẩu mình nhập).
+  - Cách 2: Đăng nhập bằng liên kết với Google.
+- Người dùng ĐĂNG KÝ TÀI KHOẢN hệ thống:
+  - Nhập Email, Mật khẩu và Xác nhận mật khẩu. Sau khi nhấn nút "Đăng ký tài khoản" sẽ có email tự động theo form gửi về chính Email người đăng ký kèm theo mã OTP (6 số) yêu cầu người dùng phải nhập xác nhận lại đúng mã OTP đó trên màn hình hệ thống để kích hoạt Tài khoản sẽ được tạo thành công và lưu trong hệ thống. Lưu ý : Mã OTP có thời hạn 5 phút kể từ khi gửi email.
+- Người dùng QUÊN MẬT KHẨU hệ thống:
+  - Nhập đúng địa chỉ Email và nhấn nút "Gửi mã xác nhận" sẽ có email tự động gửi về chính Email người đăng ký kèm theo mã OTP (6 số) yêu cầu người dùng phải nhập xác nhận lại đúng mã OTP đó trên màn hình hệ thống để kích hoạt chuyển sang màn hình ĐẶT LẠI MẬT KHẨU (gồm : Nhập mật khẩu mới và Xác nhận mật khẩu mới). Sau khi thành công sẽ tự động quay về trang ĐĂNG NHẬP hệ thống. Lưu ý : Mã OTP có thời hạn 5 phút kể từ khi gửi email.
+- Người dùng THIẾT LẬP HỒ SƠ: Đây là phần bắt buộc sau khi qua bước ĐĂNG KÝ TÀI KHOẢN vào hệ thống.
+  - Người dùng cần nhập đầy đủ thêm các thông tin theo các bước từ 1 đến 4
+  - Bước 1 : Thông tin cá nhân : nhập Họ Tên, Số điện thoại, Địa chỉ,  Ngày sinh.
+  - Bước 2 : Thông tin học tập :
+    - chọn *Kỳ đang học (Drop List từ Kỳ 1 - Kỳ 9) và
+    - chọn *Chuyên ngành (Drop List) mình học.
+    - chọn *Chuyên ngành hẹp (Drop List danh sách các chuyên ngành hẹp tương ứng với Chuyên ngành đã chọn). Chuyên ngành hẹp chỉ hiện ra khi bạn chọn Kỳ học từ 5 trở lên. Bởi vì *Đại học FPT mặc định sinh viên bắt đầu vào Kỳ 5 mới cho chọn "Chuyên ngành hẹp".
+  - Bước 3 : Hồ sơ năng lực :
+    - *Kỹ năng chính : chọn Many2Many các kỹ năng chính như : Lập trình, Thiết kế, Marketing, Kinh doanh, Bảo mật, Quản lý, Khác .....
+    - *Điểm mạnh (người dùng nhập) : ví dụ Thuyết trình, giải quyết vấn đề, chủ động đóng góp trong nhóm...
+    - *Điểm yếu (người dùng nhập) : ví dụ Thiếu tự tin, Kỹ năng còn hạn chế...
+    - *Lịch sử dự án : cho dạng dấu + và có 2 button Lưu và Xóa, mỗi lần người dùng click dấu + sẽ tạo mới để điền form thông tin. Dự án sẽ gồm 2 tab 'Dự án cá nhân' và 'Dự án nhóm'. Thông tin sẽ là dạng Popup gồm : *Tên dự án - Nhập, *Mô tả dự án - Nhập), *Thời gian tham gia (Bắt đầu - Kết thúc) - kiểu Date để chọn, *Vai trò (Droplist [Trưởng nhóm, Thành viên] - vai trò của người đó trong dự án đó ) và *Nhiệm vụ cụ thể (Nhập - mô tả họ làm gì trong dự án đó). Lưu ý *Vai trò và *Nhiệm vụ cụ thể chỉ hiển thị khi chọn tab 'Dự án nhóm'.
+  - Bước 4 : Mục tiêu :
+    - Mục tiêu điểm số : kéo range khoảng từ 0.0 đến 4.0.
+  - Bước 5 : Thật ra nhập 4 bước xong sẽ có Step Indicator / Step Icon thể hiện các bước đã hoàn thiện. Bước cuối chỉ cần nhấn "Hoàn thiện hồ sơ". Lập tức sẽ xong hết tất cả và chuyển đến trang feed các dự án và feed các tài liệu học tập.
 
-### 3.2: Khám phá Bảng tin (Project Feed)
+### 3.2: Khám phá Bảng tin dự án (Project Feed)
 
-- Người dùng truy cập trang **Bảng tin dự án (/feed)**.
+- Người dùng truy cập trang **Bảng tin dự án (/project-feed)**.
 - Giao diện chia làm 2 phần chính:
   - **Cột trái (Sidebar Filter):** Chứa công cụ bộ lọc thông minh (được ghim cố định - sticky). Thay đổi bộ lọc theo tab "Sinh viên" hoặc "Người đi làm".
   - **Cột phải (Project List):** Danh sách các dự án. Các dự án có thể được gắn tag ưu tiên (VIP, PREMIUM).
@@ -61,6 +81,13 @@ Hệ thống phân chia người dùng thành 2 nhóm đối tượng chính v�
 ### 3.7: AI Hub & Tiện ích mở rộng
 
 - Trang **AI Hub (/ai)**: Nơi tích hợp các tiện ích AI, ví dụ như tự động sinh mô tả dự án từ vài từ khóa, hoặc phân tích kỹ năng để gợi ý dự án phù hợp nhất.
+
+### 3.8: Khám phá Bảng tin tài liệu môn học (Document Feed)
+
+- Người dùng truy cập trang **Bảng tin tài liệu môn học (/document-feed)**.
+- Giao diện chia làm 2 phần chính:
+  - **Cột trái (Sidebar Filter):** Chứa công cụ bộ lọc thông minh (được ghim cố định - sticky). Thay đổi bộ lọc theo tab "Sinh viên" hoặc "Người đi làm".
+  - **Cột phải (Project List):** Danh sách các dự án. Các dự án có thể được gắn tag ưu tiên (VIP, PREMIUM).
 
 ## 4. Mô tả Các Chức năng Cốt lõi (Core Features)
 
