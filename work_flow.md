@@ -90,8 +90,6 @@ Hệ thống phân chia người dùng thành 2 nhóm đối tượng chính v�
   - Nút Hủy (tắt màn hình popup và trở về trang list danh sách dự án đó) và Gửi hồ sơ (Chức năng gửi yêu cầu ứng tuyển).
   - Tham khảo ảnh bên dưới:![1785410536888](image/work_flow/1785410536888.png)
 
-
-
 ### 3.5: Kết nối cộng đồng
 
 - Người dùng có thể gõ tìm kiếm trên thanh search của Tab "Cộng đồng" trên Navbar dự án để tìm kiếm tên người dùng để vào trang cá nhân của họ rồi xem các thông tin cơ bản và có thể theo dõi và nhắn tin liên hệ (liên quan đến phần 3.6)
@@ -128,9 +126,9 @@ Hệ thống phân chia người dùng thành 2 nhóm đối tượng chính v�
   - **Cột trái (Sidebar Filter):** Chứa công cụ bộ lọc thông minh (được ghim cố định - sticky). Thay đổi bộ lọc theo Mã môn, chuyên ngành, chuyên ngành hẹp, Kỳ (từ 1 đến 9)
   - **Cột phải (Document List):** Danh sách list các mã môn all của trường, click vào sẽ ra giao diện tên môn, mô tả môn, và các tài liệu quan trọng.
 
-### 3.10: Nạp tiền vào ví để phân cấp tài khoản người dùng.
+### 3.10: Nạp tiền vào ví (Tích hợp VNPay thanh toán thật) để phân cấp tài khoản người dùng.
 
-- Người dùng truy cập trang phần ví tài khoản và có thể nạp tiền thật vào trong tài khoản. Phần này tính năng sẽ liên kết chuyển khoản ngân hàng thật để số tiền sẽ thu được về đội ngũ dự án sản phẩm này để thu được lợi ích từ kinh phí.
+- Người dùng truy cập trang phần ví tài khoản và có thể nạp tiền thật vào trong tài khoản. Phần này tính năng sẽ liên kết chuyển khoản ngân hàng tích hợp VNPAY thanh toán thật để số tiền sẽ thu được về đội ngũ dự án sản phẩm này nhẳm mục đích tăng lợi ích kinh phí.
 - Số tiền trong tài khoản:
   - **Gói thường - 0k :** tính năng cơ bản như : xem các bài đăng dự án tìm thành viên và nộp hồ sơ, nhắn tin kết nối, quản lý bài đăng cá nhân.
   - **Gói VIP - 59k:** tính năng NÂNG CAO hơn như : được quyền tạo bài đăng dự án và khám phá tài liệu các môn học, còn lại các tính năng khác giống gói thường.
