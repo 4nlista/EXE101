@@ -45,14 +45,22 @@ Hệ thống phân chia người dùng thành 2 nhóm đối tượng chính v�
     - *Lịch sử dự án : cho dạng dấu + và có 2 button Lưu và Xóa, mỗi lần người dùng click dấu + sẽ tạo mới để điền form thông tin. Dự án sẽ gồm 2 tab 'Dự án cá nhân' và 'Dự án nhóm'. Thông tin sẽ là dạng Popup gồm : *Tên dự án - Nhập, *Mô tả dự án - Nhập), *Thời gian tham gia (Bắt đầu - Kết thúc) - kiểu Date để chọn, *Vai trò (Droplist [Trưởng nhóm, Thành viên] - vai trò của người đó trong dự án đó ) và *Nhiệm vụ cụ thể (Nhập - mô tả họ làm gì trong dự án đó). Lưu ý *Vai trò và *Nhiệm vụ cụ thể chỉ hiển thị khi chọn tab 'Dự án nhóm'.
   - Bước 4 : Mục tiêu :
     - Mục tiêu điểm số : kéo range khoảng từ 0.0 đến 4.0.
-  - Bước 5 : Thật ra nhập 4 bước xong sẽ có Step Indicator / Step Icon thể hiện các bước đã hoàn thiện. Bước cuối chỉ cần nhấn "Hoàn thiện hồ sơ". Lập tức sẽ xong hết tất cả và chuyển đến trang feed các dự án và feed các tài liệu học tập.
+  - Bước 5 : Nhập 4 bước xong sẽ có Step Indicator / Step Icon thể hiện các bước đã hoàn thiện. Bước cuối chỉ cần nhấn "Hoàn thiện hồ sơ". Lập tức sẽ xong hết tất cả và chuyển đến trang feed các dự án và feed các tài liệu học tập.
 
 ### 3.2: Khám phá Bảng tin dự án (Project Feed)
 
 - Người dùng truy cập trang **Bảng tin dự án (/project-feed)**.
 - Giao diện chia làm 2 phần chính:
-  - **Cột trái (Sidebar Filter):** Chứa công cụ bộ lọc thông minh (được ghim cố định - sticky). Thay đổi bộ lọc theo tab "Sinh viên" hoặc "Người đi làm".
-  - **Cột phải (Project List):** Danh sách các dự án. Các dự án có thể được gắn tag ưu tiên (VIP, PREMIUM).
+  - **Div trái (Sidebar Filter) 20%:**
+    - Chứa công cụ bộ lọc thông minh (được ghim cố định - sticky).
+    - Bộ lọc gồm : Dropdown Chuyên ngành , Dropdown Chuyên ngành hẹp (Chuyên ngành hẹp sẽ hiển thị dạng list khi chúng ta đã chọn Chuyên ngành tương ứng, ví dụ : Chuyên ngành A sẽ có list gồm x chuyên ngành hẹp, Chuyên ngành B thì lại có list y chuyên ngành hẹp, hiển thị list các chuyên ngành hẹp tương ứng với chuyên ngành đã chọn). Mục tiêu điểm số (Range từ 0 - 10), Sắp xếp : theo mới nhất, cũ nhất, 7 ngày qua, 1 tuần qua, 1 tháng qua. Trạng thái (Còn tuyển và Đã đủ (liên quan đến số lượng ứng viên đã nộp hồ sơ vào bài đăng dự án đó) - type Radio) và 2 button đặt ngang nhau display flex gồm Xóa (Reset các bộ lọc về mặc định) và Lọc (Thực hiện chức năng lọc).
+  - **Div phải (Project List) 80%:**
+    - Danh sách các dự án : dạng Box dàn hàng ngang 4 card / 1 dòng và tổng là 20 cái trong 5 dòng buộc phải scroll đến cuối để có phân trang. Phân trang bắt buộc phải luôn là Trước 1... Sau , nếu có 1 trang mà chưa đủ 20 card bài đăng thì vẫn để Trước - 1 - Sau..
+    - Project List gồm Title dạng cỡ chữ Hx (x có thể là 2,3,4 tùy ý) đặt ở bottom left cùng dòng với Filter tìm kiếm tên dự án  - kiểu Text input, filter Dropdown lọc "Mới nhất, Cũ nhất " và Button Tạo bài đăng ở bottom right - Tất cả đều đặt ngang hàng nhau và cùng trên 1 dòng, tuyệt đối không đặt theo chiều dọc.
+    - Màn hình các Card bài đăng dự án :
+      - Card hình vuông, có border góc cạnh nhẹ, hiệu ứng bo viền dạng màu đổ bóng nhẹ.
+      - Card sẽ gồm Tên Chuyên ngành, Độ phù hợp x % - sẽ là thuật toán dựa trên những thông tin của người dùng có như cầu), Thời hạn ("Còn x ngày" - mô tả còn x ngày thì bài đăng sẽ tự động ẩn đi, kết thúc), Ngày đăng : kiểu Date, Tiêu đề dự án và Một chút đoạn description mô tả ngắn gọn, nếu dài thì cứ ghi 1-2 dòng rồi thêm 3 chấm cuối đoạn mô tả, Số lượng tuyển : X ứng viên, Số lượng còn lại : X - số lượng đã nộp hồ sơ sẽ ra giá trị của số lượng còn lại). Bên dưới sẽ gồm Icon Avatar Chủ bài đăng và icon Tym (kiểu để like, tim giống Facebook sau này có thể vào hoạt động của người dùng để xem các bài đã thả tim) và Button "Chi tiết" (Click vào sẽ hiển thị popup chi tiết bài đăng dự án đó). Tham khảo ảnh dưới : ![1785407746366](image/work_flow/1785407746366.png)
+    - Màn hình chi tiết bên trong một bài đăng:
 
 ### 3.3: Đăng tải Dự án mới (Create Post)
 
