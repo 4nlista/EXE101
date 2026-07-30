@@ -60,19 +60,35 @@ Hệ thống phân chia người dùng thành 2 nhóm đối tượng chính v�
     - Màn hình các Card bài đăng dự án :
       - Card hình vuông, có border góc cạnh nhẹ, hiệu ứng bo viền dạng màu đổ bóng nhẹ.
       - Card sẽ gồm Tên Chuyên ngành, Độ phù hợp x % - sẽ là thuật toán dựa trên những thông tin của người dùng có như cầu), Thời hạn ("Còn x ngày" - mô tả còn x ngày thì bài đăng sẽ tự động ẩn đi, kết thúc), Ngày đăng : kiểu Date, Tiêu đề dự án và Một chút đoạn description mô tả ngắn gọn, nếu dài thì cứ ghi 1-2 dòng rồi thêm 3 chấm cuối đoạn mô tả, Số lượng tuyển : X ứng viên, Số lượng còn lại : X - số lượng đã nộp hồ sơ sẽ ra giá trị của số lượng còn lại). Bên dưới sẽ gồm Icon Avatar Chủ bài đăng và icon Tym (kiểu để like, tim giống Facebook sau này có thể vào hoạt động của người dùng để xem các bài đã thả tim) và Button "Chi tiết" (Click vào sẽ hiển thị popup chi tiết bài đăng dự án đó). Tham khảo ảnh dưới : ![1785407746366](image/work_flow/1785407746366.png)
-    - Màn hình chi tiết bên trong một bài đăng:
 
 ### 3.3: Đăng tải Dự án mới (Create Post)
 
-- Người dùng nhấn nút **+ Tạo bài đăng**.
-- Form nhập liệu thông minh tự động thay đổi theo đối tượng (VD: Hỏi "Mục tiêu điểm" đối với Sinh viên, hoặc "Mức lương" đối với Người đi làm).
-- Trường *Chuyên ngành/Lĩnh vực* được thiết kế dạng Multi-select Checkbox Dropdown (Many-to-Many).
-- Người dùng có thể chọn Gói đăng tin (Miễn phí, VIP, Premium) để đẩy bài lên top.
+Màn hình chi tiết tạo bài đăng khi người dùng click "Tạo bài đăng" - tương tự popup xem chi tiết nhưng có khác một chút về các thông tin gồm :- Tiêu đề dự án * : dạng text cho nhập nhưng giới hạn số lượng từ
+
+- Tổng quan dự án * : dạng text cho nhập nhưng giới hạn số lượng từ (tối đa x từ)
+- Yêu cầu ứng viên * dạng text cho nhập nhưng giới hạn số lượng từ (tối đa x từ)
+- Chuyên ngành *: dạng dropdown nhưng là kiểu many2many
+- Mục tiêu điểm * : khoảng range min 0 và max 10
+- Số lượng tuyển * : Number từ min = 1 đổ lên (validate không được phép là 0 và âm, kiểu Integer)
+- Chi tiết số lượng thành viên* : cho dạng number - text và dấu + thêm dòng đại diện cho số lượng : vị trí Ví dụ : 1 : Desginer, 2 : Frontend, 1 : Tester.... luôn validate min là 1 trở đi
+- Hạn ứng tuyển : Date - chọn ngày hết hạn để đóng tuyển thành viên
+- Nút Hủy (Quay lại list các dự án) và Đăng bài ngay (OnPress để hoàn thành tính năng đăng bài)
+- Tham khảo ảnh bên dưới: ![1785410559414](image/work_flow/1785410559414.png)
 
 ### 3.4: Xem chi tiết & Ứng tuyển
 
-- Nhấn vào một dự án để xem **Chi tiết Dự án**: Hiển thị mô tả, yêu cầu, quyền lợi, số lượng thành viên, và thông tin người đăng (Tác giả).
-- Người dùng có thể "Lưu" dự án hoặc nhấn "Ứng tuyển/Kết nối" để gửi yêu cầu tham gia dự án.
+Màn hình xem chi tiết bên trong một bài đăng:
+
+- Tên Chuyên ngành, Tên Chuyên ngành hẹp
+- Góc phải sát popup sẽ là Đăng x ngày trước và Thời hạn còn lại.
+- Mục tiêu điểm : Target của dự án người chủ bài đăng đề ra.
+- Tổng quan dự án : Description mô tả dự án (thẻ Card lấy từ cái này để làm mô tả)
+- Yêu cầu ứng viên : các gạch đầu dòng nhập mô tả yêu cầu ứng viên
+- Chi tiết số lượng thành viên : ví dụ X data analyst, Y frontend, Z tester. Tổng số lượng tuyển chính là X + Y + Z hiển thị ở Card.
+- Form Nộp Hồ Sơ ứng tuyển : đường link upload file (Max 2mb)
+- Text ghi chú : Người dùng nhập ghi chú + upload CV để OnPress gửi hồ sơ đến cho Chủ bài đăng đó rồi đợi họ duyệt.
+- Nút Hủy (tắt màn hình popup và trở về trang list danh sách dự án đó) và Gửi hồ sơ (Chức năng gửi yêu cầu ứng tuyển).
+- Tham khảo ảnh bên dưới:![1785410536888](image/work_flow/1785410536888.png)
 
 ### 3.5: Quản lý Tin nhắn & Kết nối (Messaging)
 
