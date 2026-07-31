@@ -3,6 +3,6 @@ dist/
 dist-ssr/
 .env
 .DS_Store
-design.md 
+design.md
 work_flow.md
 database_design.md
