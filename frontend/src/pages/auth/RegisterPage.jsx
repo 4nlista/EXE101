@@ -15,7 +15,7 @@ export default function RegisterPage() {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
-  
+
   const [showPwd, setShowPwd] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
@@ -52,10 +52,10 @@ export default function RegisterPage() {
     e.preventDefault();
     if (!validate()) return;
     setLoading(true);
-    
+
     const res = await register(form.email, form.password);
     setLoading(false);
-    
+
     if (!res.success) {
       setErrors((p) => ({ ...p, email: res.error }));
       return;
@@ -96,7 +96,7 @@ export default function RegisterPage() {
         {/* ── Left Hero (Orange variant) ── */}
         <div className="auth-hero hero-orange">
           <div className="hero-overlay" />
-          
+
           <div className="hero-logo">
             <div className="hero-logo-dot" /> UniVerse AI
           </div>
@@ -118,7 +118,7 @@ export default function RegisterPage() {
         {/* ── Right Form ── */}
         <div className="auth-panel">
           <div className="auth-panel-inner">
-            
+
             {toast && (
               <div className="alert alert-success" style={{ marginBottom: 20 }}>
                 {toast.msg}
@@ -228,7 +228,7 @@ export default function RegisterPage() {
                         className={`input${errors.otp ? ' err' : ''}`}
                         placeholder="Nhập 6 số..."
                         value={otp} onChange={e => { setOtp(e.target.value); setErrors({}); }}
-                        style={{ fontSize: 20, letterSpacing: 4, fontWeight: 'bold' }}
+                        style={{ fontSize: 15 }}
                       />
                     </div>
                     {errors.otp && <span className="field-error">{errors.otp}</span>}
@@ -253,8 +253,8 @@ export default function RegisterPage() {
 
       {/* BƯỚC 3: SETUP PROFILE (Onboarding) */}
       {step === 'setup' && (
-        <ProfileSetupModal 
-          onClose={() => navigate('/feed')} 
+        <ProfileSetupModal
+          onClose={() => navigate('/feed')}
           onComplete={handleSetupComplete}
           initialName={form.name}
         />
