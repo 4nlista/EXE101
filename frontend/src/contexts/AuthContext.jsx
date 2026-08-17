@@ -77,13 +77,18 @@ export function AuthProvider({ children }) {
   };
 
   // ---- Verify OTP (Xác thực và Đăng nhập) ----
-  const verifyOtp = async (email, otp, password) => {
+  const verifyOtp = async (name, email, otp, password) => {
     try {
-      const response = await axiosClient.post('/auth/verify-otp', { email, otp, password });
+      const response = await axiosClient.post('/auth/verify-otp', { name, email, otp, password });
       if (response.success) {
         const { token, user } = response.data;
         setCurrentUser(user);
         setIsAuthenticated(true);
+
+        // Hiện Modal Setup nếu chưa làm onboarding
+        if (!user.onboardingCompleted) {
+          setShowSetup(true);
+        }
 
         // Lưu vào storage
         localStorage.setItem('token', token);

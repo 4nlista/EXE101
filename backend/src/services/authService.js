@@ -128,7 +128,7 @@ const registerUser = async (email, password) => {
 /**
  * Xác thực OTP và Tạo User
  */
-const verifyOtp = async (email, otp, password) => {
+const verifyOtp = async (name, email, otp, password) => {
   // 1. Kiểm tra OTP hợp lệ
   const otpRecord = await Otp.findOne({ email, isUsed: false }).sort({ createdAt: -1 });
   if (!otpRecord) {
@@ -159,6 +159,7 @@ const verifyOtp = async (email, otp, password) => {
   const hashedPassword = await bcrypt.hash(password, salt);
 
   const newUser = await User.create({
+    name: name || 'Người dùng mới',
     email,
     password: hashedPassword,
     roleCode: 1, // User mặc định
@@ -179,6 +180,7 @@ const verifyOtp = async (email, otp, password) => {
     token,
     user: {
       _id: newUser._id,
+      name: newUser.name,
       email: newUser.email,
       roleCode: newUser.roleCode,
       onboardingCompleted: newUser.onboardingCompleted,

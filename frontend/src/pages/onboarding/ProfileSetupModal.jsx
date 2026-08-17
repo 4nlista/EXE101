@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   X, Check, User, Phone, Calendar, MapPin, Building2, Briefcase, 
   GraduationCap, Plus, Code, PenTool, LayoutTemplate, Target, ChevronDown
@@ -30,6 +30,23 @@ export default function ProfileSetupModal({ onClose, onComplete, initialName = '
   const [err2, setErr2] = useState({});
   const [tagInput, setTagInput] = useState('');
   const [skillMenuOpen, setSkillMenuOpen] = useState(false);
+  const skillRef = useRef(null);
+
+  // Sync initialName if it comes late
+  useEffect(() => {
+    if (initialName && !data.name) set('name', initialName);
+  }, [initialName]);
+
+  // Handle click outside for skills dropdown
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (skillRef.current && !skillRef.current.contains(e.target)) {
+        setSkillMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Master Data States
   const [majors, setMajors] = useState([]);
@@ -93,10 +110,39 @@ export default function ProfileSetupModal({ onClose, onComplete, initialName = '
 
   // Submit form lên API
   const handleSubmit = async () => {
+    // Validate gradeGoal
+    if (data.gradeGoal) {
+      const numGoal = Number(data.gradeGoal);
+      if (isNaN(numGoal) || numGoal < 0 || numGoal > 4) {
+        setErrorMsg('Mục tiêu điểm số phải nằm trong thang điểm 4.0 (từ 0.0 đến 4.0)');
+        return;
+      }
+    }
+
     setLoading(true);
     setErrorMsg('');
+
+    // Chuẩn bị payload chuẩn với Database
+    const payload = { ...data };
+    
+    if (payload.gradeGoal) {
+      payload.gradeGoal = Number(payload.gradeGoal);
+    } else {
+      delete payload.gradeGoal;
+    }
+
+    if (payload.projectHistory && typeof payload.projectHistory === 'string') {
+      payload.projectHistory = [{
+        projectName: 'Dự án / Kinh nghiệm',
+        role: 'Cá nhân',
+        description: payload.projectHistory
+      }];
+    } else {
+      payload.projectHistory = [];
+    }
+
     try {
-      const response = await axiosClient.put('/users/profile/setup', data);
+      const response = await axiosClient.put('/users/profile/setup', payload);
       if (response.success) {
         // Cập nhật context local
         completeProfile({ name: data.name });
@@ -113,7 +159,7 @@ export default function ProfileSetupModal({ onClose, onComplete, initialName = '
   };
 
   return (
-    <div className="modal-overlay">
+    <div className="modal-overlay" style={{ background: '#f8f9fa' }}>
       <div className="modal">
         {/* Header */}
         <div className="modal-header">
@@ -274,7 +320,7 @@ export default function ProfileSetupModal({ onClose, onComplete, initialName = '
               <div className="field">
                 <label className="field-label">Kỹ năng chính</label>
                 <div className="tag-hint">Nhập và ấn Enter để thêm kỹ năng</div>
-                <div className="tag-field" onClick={() => setSkillMenuOpen(true)}>
+                <div className="tag-field" ref={skillRef} onClick={() => setSkillMenuOpen(true)}>
                   {data.mainSkills.map(s => (
                     <div key={s} className="tag">
                       {s} <button className="tag-x" onClick={(e) => { e.stopPropagation(); removeSkill(s); }}><X size={10} /></button>
@@ -325,11 +371,11 @@ export default function ProfileSetupModal({ onClose, onComplete, initialName = '
             <div>
               <div className="s-label">Mục tiêu</div>
               <div className="field" style={{ marginBottom: 0 }}>
-                <label className="field-label">Mục tiêu điểm số / Kỳ vọng</label>
+                <label className="field-label">Mục tiêu điểm số (Thang 4.0)</label>
                 <div className="input-box">
                   <Target className="input-icon" size={16} />
-                  <input className="input" type="text" placeholder="Ví dụ: Đạt loại Giỏi kỳ này"
-                    value={data.gradeGoal} onChange={e => set('gradeGoal', e.target.value)} />
+                  <input className="input" type="number" step="0.1" min="0" max="4" placeholder="Ví dụ: 3.5"
+                    value={data.gradeGoal} onChange={e => { set('gradeGoal', e.target.value); setErrorMsg(''); }} />
                 </div>
               </div>
             </div>

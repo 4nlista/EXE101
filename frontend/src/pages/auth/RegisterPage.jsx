@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { User, Mail, Lock, Eye, EyeOff, KeyRound } from 'lucide-react';
-import ProfileSetupModal from '../onboarding/ProfileSetupModal';
 
 const validateEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
@@ -20,7 +19,7 @@ export default function RegisterPage() {
   const [showConfirm, setShowConfirm] = useState(false);
 
   // States quản lý luồng màn hình
-  const [step, setStep] = useState('register'); // 'register' | 'otp' | 'setup'
+  const [step, setStep] = useState('register'); // 'register' | 'otp'
 
   useEffect(() => {
     if (!toast) return;
@@ -73,7 +72,7 @@ export default function RegisterPage() {
     }
 
     setLoading(true);
-    const res = await verifyOtp(form.email, otp, form.password);
+    const res = await verifyOtp(form.name, form.email, otp, form.password);
     setLoading(false);
 
     if (!res.success) {
@@ -81,13 +80,8 @@ export default function RegisterPage() {
       return;
     }
 
-    setToast({ type: 'success', msg: 'Xác thực thành công! Vui lòng thiết lập hồ sơ.' });
-    setStep('setup');
-  };
-
-  // Hoàn tất Setup Modal
-  const handleSetupComplete = () => {
-    navigate('/feed');
+    setToast({ type: 'success', msg: 'Xác thực thành công! Đang chuyển hướng...' });
+    // setTimeout(() => navigate('/feed'), 1000); // Route bảo vệ sẽ tự chuyển hướng
   };
 
   return (
@@ -210,7 +204,7 @@ export default function RegisterPage() {
             )}
 
             {/* BƯỚC 2: NHẬP OTP */}
-            {(step === 'otp' || step === 'setup') && (
+            {step === 'otp' && (
               <>
                 <div className="form-head">
                   <h2>Xác thực Email</h2>
@@ -234,7 +228,7 @@ export default function RegisterPage() {
                     {errors.otp && <span className="field-error">{errors.otp}</span>}
                   </div>
 
-                  <button type="submit" className="btn btn-primary btn-full btn-lg" disabled={loading || step === 'setup'}>
+                  <button type="submit" className="btn btn-primary btn-full btn-lg" disabled={loading}>
                     {loading ? <span className="spinner" /> : 'Xác nhận mã OTP'}
                   </button>
                 </form>
@@ -250,15 +244,6 @@ export default function RegisterPage() {
           </div>
         </div>
       </div>
-
-      {/* BƯỚC 3: SETUP PROFILE (Onboarding) */}
-      {step === 'setup' && (
-        <ProfileSetupModal
-          onClose={() => navigate('/feed')}
-          onComplete={handleSetupComplete}
-          initialName={form.name}
-        />
-      )}
     </>
   );
 }

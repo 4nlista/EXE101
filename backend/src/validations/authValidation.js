@@ -39,7 +39,8 @@ const verifyOtpSchema = Joi.object({
     'string.length': 'Mã OTP phải bao gồm 6 ký tự.',
     'string.empty': 'Mã OTP không được để trống.',
     'any.required': 'Vui lòng nhập mã OTP.'
-  })
+  }),
+  name: Joi.string().allow('', null)
 });
 
 module.exports = {

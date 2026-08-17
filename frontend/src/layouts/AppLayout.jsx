@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Bell, Settings, LogOut, ChevronDown, User } from 'lucide-react';
+import ProfileSetupModal from '../pages/onboarding/ProfileSetupModal';
 
 export default function AppLayout() {
-  const { currentUser, logout } = useAuth();
+  const { currentUser, logout, showSetup, completeProfile, closeSetup } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [showDrop, setShowDrop] = useState(false);
@@ -96,6 +97,17 @@ export default function AppLayout() {
           <a href="#">Trung tâm nghề nghiệp</a>
         </div>
       </footer>
+
+      {/* ── Onboarding Modal (Render đè lên nền Feed) ── */}
+      {showSetup && (
+        <ProfileSetupModal 
+          onClose={closeSetup}
+          onComplete={(data) => {
+            completeProfile(data);
+          }}
+          initialName={currentUser?.name}
+        />
+      )}
     </div>
   );
 }

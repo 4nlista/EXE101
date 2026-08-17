@@ -69,7 +69,7 @@ const verifyOtp = async (req, res, next) => {
   try {
     // Để verify otp, client cần gửi lại password để tạo User vì ta ko cache password lúc đăng ký
     // Bổ sung password vào schema tạm thời bằng code
-    const { error, value } = verifyOtpSchema.validate({ email: req.body.email, otp: req.body.otp });
+    const { error, value } = verifyOtpSchema.validate({ name: req.body.name, email: req.body.email, otp: req.body.otp });
     if (error) {
       return res.status(400).json({
         success: false,
@@ -84,10 +84,10 @@ const verifyOtp = async (req, res, next) => {
       });
     }
 
-    const { email, otp } = value;
+    const { name, email, otp } = value;
     const { password } = req.body;
     
-    const { token, user } = await authService.verifyOtp(email, otp, password);
+    const { token, user } = await authService.verifyOtp(name, email, otp, password);
 
     res.status(201).json({
       success: true,
