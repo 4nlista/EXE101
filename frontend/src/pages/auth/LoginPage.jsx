@@ -36,11 +36,18 @@ export default function LoginPage() {
     e.preventDefault();
     if (!validate()) return;
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 900));
-    const res = login(form.email, form.password, form.remember);
+    
+    // Gọi hàm login từ Context (đã được sửa thành async gọi API thực tế)
+    const res = await login(form.email, form.password, form.remember);
+    
     setLoading(false);
-    if (!res.success) { setGlobalErr(res.error); return; }
-    navigate('/dashboard');
+    if (!res.success) { 
+      setGlobalErr(res.error); 
+      return; 
+    }
+    
+    // Đăng nhập thành công -> chuyển vào Feed
+    navigate('/feed');
   };
 
   const handleGoogle = async () => {
@@ -48,7 +55,7 @@ export default function LoginPage() {
     await new Promise((r) => setTimeout(r, 1300));
     loginWithGoogle();
     setGoogleLoading(false);
-    navigate('/dashboard');
+    navigate('/feed');
   };
 
   return (

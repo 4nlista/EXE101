@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Bell, Settings, LogOut, ChevronDown, User } from 'lucide-react';
 
 export default function AppLayout() {
-  const { user, logout } = useAuth();
+  const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [showDrop, setShowDrop] = useState(false);
@@ -60,7 +60,7 @@ export default function AppLayout() {
             {showDrop && (
               <div className="drop-menu">
                 <div className="drop-user">
-                  <div className="drop-user-name">{user?.email || 'Người dùng'}</div>
+                  <div className="drop-user-name">{currentUser?.name || currentUser?.email || 'Người dùng'}</div>
                   <div className="drop-user-email">Chưa cập nhật vai trò</div>
                 </div>
                 <div style={{ padding: '6px 0' }}>

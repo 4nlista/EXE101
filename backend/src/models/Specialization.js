@@ -9,6 +9,12 @@ const specializationSchema = new mongoose.Schema(
       ref: 'Major',
       required: true
     },
+    // Mã chuyên ngành hẹp (VD: SE, AI, IA)
+    code: {
+      type: String,
+      required: true,
+      unique: true
+    },
     // Tên chuyên ngành hẹp (ví dụ: "NodeJS", "Topic on Java")
     name: {
       type: String,

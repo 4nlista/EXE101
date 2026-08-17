@@ -3,6 +3,12 @@ const mongoose = require('mongoose');
 // Schema chuyên ngành (do Admin quản lý CRUD)
 const majorSchema = new mongoose.Schema(
   {
+    // Mã chuyên ngành (ví dụ: "SE", "IA")
+    code: {
+      type: String,
+      required: true,
+      unique: true
+    },
     // Tên chuyên ngành (ví dụ: "Kỹ thuật phần mềm")
     name: {
       type: String,
