@@ -18,10 +18,10 @@ const subjectSchema = new mongoose.Schema(
     description: {
       type: String
     },
-    // Thuộc chuyên ngành nào (nếu có - một số môn dùng chung)
-    majorId: {
+    // Thuộc ngành nào (nếu có - một số môn dùng chung)
+    departmentId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Major'
+      ref: 'Department'
     },
     // Kỳ học của môn (1 - 9)
     semester: {

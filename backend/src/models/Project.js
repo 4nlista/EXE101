@@ -69,10 +69,10 @@ const projectSchema = new mongoose.Schema(
 
     // ===== PHÂN LOẠI =====
 
-    // Chuyên ngành liên quan - Many2Many
-    majorIds: [{
+    // Ngành liên quan - Many2Many
+    departmentIds: [{
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Major'
+      ref: 'Department'
     }],
     // Mục tiêu điểm dự án (range 0 - 10)
     gradeTarget: {

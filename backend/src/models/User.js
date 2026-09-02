@@ -110,15 +110,15 @@ const userSchema = new mongoose.Schema(
       min: 1,
       max: 9
     },
-    // Chuyên ngành (tham chiếu collection majors)
+    // Ngành (tham chiếu collection departments)
+    departmentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Department'
+    },
+    // Chuyên ngành (chỉ hiện khi Kỳ >= 5)
     majorId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Major'
-    },
-    // Chuyên ngành hẹp (chỉ hiện khi Kỳ >= 5)
-    specializationId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Specialization'
     },
 
     // ===== BƯỚC 3: HỒ SƠ NĂNG LỰC =====

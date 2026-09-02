@@ -20,15 +20,15 @@ Hệ thống hỗ trợ đăng ký tài khoản qua Email với xác thực OTP 
 
 ### ◆ Thiết lập hồ sơ cá nhân
 
-Sau khi đăng ký, người dùng hoàn thiện hồ sơ qua 4 bước: thông tin cá nhân, thông tin học tập (chuyên ngành, chuyên ngành hẹp, kỳ học), hồ sơ năng lực (kỹ năng chính, điểm mạnh/yếu, lịch sử dự án) và mục tiêu điểm số. Quy trình được thiết kế theo dạng Step Indicator trực quan.
+Sau khi đăng ký, người dùng hoàn thiện hồ sơ qua 4 bước: thông tin cá nhân, thông tin học tập (ngành, chuyên ngành, kỳ học), hồ sơ năng lực (kỹ năng chính, điểm mạnh/yếu, lịch sử dự án) và mục tiêu điểm số. Quy trình được thiết kế theo dạng Step Indicator trực quan.
 
 ### ◆ Bảng tin dự án
 
-Trang khám phá các bài đăng tuyển thành viên với giao diện chia làm sidebar bộ lọc (chuyên ngành, mục tiêu điểm, trạng thái, thời gian) và danh sách dự án dạng card. Mỗi card hiển thị tên chuyên ngành, độ phù hợp (%), thời hạn, tiêu đề, mô tả ngắn gọn và số lượng tuyển.
+Trang khám phá các bài đăng tuyển thành viên với giao diện chia làm sidebar bộ lọc (ngành, mục tiêu điểm, trạng thái, thời gian) và danh sách dự án dạng card. Mỗi card hiển thị tên ngành, độ phù hợp (%), thời hạn, tiêu đề, mô tả ngắn gọn và số lượng tuyển.
 
 ### ◆ Đăng tải dự án mới
 
-Người dùng có thể tạo bài đăng tuyển thành viên với đầy đủ thông tin: tiêu đề, tổng quan dự án, yêu cầu ứng viên, chuyên ngành, mục tiêu điểm, số lượng tuyển theo từng vị trí (Designer, Frontend, Tester...) và hạn ứng tuyển.
+Người dùng có thể tạo bài đăng tuyển thành viên với đầy đủ thông tin: tiêu đề, tổng quan dự án, yêu cầu ứng viên, ngành, mục tiêu điểm, số lượng tuyển theo từng vị trí (Designer, Frontend, Tester...) và hạn ứng tuyển.
 
 ### ◆ Xem chi tiết & Ứng tuyển
 
@@ -52,7 +52,7 @@ Tích hợp Gemini API để tự động sinh mô tả dự án từ từ khóa
 
 ### ◆ Tài liệu môn học
 
-Khám phá và tìm kiếm tài liệu theo mã môn, chuyên ngành, chuyên ngành hẹp và kỳ học. Hỗ trợ sinh viên tiếp cận nguồn tài liệu học tập phong phú.
+Khám phá và tìm kiếm tài liệu theo mã môn, ngành, chuyên ngành và kỳ học. Hỗ trợ sinh viên tiếp cận nguồn tài liệu học tập phong phú.
 
 ### ◆ Nạp tiền & Gói dịch vụ
 

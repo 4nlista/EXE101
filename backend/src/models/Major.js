@@ -1,19 +1,24 @@
 const mongoose = require('mongoose');
 
-// Schema chuyên ngành (do Admin quản lý CRUD)
+// Schema Chuyên ngành (phụ thuộc vào Ngành)
 const majorSchema = new mongoose.Schema(
   {
+    // Thuộc ngành nào (khóa ngoại)
+    departmentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Department',
+      required: true
+    },
     // Tên chuyên ngành (ví dụ: "Kỹ thuật phần mềm")
     name: {
       type: String,
-      required: true,
-      unique: true
+      required: true
     },
     // Mô tả chuyên ngành
     description: {
       type: String
     },
-    // Trạng thái hiển thị (Admin có thể ẩn chuyên ngành)
+    // Trạng thái hiển thị
     isActive: {
       type: Boolean,
       default: true
@@ -21,6 +26,9 @@ const majorSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// Index: tìm chuyên ngành theo ngành cha
+majorSchema.index({ departmentId: 1 });
 
 const Major = mongoose.model('Major', majorSchema);
 
