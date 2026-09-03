@@ -6,3 +6,5 @@ dist-ssr/
 .agents/
 *.md
 !README.md
+*.json
+!package*.json
