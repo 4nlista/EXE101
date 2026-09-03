@@ -10,10 +10,12 @@ const subjectSchema = new mongoose.Schema(
       unique: true
     },
     // Thuộc chuyên ngành nào (nhiều chuyên ngành nếu là môn dùng chung)
-    majorIds: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Major'
-    }],
+    majorIds: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Major'
+      }
+    ],
     // Trạng thái hiển thị
     isActive: {
       type: Boolean,
