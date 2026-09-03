@@ -9,3 +9,13 @@ dist-ssr/
 *.json
 !package.json
 !package-lock.json
+
+# Bỏ qua các file ảnh
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+*.svg
+*.ico
+*.bmp
