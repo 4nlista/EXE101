@@ -9,26 +9,11 @@ const subjectSchema = new mongoose.Schema(
       required: true,
       unique: true
     },
-    // Tên môn học (ví dụ: "Programming Fundamentals")
-    name: {
-      type: String,
-      required: true
-    },
-    // Mô tả môn học
-    description: {
-      type: String
-    },
-    // Thuộc ngành nào (nếu có - một số môn dùng chung)
-    departmentId: {
+    // Thuộc chuyên ngành nào (nhiều chuyên ngành nếu là môn dùng chung)
+    majorIds: [{
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Department'
-    },
-    // Kỳ học của môn (1 - 9)
-    semester: {
-      type: Number,
-      min: 1,
-      max: 9
-    },
+      ref: 'Major'
+    }],
     // Trạng thái hiển thị
     isActive: {
       type: Boolean,
