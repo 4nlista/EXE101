@@ -11,4 +11,7 @@ router.post('/register', authController.register);
 // [POST] Xác thực OTP (Tạo User)
 router.post('/verify-otp', authController.verifyOtp);
 
+// [POST] Đăng nhập bằng Google
+router.post('/login-google', authController.loginGoogle);
+
 module.exports = router;

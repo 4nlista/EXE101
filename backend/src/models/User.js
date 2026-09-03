@@ -127,14 +127,6 @@ const userSchema = new mongoose.Schema(
     mainSkills: [{
       type: String
     }],
-    // Điểm mạnh (người dùng tự nhập mô tả)
-    strengths: {
-      type: String
-    },
-    // Điểm yếu (người dùng tự nhập mô tả)
-    weaknesses: {
-      type: String
-    },
     // Lịch sử dự án đã tham gia (nhúng trực tiếp)
     projectHistory: [projectHistorySchema],
 

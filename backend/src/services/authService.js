@@ -189,8 +189,80 @@ const verifyOtp = async (name, email, otp, password) => {
   };
 };
 
+const { OAuth2Client } = require('google-auth-library');
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || 'your-google-client-id');
+
+/**
+ * Xử lý đăng nhập bằng Google
+ */
+const loginGoogle = async (googleToken) => {
+  // 1. Verify token với Google
+  let ticket;
+  try {
+    ticket = await googleClient.verifyIdToken({
+      idToken: googleToken,
+      audience: process.env.GOOGLE_CLIENT_ID || 'your-google-client-id',
+    });
+  } catch (error) {
+    const err = new Error('Xác thực Google thất bại hoặc Token đã hết hạn.');
+    err.statusCode = 401;
+    throw err;
+  }
+
+  const payload = ticket.getPayload();
+  const { email, name, picture, sub: googleId } = payload;
+
+  // 2. Tìm hoặc tạo User trong DB
+  let user = await User.findOne({ email });
+
+  if (!user) {
+    // Tạo user mới nếu chưa tồn tại
+    user = await User.create({
+      email,
+      name,
+      avatar: picture,
+      googleId,
+      roleCode: 1, // User mặc định
+      onboardingCompleted: false, // Yêu cầu nhập hồ sơ
+      isActive: 1
+    });
+  } else {
+    // Nếu user đã tồn tại (đăng ký bằng email thường) nhưng giờ login google, ta link googleId lại
+    if (!user.googleId) {
+      user.googleId = googleId;
+      if (!user.avatar) user.avatar = picture;
+    }
+    user.isActive = 1;
+    await user.save();
+  }
+
+  // 3. Tạo JWT Token
+  const jwtPayload = {
+    id: user._id,
+    roleCode: user.roleCode
+  };
+
+  const token = jwt.sign(jwtPayload, process.env.JWT_SECRET || 'universe-secret-key', {
+    expiresIn: '7d'
+  });
+
+  return {
+    token,
+    user: {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      avatar: user.avatar,
+      roleCode: user.roleCode,
+      onboardingCompleted: user.onboardingCompleted,
+      currentPackage: user.currentPackage
+    }
+  };
+};
+
 module.exports = {
   loginUser,
   registerUser,
-  verifyOtp
+  verifyOtp,
+  loginGoogle
 };

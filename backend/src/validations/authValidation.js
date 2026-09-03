@@ -43,8 +43,16 @@ const verifyOtpSchema = Joi.object({
   name: Joi.string().allow('', null)
 });
 
+const loginGoogleSchema = Joi.object({
+  token: Joi.string().required().messages({
+    'string.empty': 'Token Google không được để trống.',
+    'any.required': 'Vui lòng cung cấp Token Google.'
+  })
+});
+
 module.exports = {
   loginSchema,
   registerSchema,
-  verifyOtpSchema
+  verifyOtpSchema,
+  loginGoogleSchema
 };

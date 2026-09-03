@@ -102,8 +102,36 @@ const verifyOtp = async (req, res, next) => {
   }
 };
 
+/**
+ * Controller xử lý API Đăng nhập bằng Google
+ * POST /api/auth/login-google
+ */
+const loginGoogle = async (req, res, next) => {
+  try {
+    const { error, value } = require('../validations/authValidation').loginGoogleSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.details[0].message
+      });
+    }
+
+    const { token } = value;
+    const result = await authService.loginGoogle(token);
+
+    res.status(200).json({
+      success: true,
+      message: 'Đăng nhập Google thành công',
+      data: result
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   login,
   register,
-  verifyOtp
+  verifyOtp,
+  loginGoogle
 };
