@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { MOCK_USERS } from '../constants/mockData';
+import axiosClient from '../utils/axiosClient';
 
 const AuthContext = createContext(null);
 
@@ -10,36 +10,36 @@ export function AuthProvider({ children }) {
 
   // Restore session on mount
   useEffect(() => {
-    const saved =
-      localStorage.getItem('universe_user') ||
-      sessionStorage.getItem('universe_user');
-    if (saved) {
-      const user = JSON.parse(saved);
-      setCurrentUser(user);
+    const savedToken = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const savedUser = localStorage.getItem('universe_user') || sessionStorage.getItem('universe_user');
+    
+    if (savedToken && savedUser) {
+      setCurrentUser(JSON.parse(savedUser));
       setIsAuthenticated(true);
     }
   }, []);
 
-  // ---- Login ----
-  const login = (email, password, remember = false) => {
-    const found = MOCK_USERS.find(
-      (u) => u.email === email && u.password === password
-    );
-    if (!found) {
-      return { success: false, error: 'Email hoặc mật khẩu không chính xác' };
+  // ---- Login (Gọi API) ----
+  const login = async (email, password, remember = false) => {
+    try {
+      const response = await axiosClient.post('/auth/login', { email, password });
+      
+      if (response.success) {
+        const { token, user } = response.data;
+        
+        setCurrentUser(user);
+        setIsAuthenticated(true);
+
+        const store = remember ? localStorage : sessionStorage;
+        store.setItem('token', token);
+        store.setItem('universe_user', JSON.stringify(user));
+
+        return { success: true };
+      }
+      return { success: false, error: response.message || 'Đăng nhập thất bại' };
+    } catch (error) {
+      return { success: false, error: error.message || 'Lỗi kết nối đến server.' };
     }
-
-    const user = { ...found };
-    setCurrentUser(user);
-    setIsAuthenticated(true);
-
-    const store = remember ? localStorage : sessionStorage;
-    store.setItem('universe_user', JSON.stringify(user));
-
-    // Show setup modal if profile not complete
-    if (!user.isProfileComplete) setShowSetup(true);
-
-    return { success: true, needsSetup: !user.isProfileComplete };
   };
 
   // ---- Google Login (simulated) ----
@@ -63,11 +63,43 @@ export function AuthProvider({ children }) {
     return { success: true, needsSetup: true };
   };
 
-  // ---- Register ----
-  const register = (email) => {
-    const exists = MOCK_USERS.find((u) => u.email === email);
-    if (exists) return { success: false, error: 'Email này đã được sử dụng' };
-    return { success: true };
+  // ---- Register (Tạo OTP) ----
+  const register = async (email, password) => {
+    try {
+      const response = await axiosClient.post('/auth/register', { email, password });
+      if (response.success) {
+        return { success: true, message: response.message };
+      }
+      return { success: false, error: response.message || 'Đăng ký thất bại' };
+    } catch (error) {
+      return { success: false, error: error.message || 'Lỗi kết nối' };
+    }
+  };
+
+  // ---- Verify OTP (Xác thực và Đăng nhập) ----
+  const verifyOtp = async (name, email, otp, password) => {
+    try {
+      const response = await axiosClient.post('/auth/verify-otp', { name, email, otp, password });
+      if (response.success) {
+        const { token, user } = response.data;
+        setCurrentUser(user);
+        setIsAuthenticated(true);
+
+        // Hiện Modal Setup nếu chưa làm onboarding
+        if (!user.onboardingCompleted) {
+          setShowSetup(true);
+        }
+
+        // Lưu vào storage
+        localStorage.setItem('token', token);
+        localStorage.setItem('universe_user', JSON.stringify(user));
+
+        return { success: true };
+      }
+      return { success: false, error: response.message || 'Xác thực thất bại' };
+    } catch (error) {
+      return { success: false, error: error.message || 'Lỗi kết nối' };
+    }
   };
 
   // ---- Logout ----
@@ -75,20 +107,22 @@ export function AuthProvider({ children }) {
     setCurrentUser(null);
     setIsAuthenticated(false);
     setShowSetup(false);
+    localStorage.removeItem('token');
     localStorage.removeItem('universe_user');
+    sessionStorage.removeItem('token');
     sessionStorage.removeItem('universe_user');
   };
 
-  // ---- Complete Profile ----
+  // ---- Complete Profile (Local State Update) ----
   const completeProfile = (profileData) => {
-    const updated = { ...currentUser, ...profileData, isProfileComplete: true };
+    const updated = { ...currentUser, ...profileData, onboardingCompleted: true };
     setCurrentUser(updated);
     setShowSetup(false);
 
     // Persist update
     if (localStorage.getItem('universe_user')) {
       localStorage.setItem('universe_user', JSON.stringify(updated));
-    } else {
+    } else if (sessionStorage.getItem('universe_user')) {
       sessionStorage.setItem('universe_user', JSON.stringify(updated));
     }
   };
@@ -106,6 +140,7 @@ export function AuthProvider({ children }) {
         login,
         loginWithGoogle,
         register,
+        verifyOtp,
         logout,
         completeProfile,
         openSetup,

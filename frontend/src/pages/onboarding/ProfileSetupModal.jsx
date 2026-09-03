@@ -1,21 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   X, Check, User, Phone, Calendar, MapPin, Building2, Briefcase, 
-  GraduationCap, Plus, Code, PenTool, LayoutTemplate
+  GraduationCap, Plus, Code, PenTool, LayoutTemplate, Target, ChevronDown
 } from 'lucide-react';
+import axiosClient from '../../utils/axiosClient';
+import { useAuth } from '../../contexts/AuthContext';
 
-const SKILLS = [
-  'React', 'Node.js', 'Figma', 'Python', 'Marketing', 
-  'Data Analysis', 'UI/UX Design', 'Project Management'
-];
-const ROLES = ['Frontend', 'Backend', 'Fullstack', 'Designer', 'BA', 'Data Scientist', 'Marketing'];
-
-export default function ProfileSetupModal({ onClose, onComplete }) {
+export default function ProfileSetupModal({ onClose, onComplete, initialName = '' }) {
+  const { completeProfile } = useAuth();
   const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+
+  // Dữ liệu 4 bước theo Schema
   const [data, setData] = useState({
-    name: '', phone: '', dob: '', address: '', avatar: null,
-    type: '', org: '', role: '',
-    skills: [], goals: []
+    // Bước 1: Cá nhân
+    name: initialName, phone: '', dob: '', address: '',
+    // Bước 2: Học tập
+    semester: '', majorId: '', specializationId: '',
+    // Bước 3: Năng lực
+    mainSkills: [], strengths: '', weaknesses: '', projectHistory: '',
+    // Bước 4: Mục tiêu
+    gradeGoal: ''
   });
 
   const set = (k, v) => setData(p => ({ ...p, [k]: v }));
@@ -24,56 +30,173 @@ export default function ProfileSetupModal({ onClose, onComplete }) {
   const [err2, setErr2] = useState({});
   const [tagInput, setTagInput] = useState('');
   const [skillMenuOpen, setSkillMenuOpen] = useState(false);
+  const skillRef = useRef(null);
 
+  // Sync initialName if it comes late
+  useEffect(() => {
+    if (initialName && !data.name) set('name', initialName);
+  }, [initialName]);
+
+  // Handle click outside for skills dropdown
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (skillRef.current && !skillRef.current.contains(e.target)) {
+        setSkillMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Master Data States
+  const [majors, setMajors] = useState([]);
+  const [specializations, setSpecializations] = useState([]);
+  const [skillsList, setSkillsList] = useState([]);
+
+  // Fetch Majors & Skills on Mount
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      try {
+        const [majorsRes, skillsRes] = await Promise.all([
+          axiosClient.get('/master-data/majors'),
+          axiosClient.get('/master-data/skills')
+        ]);
+        if (majorsRes.success) setMajors(majorsRes.data);
+        if (skillsRes.success) setSkillsList(skillsRes.data);
+      } catch (err) {
+        console.error('Failed to fetch master data:', err);
+      }
+    };
+    fetchInitialData();
+  }, []);
+
+  // Fetch Specializations when Major changes
+  useEffect(() => {
+    if (!data.majorId) {
+      setSpecializations([]);
+      set('specializationId', '');
+      return;
+    }
+    const fetchSpecs = async () => {
+      try {
+        const res = await axiosClient.get(`/master-data/specializations/${data.majorId}`);
+        if (res.success) setSpecializations(res.data);
+      } catch (err) {
+        console.error('Failed to fetch specializations:', err);
+      }
+    };
+    fetchSpecs();
+  }, [data.majorId]);
+
+  // Validation các bước
   const next1 = () => {
-    if (!data.name) { setErr1({ name: 'Vui lòng nhập tên' }); return; }
+    if (!data.name) { setErr1({ name: 'Vui lòng nhập họ và tên' }); return; }
     setStep(2);
   };
   const next2 = () => {
-    if (!data.type) { setErr2({ type: 'Vui lòng chọn vai trò' }); return; }
+    if (!data.majorId) { setErr2({ majorId: 'Vui lòng nhập chuyên ngành' }); return; }
     setStep(3);
   };
-
-  const handleAddSkill = (s) => {
-    if (s && !data.skills.includes(s)) set('skills', [...data.skills, s]);
-    setTagInput(''); setSkillMenuOpen(false);
+  const next3 = () => {
+    setStep(4);
   };
 
-  const removeSkill = (s) => set('skills', data.skills.filter(x => x !== s));
+  // Quản lý tags kỹ năng
+  const handleAddSkill = (s) => {
+    if (s && !data.mainSkills.includes(s)) set('mainSkills', [...data.mainSkills, s]);
+    setTagInput(''); setSkillMenuOpen(false);
+  };
+  const removeSkill = (s) => set('mainSkills', data.mainSkills.filter(x => x !== s));
 
-  const toggleGoal = (g) => {
-    const goals = data.goals.includes(g) 
-      ? data.goals.filter(x => x !== g)
-      : [...data.goals, g];
-    set('goals', goals);
+  // Submit form lên API
+  const handleSubmit = async () => {
+    // Validate gradeGoal
+    if (data.gradeGoal) {
+      const numGoal = Number(data.gradeGoal);
+      if (isNaN(numGoal) || numGoal < 0 || numGoal > 4) {
+        setErrorMsg('Mục tiêu điểm số phải nằm trong thang điểm 4.0 (từ 0.0 đến 4.0)');
+        return;
+      }
+    }
+
+    setLoading(true);
+    setErrorMsg('');
+
+    // Chuẩn bị payload chuẩn với Database
+    const payload = { ...data };
+    
+    if (payload.gradeGoal) {
+      payload.gradeGoal = Number(payload.gradeGoal);
+    } else {
+      delete payload.gradeGoal;
+    }
+
+    if (payload.projectHistory && typeof payload.projectHistory === 'string') {
+      payload.projectHistory = [{
+        projectName: 'Dự án / Kinh nghiệm',
+        role: 'Cá nhân',
+        description: payload.projectHistory
+      }];
+    } else {
+      payload.projectHistory = [];
+    }
+
+    try {
+      const response = await axiosClient.put('/users/profile/setup', payload);
+      if (response.success) {
+        // Cập nhật context local
+        completeProfile({ name: data.name });
+        if (onComplete) onComplete(data);
+        if (onClose) onClose();
+      } else {
+        setErrorMsg(response.message || 'Có lỗi xảy ra');
+      }
+    } catch (err) {
+      setErrorMsg(err.message || 'Lỗi kết nối server');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="modal-overlay">
+    <div className="modal-overlay" style={{ background: '#f8f9fa' }}>
       <div className="modal">
         {/* Header */}
         <div className="modal-header">
           <div className="modal-header-top">
             <div>
               <div className="modal-title">Hoàn thiện hồ sơ</div>
-              <div className="modal-sub">Cập nhật thông tin để kết nối tốt hơn</div>
+              <div className="modal-sub">Cập nhật thông tin để hệ thống kết nối bạn tốt hơn</div>
             </div>
-            <button className="modal-skip" onClick={() => onComplete(data)}>Bỏ qua / Lưu sau</button>
+            <button className="modal-skip" onClick={() => { if(onClose) onClose(); }}>Bỏ qua / Lưu sau</button>
           </div>
           
+          {/* STEPPER 4 BƯỚC */}
           <div className="stepper">
+            {/* Bước 1 */}
             <div className={`stepper-step ${step >= 1 ? (step > 1 ? 'done' : 'active') : ''}`}>
               <div className="step-num">{step > 1 ? <Check size={14} /> : '1'}</div>
               <div className="step-label">Cá nhân</div>
             </div>
             <div className={`step-line ${step > 1 ? 'done' : ''}`} />
+            
+            {/* Bước 2 */}
             <div className={`stepper-step ${step >= 2 ? (step > 2 ? 'done' : 'active') : ''}`}>
               <div className="step-num">{step > 2 ? <Check size={14} /> : '2'}</div>
-              <div className="step-label">Công việc</div>
+              <div className="step-label">Học tập</div>
             </div>
             <div className={`step-line ${step > 2 ? 'done' : ''}`} />
-            <div className={`stepper-step ${step >= 3 ? 'active' : ''}`}>
-              <div className="step-num">3</div>
+            
+            {/* Bước 3 */}
+            <div className={`stepper-step ${step >= 3 ? (step > 3 ? 'done' : 'active') : ''}`}>
+              <div className="step-num">{step > 3 ? <Check size={14} /> : '3'}</div>
+              <div className="step-label">Năng lực</div>
+            </div>
+            <div className={`step-line ${step > 3 ? 'done' : ''}`} />
+
+            {/* Bước 4 */}
+            <div className={`stepper-step ${step >= 4 ? 'active' : ''}`}>
+              <div className="step-num">4</div>
               <div className="step-label">Mục tiêu</div>
             </div>
           </div>
@@ -81,20 +204,16 @@ export default function ProfileSetupModal({ onClose, onComplete }) {
 
         {/* Body */}
         <div className="modal-body">
+          {errorMsg && (
+            <div className="alert alert-error" style={{ marginBottom: 16 }}>
+              <span>⚠️</span> {errorMsg}
+            </div>
+          )}
+
+          {/* BƯỚC 1: CÁ NHÂN */}
           {step === 1 && (
             <div>
               <div className="s-label">Thông tin cơ bản</div>
-              <div className="avatar-block">
-                <div className="avatar-circle">
-                  <User size={28} />
-                </div>
-                <div className="avatar-info">
-                  <h4>Ảnh đại diện</h4>
-                  <p>PNG, JPG (Tối đa 2MB)</p>
-                  <button className="btn btn-secondary btn-sm">Tải ảnh lên</button>
-                </div>
-              </div>
-
               <div className="g2">
                 <div className="field gc2">
                   <label className="field-label">Họ và tên *</label>
@@ -138,55 +257,78 @@ export default function ProfileSetupModal({ onClose, onComplete }) {
             </div>
           )}
 
+          {/* BƯỚC 2: HỌC TẬP */}
           {step === 2 && (
             <div>
-              <div className="s-label">Định danh chuyên môn</div>
-              <div className="opt-grid-2">
-                <div className="opt-card">
-                  <input type="radio" id="t-pro" name="type" checked={data.type==='pro'} onChange={() => {set('type', 'pro'); setErr2({})}} />
-                  <label htmlFor="t-pro"><Briefcase size={16} /> Người đi làm / Freelancer</label>
-                </div>
-                <div className="opt-card">
-                  <input type="radio" id="t-stu" name="type" checked={data.type==='stu'} onChange={() => {set('type', 'stu'); setErr2({})}} />
-                  <label htmlFor="t-stu"><GraduationCap size={16} /> Sinh viên</label>
+              <div className="s-label">Thông tin Học tập</div>
+              <div className="field">
+                <label className="field-label">Học kỳ hiện tại</label>
+                <div className="input-box">
+                  <GraduationCap className="input-icon" size={16} />
+                  <input className="input" type="number" placeholder="Ví dụ: Kỳ 5"
+                    value={data.semester} onChange={e => set('semester', e.target.value)} />
                 </div>
               </div>
-              {err2.type && <div className="field-error" style={{ marginTop: 6 }}>{err2.type}</div>}
-
-              <div className="s-divider" />
 
               <div className="field">
-                <label className="field-label">Tổ chức / Công ty / Trường học</label>
-                <div className="input-box">
+                <label className="field-label">Chuyên ngành chính *</label>
+                <div className="input-box" style={{ paddingRight: 10 }}>
                   <Building2 className="input-icon" size={16} />
-                  <input className="input" type="text" placeholder="Ví dụ: ĐH Bách Khoa, FPT Software..."
-                    value={data.org} onChange={e => set('org', e.target.value)} />
-                </div>
-              </div>
-
-              <div className="field">
-                <label className="field-label">Vị trí / Chuyên môn chính</label>
-                <div className="input-box">
-                  <Code className="input-icon" size={16} />
-                  <select className="input no-icon" value={data.role} onChange={e => set('role', e.target.value)} style={{ paddingLeft: 36, appearance: 'none' }}>
-                    <option value="" disabled>-- Chọn vị trí --</option>
-                    {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
+                  <select 
+                    className={`input${err2.majorId ? ' err' : ''}`} 
+                    value={data.majorId} 
+                    onChange={e => { set('majorId', e.target.value); setErr2({}); }}
+                    style={{ appearance: 'none', background: 'transparent' }}
+                  >
+                    <option value="">-- Chọn chuyên ngành --</option>
+                    {majors.map(m => (
+                      <option key={m._id} value={m._id}>{m.name}</option>
+                    ))}
                   </select>
+                  <ChevronDown size={16} style={{ color: 'var(--text-muted)' }} />
                 </div>
+                {err2.majorId && <span className="field-error">{err2.majorId}</span>}
               </div>
 
               <div className="field" style={{ marginBottom: 0 }}>
-                <label className="field-label">Kỹ năng mềm & cứng</label>
+                <label className="field-label">Chuyên ngành hẹp</label>
+                <div className="input-box" style={{ paddingRight: 10 }}>
+                  <Code className="input-icon" size={16} />
+                  <select 
+                    className="input" 
+                    value={data.specializationId} 
+                    onChange={e => set('specializationId', e.target.value)}
+                    style={{ appearance: 'none', background: 'transparent' }}
+                    disabled={!data.majorId || specializations.length === 0}
+                  >
+                    <option value="">-- Chọn chuyên ngành hẹp --</option>
+                    {specializations.map(s => (
+                      <option key={s._id} value={s._id}>{s.name}</option>
+                    ))}
+                  </select>
+                  <ChevronDown size={16} style={{ color: 'var(--text-muted)' }} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* BƯỚC 3: HỒ SƠ NĂNG LỰC */}
+          {step === 3 && (
+            <div>
+              <div className="s-label">Hồ sơ năng lực</div>
+              
+              <div className="field">
+                <label className="field-label">Kỹ năng chính</label>
                 <div className="tag-hint">Nhập và ấn Enter để thêm kỹ năng</div>
-                <div className="tag-field" onClick={() => setSkillMenuOpen(true)}>
-                  {data.skills.map(s => (
+                <div className="tag-field" ref={skillRef} onClick={() => setSkillMenuOpen(true)}>
+                  {data.mainSkills.map(s => (
                     <div key={s} className="tag">
                       {s} <button className="tag-x" onClick={(e) => { e.stopPropagation(); removeSkill(s); }}><X size={10} /></button>
                     </div>
                   ))}
                   <div className="msel" style={{ flex: 1, margin: 0 }}>
                     <input 
-                      type="text" className="tag-bare" placeholder={data.skills.length ? "" : "Gõ tên kỹ năng..."}
+                      type="text" className="tag-bare" placeholder={data.mainSkills.length ? "" : "Gõ tên kỹ năng..."}
                       value={tagInput} onChange={e => setTagInput(e.target.value)}
                       onKeyDown={e => {
                         if (e.key === 'Enter') { e.preventDefault(); handleAddSkill(tagInput); }
@@ -194,7 +336,7 @@ export default function ProfileSetupModal({ onClose, onComplete }) {
                     />
                     {skillMenuOpen && (
                       <div className="msel-dropdown" style={{ top: 30 }}>
-                        {SKILLS.filter(s => !data.skills.includes(s) && s.toLowerCase().includes(tagInput.toLowerCase())).map(s => (
+                        {skillsList.filter(s => !data.mainSkills.includes(s) && s.toLowerCase().includes(tagInput.toLowerCase())).map(s => (
                           <div key={s} className="msel-opt" onClick={() => handleAddSkill(s)}>{s}</div>
                         ))}
                       </div>
@@ -202,30 +344,39 @@ export default function ProfileSetupModal({ onClose, onComplete }) {
                   </div>
                 </div>
               </div>
+
+              <div className="g2">
+                <div className="field">
+                  <label className="field-label">Điểm mạnh</label>
+                  <textarea className="input" rows={3} style={{ height: 'auto', resize: 'vertical' }} placeholder="Chăm chỉ, hòa đồng..."
+                    value={data.strengths} onChange={e => set('strengths', e.target.value)} />
+                </div>
+                <div className="field">
+                  <label className="field-label">Điểm yếu</label>
+                  <textarea className="input" rows={3} style={{ height: 'auto', resize: 'vertical' }} placeholder="Chưa thạo tiếng anh..."
+                    value={data.weaknesses} onChange={e => set('weaknesses', e.target.value)} />
+                </div>
+              </div>
+
+              <div className="field" style={{ marginBottom: 0 }}>
+                <label className="field-label">Lịch sử dự án</label>
+                <textarea className="input" rows={2} style={{ height: 'auto', resize: 'vertical' }} placeholder="Ví dụ: Tham gia 2 dự án web FPT"
+                  value={data.projectHistory} onChange={e => set('projectHistory', e.target.value)} />
+              </div>
             </div>
           )}
 
-          {step === 3 && (
+          {/* BƯỚC 4: MỤC TIÊU */}
+          {step === 4 && (
             <div>
-              <div className="s-label">Bạn đang tìm kiếm gì?</div>
-              <div className="goal-list">
-                {[
-                  { id: 'g1', title: 'Tìm đồng đội làm Side-project / Startup', desc: 'Kết nối với các nhà phát triển, designer, hoặc marketer' },
-                  { id: 'g2', title: 'Tìm nhóm Đồ án / Bài tập lớn', desc: 'Dành cho sinh viên cần ghép nhóm môn học' },
-                  { id: 'g3', title: 'Tìm việc Freelance / Hợp đồng ngắn hạn', desc: 'Sẵn sàng nhận các công việc part-time hoặc freelance' },
-                  { id: 'g4', title: 'Mentor / Cố vấn dự án', desc: 'Tôi muốn tìm người hướng dẫn hoặc sẵn sàng làm mentor' },
-                ].map(g => (
-                  <div className="goal-card" key={g.id}>
-                    <input type="checkbox" id={g.id} checked={data.goals.includes(g.id)} onChange={() => toggleGoal(g.id)} />
-                    <label htmlFor={g.id}>
-                      <div className="goal-chk"><Check size={12} strokeWidth={3} /></div>
-                      <div className="goal-text">
-                        <h4>{g.title}</h4>
-                        <p>{g.desc}</p>
-                      </div>
-                    </label>
-                  </div>
-                ))}
+              <div className="s-label">Mục tiêu</div>
+              <div className="field" style={{ marginBottom: 0 }}>
+                <label className="field-label">Mục tiêu điểm số (Thang 4.0)</label>
+                <div className="input-box">
+                  <Target className="input-icon" size={16} />
+                  <input className="input" type="number" step="0.1" min="0" max="4" placeholder="Ví dụ: 3.5"
+                    value={data.gradeGoal} onChange={e => { set('gradeGoal', e.target.value); setErrorMsg(''); }} />
+                </div>
               </div>
             </div>
           )}
@@ -233,13 +384,18 @@ export default function ProfileSetupModal({ onClose, onComplete }) {
 
         {/* Footer */}
         <div className="modal-footer">
-          <div className="modal-step-info">Bước {step} / 3</div>
+          <div className="modal-step-info">Bước {step} / 4</div>
           <div className="modal-footer-btns">
-            {step > 1 && <button className="btn btn-secondary" onClick={() => setStep(step - 1)}>Quay lại</button>}
-            {step < 3 ? (
-              <button className="btn btn-primary" onClick={step === 1 ? next1 : next2}>Tiếp tục</button>
-            ) : (
-              <button className="btn btn-primary" onClick={() => onComplete(data)}>Hoàn tất</button>
+            {step > 1 && <button className="btn btn-secondary" onClick={() => setStep(step - 1)} disabled={loading}>Quay lại</button>}
+            
+            {step === 1 && <button className="btn btn-primary" onClick={next1}>Tiếp tục</button>}
+            {step === 2 && <button className="btn btn-primary" onClick={next2}>Tiếp tục</button>}
+            {step === 3 && <button className="btn btn-primary" onClick={next3}>Tiếp tục</button>}
+            
+            {step === 4 && (
+              <button className="btn btn-primary" onClick={handleSubmit} disabled={loading}>
+                {loading ? <span className="spinner" /> : 'Hoàn tất'}
+              </button>
             )}
           </div>
         </div>

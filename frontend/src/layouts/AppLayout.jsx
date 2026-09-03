@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Bell, Settings, LogOut, ChevronDown, User } from 'lucide-react';
+import ProfileSetupModal from '../pages/onboarding/ProfileSetupModal';
 
 export default function AppLayout() {
-  const { user, logout } = useAuth();
+  const { currentUser, logout, showSetup, completeProfile, closeSetup } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [showDrop, setShowDrop] = useState(false);
@@ -60,7 +61,7 @@ export default function AppLayout() {
             {showDrop && (
               <div className="drop-menu">
                 <div className="drop-user">
-                  <div className="drop-user-name">{user?.email || 'Người dùng'}</div>
+                  <div className="drop-user-name">{currentUser?.name || currentUser?.email || 'Người dùng'}</div>
                   <div className="drop-user-email">Chưa cập nhật vai trò</div>
                 </div>
                 <div style={{ padding: '6px 0' }}>
@@ -96,6 +97,17 @@ export default function AppLayout() {
           <a href="#">Trung tâm nghề nghiệp</a>
         </div>
       </footer>
+
+      {/* ── Onboarding Modal (Render đè lên nền Feed) ── */}
+      {showSetup && (
+        <ProfileSetupModal 
+          onClose={closeSetup}
+          onComplete={(data) => {
+            completeProfile(data);
+          }}
+          initialName={currentUser?.name}
+        />
+      )}
     </div>
   );
 }
