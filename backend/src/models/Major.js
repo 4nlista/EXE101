@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-// Schema Chuyên ngành (phụ thuộc vào Ngành)
+// Schema Chuyên ngành (phụ thuộc vào Ngành - Department)
 const majorSchema = new mongoose.Schema(
   {
     // Thuộc ngành nào (khóa ngoại)
@@ -13,10 +13,6 @@ const majorSchema = new mongoose.Schema(
     name: {
       type: String,
       required: true
-    },
-    // Mô tả chuyên ngành
-    description: {
-      type: String
     },
     // Trạng thái hiển thị
     isActive: {
