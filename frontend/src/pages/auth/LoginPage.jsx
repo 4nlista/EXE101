@@ -26,7 +26,7 @@ export default function LoginPage() {
   const validate = () => {
     const errs = {};
     if (!form.email) errs.email = 'Vui lòng nhập email';
-    else if (!validateEmail(form.email)) errs.email = 'Email sai định dạng.';
+    else if (!validateEmail(form.email)) errs.email = 'Email sai định dạng';
     if (!form.password) errs.password = 'Vui lòng nhập mật khẩu';
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -72,21 +72,18 @@ export default function LoginPage() {
       {/* ── Right Form ── */}
       <div className="auth-panel-split">
         <div className="auth-panel-inner-split">
-          
+
           <div className="auth-header">
             <h1 className="auth-logo-text">UniVerse AI</h1>
-            <h2 className="auth-heading">Chào mừng trở lại NexLink</h2>
-            <p className="auth-subheading">
-              Nhập thông tin xác thực của bạn để truy cập mạng lưới học thuật và nghề nghiệp của bạn.
-            </p>
+            <h2 className="auth-heading">Chào mừng trở lại UniVerse AI</h2>
           </div>
 
           {/* Reserved height container to prevent layout shift on error */}
           <div className="auth-error-container">
             {globalErr && (
               <div className="auth-error-message">
-                {globalErr === 'Network Error' 
-                  ? 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại mạng.' 
+                {globalErr === 'Network Error'
+                  ? 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại mạng.'
                   : globalErr}
               </div>
             )}
@@ -96,14 +93,14 @@ export default function LoginPage() {
             {/* Email */}
             <div className="auth-input-group">
               <div className="auth-label-row">
-                <label className="auth-label" htmlFor="email">Địa chỉ Email</label>
+                <label className="auth-label" htmlFor="email">Email</label>
               </div>
               <div className="auth-input-wrapper">
                 <Mail className="auth-icon-left" size={18} />
                 <input
                   id="email" name="email" type="email"
                   className={`auth-input${errors.email ? ' err' : ''}`}
-                  placeholder="nguoidung@email.com"
+                  placeholder="user@example.com"
                   value={form.email} onChange={handleChange}
                 />
               </div>
@@ -148,9 +145,9 @@ export default function LoginPage() {
               </label>
             </div>
 
-            <button 
-              type="submit" 
-              className="auth-btn-primary" 
+            <button
+              type="submit"
+              className="auth-btn-primary"
               disabled={loading}
             >
               {loading ? <span className="spinner" style={{ borderTopColor: 'white' }} /> : 'Đăng nhập →'}
@@ -159,7 +156,7 @@ export default function LoginPage() {
 
           <div className="auth-divider-row">
             <div className="auth-divider-line"></div>
-            <span style={{ padding: '0 12px' }}>HOẶC TIẾP TỤC VỚI</span>
+            <span style={{ padding: '0 12px' }}>HOẶC ĐĂNG NHẬP VỚI</span>
             <div className="auth-divider-line"></div>
           </div>
 
