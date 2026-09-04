@@ -123,13 +123,13 @@ img { max-width: 100%; height: auto; display: block; }
 }
 
 .auth-brand-logo {
-  height: 48px;
+  height: 100px;
   width: auto;
 }
 
 .auth-brand-text {
   color: #C65D2B;
-  font-size: 28px;
+  font-size: 40px;
   font-weight: 800;
   letter-spacing: -0.5px;
 }
