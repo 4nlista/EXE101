@@ -80,7 +80,7 @@ export default function LoginPage() {
 
           <div className="auth-header">
             <h1 className="auth-logo-text">UniVerse AI</h1>
-            <h2 className="auth-heading">Chào mừng trở lại UniVerse AI</h2>
+            <h2 className="auth-heading">Đăng nhập</h2>
           </div>
 
           {/* Reserved height container to prevent layout shift on error */}
@@ -183,7 +183,7 @@ export default function LoginPage() {
           </button>
 
           <div className="auth-footer">
-            Chưa có tài khoản? <Link to="/register" className="auth-link">Đăng ký truy cập</Link>
+            Chưa có tài khoản? <Link to="/register" className="auth-link">Đăng ký ngay</Link>
           </div>
 
         </div>
