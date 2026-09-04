@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import LogoImg from '../../../images/Logo.png';
+import IconLoginImg from '../../../images/Icon_login.png';
 
 const validateEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
@@ -63,12 +65,12 @@ export default function LoginPage() {
       {/* ── Left Hero ── */}
       <div className="auth-hero-split">
         <div className="auth-brand-wrapper">
-          <img src="/images/Logo.png" alt="UniVerse AI Logo" className="auth-brand-logo" />
+          <img src={LogoImg} alt="UniVerse AI Logo" className="auth-brand-logo" />
           <span className="auth-brand-text">UniVerse AI</span>
         </div>
         <div className="auth-hero-content">
           <img
-            src="/images/Icon_login.png"
+            src={IconLoginImg}
             alt="Login Illustration"
             className="auth-hero-img"
           />
