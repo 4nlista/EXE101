@@ -59,137 +59,113 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="auth-layout" style={{ flexDirection: 'row', height: '100vh', overflow: 'hidden' }}>
+    <div className="auth-layout-split">
       {/* ── Left Hero ── */}
-      <div className="auth-hero" style={{ 
-        flex: 1, 
-        backgroundColor: '#DCCABF', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        padding: '40px'
-      }}>
+      <div className="auth-hero-split">
         <img
           src="/images/Icon_login.png"
           alt="Login Illustration"
-          style={{ 
-            maxWidth: '100%', 
-            maxHeight: '80%',
-            objectFit: 'contain',
-            borderRadius: '16px',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.08)' // Giả lập phần khung nền nếu ảnh là transparent
-          }}
+          className="auth-hero-img"
         />
       </div>
 
       {/* ── Right Form ── */}
-      <div className="auth-panel" style={{ 
-        flex: 1, 
-        backgroundColor: '#FAF5ED', 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        padding: '32px 48px', // Giảm padding dọc một chút để form ôm sát hơn
-        overflowY: 'auto'     // Nếu màn hình quá bé, chỉ cuộn bên phải chứ không cuộn toàn bộ trang
-      }}>
-        <div className="auth-panel-inner" style={{ width: '100%', maxWidth: '420px', margin: 'auto 0' }}>
+      <div className="auth-panel-split">
+        <div className="auth-panel-inner-split">
           
-          <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-            <h1 style={{ color: '#C65D2B', fontSize: '28px', fontWeight: '800', marginBottom: '12px', letterSpacing: '-0.5px' }}>
-              UniVerse AI
-            </h1>
-            <h2 style={{ fontSize: '24px', fontWeight: '700', color: '#1F2937', marginBottom: '8px' }}>
-              Chào mừng trở lại NexLink
-            </h2>
-            <p style={{ color: '#6B7280', fontSize: '14px', lineHeight: '1.5' }}>
+          <div className="auth-header">
+            <h1 className="auth-logo-text">UniVerse AI</h1>
+            <h2 className="auth-heading">Chào mừng trở lại NexLink</h2>
+            <p className="auth-subheading">
               Nhập thông tin xác thực của bạn để truy cập mạng lưới học thuật và nghề nghiệp của bạn.
             </p>
           </div>
 
-          {globalErr && (
-            <div className="alert alert-error" style={{ marginBottom: '24px' }}>
-              <span>⚠️</span> {globalErr}
-            </div>
-          )}
+          {/* Reserved height container to prevent layout shift on error */}
+          <div className="auth-error-container">
+            {globalErr && (
+              <div className="auth-error-message">
+                {globalErr === 'Network Error' 
+                  ? 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại mạng.' 
+                  : globalErr}
+              </div>
+            )}
+          </div>
 
           <form onSubmit={handleSubmit} noValidate>
             {/* Email */}
-            <div className="field" style={{ marginBottom: '20px' }}>
-              <label className="field-label" htmlFor="email" style={{ fontSize: '14px', fontWeight: '600', color: '#4B5563', marginBottom: '8px', display: 'block' }}>
-                Địa chỉ Email
-              </label>
-              <div className="input-box" style={{ position: 'relative' }}>
-                <Mail className="input-icon" size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#9CA3AF' }} />
+            <div className="auth-input-group">
+              <div className="auth-label-row">
+                <label className="auth-label" htmlFor="email">Địa chỉ Email</label>
+              </div>
+              <div className="auth-input-wrapper">
+                <Mail className="auth-icon-left" size={18} />
                 <input
                   id="email" name="email" type="email"
-                  className={`input${errors.email ? ' err' : ''}`}
+                  className={`auth-input${errors.email ? ' err' : ''}`}
                   placeholder="nguoidung@email.com"
                   value={form.email} onChange={handleChange}
-                  style={{ width: '100%', padding: '12px 14px 12px 40px', borderRadius: '8px', border: '1px solid #E5E7EB', backgroundColor: '#FFFFFF', fontSize: '15px' }}
                 />
               </div>
-              {errors.email && <span className="field-error" style={{ color: '#EF4444', fontSize: '13px', marginTop: '4px', display: 'block' }}>{errors.email}</span>}
+              {errors.email && <span className="auth-error-text">{errors.email}</span>}
             </div>
 
             {/* Password */}
-            <div className="field" style={{ marginBottom: '20px' }}>
-              <div className="field-label" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <label htmlFor="password" style={{ fontSize: '14px', fontWeight: '600', color: '#4B5563' }}>Mật khẩu</label>
-                <Link to="/forgot" className="field-label-link" style={{ fontSize: '13px', color: '#C65D2B', fontWeight: '600', textDecoration: 'none' }}>Quên mật khẩu?</Link>
+            <div className="auth-input-group">
+              <div className="auth-label-row">
+                <label className="auth-label" htmlFor="password">Mật khẩu</label>
+                <Link to="/forgot" className="auth-link">Quên mật khẩu?</Link>
               </div>
-              <div className="input-box" style={{ position: 'relative' }}>
-                <Lock className="input-icon" size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#9CA3AF' }} />
+              <div className="auth-input-wrapper">
+                <Lock className="auth-icon-left" size={18} />
                 <input
                   id="password" name="password"
                   type={showPwd ? 'text' : 'password'}
-                  className={`input${errors.password ? ' err' : ''}`}
+                  className={`auth-input${errors.password ? ' err' : ''}`}
                   placeholder="••••••••"
                   value={form.password} onChange={handleChange}
-                  style={{ width: '100%', padding: '12px 40px', borderRadius: '8px', border: '1px solid #E5E7EB', backgroundColor: '#FFFFFF', fontSize: '15px' }}
                 />
                 <button
-                  type="button" className="input-suffix"
+                  type="button" className="auth-icon-right"
                   onClick={() => setShowPwd(v => !v)}
                   tabIndex={-1}
-                  style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#9CA3AF', cursor: 'pointer', padding: 0 }}
                 >
                   {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
-              {errors.password && <span className="field-error" style={{ color: '#EF4444', fontSize: '13px', marginTop: '4px', display: 'block' }}>{errors.password}</span>}
+              {errors.password && <span className="auth-error-text">{errors.password}</span>}
             </div>
 
             {/* Remember */}
-            <div className="check-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
+            <div className="auth-check-row">
               <input
                 type="checkbox" id="remember" name="remember"
                 checked={form.remember} onChange={handleChange}
-                style={{ width: '16px', height: '16px', accentColor: '#C65D2B', cursor: 'pointer', borderRadius: '4px', border: '1px solid #D1D5DB' }}
+                className="auth-checkbox"
               />
-              <label htmlFor="remember" style={{ fontSize: '14px', color: '#6B7280', cursor: 'pointer' }}>Ghi nhớ đăng nhập</label>
+              <label htmlFor="remember" className="auth-label" style={{ cursor: 'pointer', fontWeight: 500 }}>
+                Ghi nhớ đăng nhập
+              </label>
             </div>
 
             <button 
               type="submit" 
-              className="btn btn-primary btn-full btn-lg" 
+              className="auth-btn-primary" 
               disabled={loading}
-              style={{ width: '100%', padding: '14px', backgroundColor: '#C65D2B', color: '#FFFFFF', border: 'none', borderRadius: '8px', fontSize: '15px', fontWeight: '600', cursor: 'pointer', transition: 'background-color 0.2s', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}
             >
               {loading ? <span className="spinner" style={{ borderTopColor: 'white' }} /> : 'Đăng nhập →'}
             </button>
           </form>
 
-          <div className="auth-divider" style={{ display: 'flex', alignItems: 'center', textAlign: 'center', margin: '32px 0', color: '#9CA3AF', fontSize: '12px', fontWeight: '600' }}>
-            <div style={{ flex: 1, height: '1px', backgroundColor: '#E5E7EB' }}></div>
+          <div className="auth-divider-row">
+            <div className="auth-divider-line"></div>
             <span style={{ padding: '0 12px' }}>HOẶC TIẾP TỤC VỚI</span>
-            <div style={{ flex: 1, height: '1px', backgroundColor: '#E5E7EB' }}></div>
+            <div className="auth-divider-line"></div>
           </div>
 
           <button
-            type="button" className="btn-google"
+            type="button" className="auth-btn-google"
             onClick={handleGoogle} disabled={googleLoading}
-            style={{ width: '100%', padding: '12px', backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', borderRadius: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', cursor: 'pointer', fontSize: '14px', fontWeight: '600', color: '#374151', transition: 'background-color 0.2s' }}
           >
             {googleLoading ? (
               <span className="spinner spinner-dark" />
@@ -204,8 +180,8 @@ export default function LoginPage() {
             Đăng nhập bằng Google
           </button>
 
-          <div className="auth-link-row" style={{ textAlign: 'center', marginTop: '32px', fontSize: '14px', color: '#6B7280' }}>
-            Chưa có tài khoản? <Link to="/register" className="text-link" style={{ color: '#C65D2B', fontWeight: '600', textDecoration: 'none' }}>Đăng ký truy cập</Link>
+          <div className="auth-footer">
+            Chưa có tài khoản? <Link to="/register" className="auth-link">Đăng ký truy cập</Link>
           </div>
 
         </div>
