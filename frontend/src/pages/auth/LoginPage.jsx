@@ -62,6 +62,10 @@ export default function LoginPage() {
     <div className="auth-layout-split">
       {/* ── Left Hero ── */}
       <div className="auth-hero-split">
+        <div className="auth-brand-wrapper">
+          <img src="/images/Logo.png" alt="UniVerse AI Logo" className="auth-brand-logo" />
+          <span className="auth-brand-text">UniVerse AI</span>
+        </div>
         <div className="auth-hero-content">
           <img
             src="/images/Icon_login.png"
@@ -79,7 +83,6 @@ export default function LoginPage() {
         <div className="auth-panel-inner-split">
 
           <div className="auth-header">
-            <h1 className="auth-logo-text">UniVerse AI</h1>
             <h2 className="auth-heading">Đăng nhập</h2>
           </div>
 

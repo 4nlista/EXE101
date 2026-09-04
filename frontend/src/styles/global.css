@@ -110,6 +110,28 @@ img { max-width: 100%; height: auto; display: block; }
   align-items: center;
   justify-content: center;
   padding: 40px;
+  position: relative;
+}
+
+.auth-brand-wrapper {
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.auth-brand-logo {
+  height: 48px;
+  width: auto;
+}
+
+.auth-brand-text {
+  color: #C65D2B;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
 }
 
 .auth-hero-content {
