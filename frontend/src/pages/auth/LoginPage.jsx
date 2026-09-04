@@ -62,11 +62,16 @@ export default function LoginPage() {
     <div className="auth-layout-split">
       {/* ── Left Hero ── */}
       <div className="auth-hero-split">
-        <img
-          src="/images/Icon_login.png"
-          alt="Login Illustration"
-          className="auth-hero-img"
-        />
+        <div className="auth-hero-content">
+          <img
+            src="/images/Icon_login.png"
+            alt="Login Illustration"
+            className="auth-hero-img"
+          />
+          <p className="auth-hero-slogan">
+            Hệ thống hỗ trợ ghép nhóm thông minh, giúp người dùng dễ dàng tìm kiếm những người thành viên phù hợp nhất dựa trên kỹ năng và chuyên ngành để nâng cao hiệu quả.
+          </p>
+        </div>
       </div>
 
       {/* ── Right Form ── */}

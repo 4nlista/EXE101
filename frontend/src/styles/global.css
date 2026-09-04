@@ -114,12 +114,29 @@ img { max-width: 100%; height: auto; display: block; }
   padding: 40px;
 }
 
+.auth-hero-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+}
+
 .auth-hero-img {
   max-width: 65%;
-  max-height: 65%;
+  max-height: 55vh;
   object-fit: contain;
   border-radius: 16px;
   box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+  margin-bottom: 20px;
+}
+
+.auth-hero-slogan {
+  color: #2F3542;
+  font-size: 0.95rem;
+  font-weight: 500;
+  max-width: 75%;
+  line-height: 1.5;
 }
 
 .auth-panel-split {
