@@ -105,7 +105,7 @@ img { max-width: 100%; height: auto; display: block; }
 
 .auth-hero-split {
   flex: 1;
-  background-color: #DCCABF;
+  background-color: #eaded7;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -164,6 +164,7 @@ img { max-width: 100%; height: auto; display: block; }
   font-size: 30px;
   font-weight: 700;
   color: #1F2937;
+  margin-bottom: 10px;
 }
 
 .auth-subheading {
