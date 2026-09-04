@@ -25,8 +25,8 @@ export default function LoginPage() {
 
   const validate = () => {
     const errs = {};
-    if (!form.email) errs.email = 'Vui lòng nhập địa chỉ email';
-    else if (!validateEmail(form.email)) errs.email = 'Email không đúng định dạng';
+    if (!form.email) errs.email = 'Vui lòng nhập email';
+    else if (!validateEmail(form.email)) errs.email = 'Email sai định dạng.';
     if (!form.password) errs.password = 'Vui lòng nhập mật khẩu';
     setErrors(errs);
     return Object.keys(errs).length === 0;

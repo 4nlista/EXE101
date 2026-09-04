@@ -22,7 +22,7 @@ const loginUser = async (email, password) => {
   const user = await User.findOne({ email });
   if (!user) {
     const error = new Error('Tài khoản không tồn tại.');
-    error.statusCode = 404;
+    error.statusCode = 401;
     throw error;
   }
 
@@ -42,7 +42,7 @@ const loginUser = async (email, password) => {
 
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
-    const error = new Error('Sai mật khẩu. Vui lòng thử lại.');
+    const error = new Error('Email hoặc mật khẩu không đúng. Vui lòng thử lại.');
     error.statusCode = 401;
     throw error;
   }
@@ -95,7 +95,7 @@ const registerUser = async (email, password) => {
 
   // 4. Lưu OTP vào DB (hết hạn sau 5 phút)
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-  
+
   await Otp.create({
     email,
     code: otpCode,
@@ -121,7 +121,7 @@ const registerUser = async (email, password) => {
   // Ta có thể cache password trong DB (ví dụ bảng Otp có thêm tempPassword) hoặc yêu cầu client gửi lại password lúc verify.
   // Thông thường: verify xong trả về 1 tempToken, sau đó client gọi API tạo user kèm thông tin. Hoặc gửi lại pass lúc verify.
   // Ta sẽ chọn cách: Client gửi email, otp, password lúc gọi verifyOtp.
-  
+
   return { message: 'Mã xác thực đã được gửi tới email của bạn.' };
 };
 
