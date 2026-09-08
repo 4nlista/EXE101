@@ -26,6 +26,10 @@ const registerSchema = Joi.object({
     'string.min': 'Mật khẩu phải có ít nhất 6 ký tự.',
     'string.empty': 'Mật khẩu không được để trống.',
     'any.required': 'Vui lòng nhập mật khẩu.'
+  }),
+  confirmPassword: Joi.any().valid(Joi.ref('password')).required().messages({
+    'any.only': 'Xác nhận mật khẩu không khớp.',
+    'any.required': 'Vui lòng xác nhận mật khẩu.'
   })
 });
 
