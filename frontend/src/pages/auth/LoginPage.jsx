@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import LogoImg from '../../../images/Logo.png';
-import IconLoginImg from '../../../images/Icon_login.png';
+import LogoImg from '../../../src/assets/images/Logo.png';
+import IconLoginImg from '../../../src/assets/images/Icon_login.png';
 
 const validateEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
