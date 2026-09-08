@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import axiosClient from '../utils/axiosClient';
+import * as authService from '../services/authService';
 
 const AuthContext = createContext(null);
 
@@ -19,10 +19,10 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  // ---- Login (Gọi API) ----
+  // ---- Login ----
   const login = async (email, password, remember = false) => {
     try {
-      const response = await axiosClient.post('/auth/login', { email, password });
+      const response = await authService.login(email, password);
       
       if (response.success) {
         const { token, user } = response.data;
@@ -42,31 +42,24 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // ---- Google Login (simulated) ----
-  const loginWithGoogle = () => {
-    const googleUser = {
-      id: Date.now(),
-      email: 'google.user@gmail.com',
-      name: 'Google User',
-      avatar: null,
-      isProfileComplete: false,
-      occupation: '',
-      organization: '',
-      skills: [],
-      fields: [],
-      level: '',
-    };
-    setCurrentUser(googleUser);
-    setIsAuthenticated(true);
-    setShowSetup(true);
-    localStorage.setItem('universe_user', JSON.stringify(googleUser));
-    return { success: true, needsSetup: true };
+  // ---- Google Login ----
+  const loginWithGoogle = async () => {
+    const response = await authService.loginWithGoogle();
+    if (response.success) {
+      const { user } = response.data;
+      setCurrentUser(user);
+      setIsAuthenticated(true);
+      setShowSetup(true);
+      localStorage.setItem('universe_user', JSON.stringify(user));
+      return { success: true, needsSetup: true };
+    }
+    return { success: false, error: 'Google Login Failed' };
   };
 
-  // ---- Register (Tạo OTP) ----
+  // ---- Register ----
   const register = async (email, password) => {
     try {
-      const response = await axiosClient.post('/auth/register', { email, password });
+      const response = await authService.register(email, password);
       if (response.success) {
         return { success: true, message: response.message };
       }
@@ -76,10 +69,10 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // ---- Verify OTP (Xác thực và Đăng nhập) ----
+  // ---- Verify OTP ----
   const verifyOtp = async (name, email, otp, password) => {
     try {
-      const response = await axiosClient.post('/auth/verify-otp', { name, email, otp, password });
+      const response = await authService.verifyOtp(name, email, otp, password);
       if (response.success) {
         const { token, user } = response.data;
         setCurrentUser(user);
