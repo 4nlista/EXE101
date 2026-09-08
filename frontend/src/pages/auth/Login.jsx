@@ -5,9 +5,14 @@ import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import LogoImg from '../../../src/assets/images/Logo.png';
 import IconLoginImg from '../../../src/assets/images/Icon_login.png';
 
+// Import các UI Component hạt nhân
+import Input from '../../components/Input';
+import Button from '../../components/Button';
+import Alert from '../../components/Alert';
+
 const validateEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
-export default function LoginPage() {
+export default function Login() {
   const navigate = useNavigate();
   const { login, loginWithGoogle } = useAuth();
 
@@ -39,12 +44,11 @@ export default function LoginPage() {
     if (!validate()) return;
     setLoading(true);
 
-    // Gọi hàm login từ Context (đã được sửa thành async gọi API thực tế)
     const res = await login(form.email, form.password, form.remember);
 
     setLoading(false);
     if (!res.success) {
-      setGlobalErr(res.error);
+      setGlobalErr(res.error === 'Network Error' ? 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại mạng.' : res.error);
       return;
     }
 
@@ -88,63 +92,59 @@ export default function LoginPage() {
             <h2 className="auth-heading">Đăng nhập</h2>
           </div>
 
-          {/* Reserved height container to prevent layout shift on error */}
-          <div className="auth-error-container">
-            {globalErr && (
-              <div className="auth-error-message">
-                {globalErr === 'Network Error'
-                  ? 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại mạng.'
-                  : globalErr}
-              </div>
-            )}
-          </div>
-
           <form onSubmit={handleSubmit} noValidate>
-            {/* Email */}
-            <div className="auth-input-group">
-              <div className="auth-label-row">
-                <label className="auth-label" htmlFor="email">Email</label>
+            
+            {/* Lỗi Form-level (Hiển thị bằng Component Alert) */}
+            <Alert type="danger" className="mb-4">
+              {globalErr}
+            </Alert>
+
+            {/* Email Input */}
+            <Input 
+              label="Email"
+              icon={Mail}
+              id="email" 
+              name="email" 
+              type="email"
+              placeholder="user@example.com"
+              value={form.email} 
+              onChange={handleChange}
+              error={errors.email}
+            />
+
+            {/* Password Input (có nút show/hide) */}
+            <div className="mb-3 position-relative">
+              <div className="d-flex justify-content-between align-items-center mb-1">
+                <label className="fw-medium mb-0" htmlFor="password">Mật khẩu</label>
+                <Link to="/forgot" className="text-decoration-none" style={{ fontSize: '14px', color: 'var(--primary)' }}>Quên mật khẩu?</Link>
               </div>
-              <div className="auth-input-wrapper">
-                <Mail className="auth-icon-left" size={18} />
-                <input
-                  id="email" name="email" type="email"
-                  className={`auth-input${errors.email ? ' err' : ''}`}
-                  placeholder="user@example.com"
-                  value={form.email} onChange={handleChange}
-                />
-              </div>
-              {errors.email && <span className="auth-error-text">{errors.email}</span>}
+              
+              <Input 
+                icon={Lock}
+                id="password" 
+                name="password"
+                type={showPwd ? 'text' : 'password'}
+                placeholder="••••••••"
+                value={form.password} 
+                onChange={handleChange}
+                error={errors.password}
+                className="mb-0" // Xóa margin bottom mặc định của Input vì đã bọc bằng div
+              />
+              
+              {/* Nút bấm ẩn/hiện mật khẩu (nằm đè lên Input) */}
+              <button
+                type="button" 
+                onClick={() => setShowPwd(!showPwd)}
+                tabIndex={-1}
+                className="position-absolute border-0 bg-transparent"
+                style={{ right: '10px', top: '35px', color: 'var(--bs-gray-500)', zIndex: 20 }}
+              >
+                {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
 
-            {/* Password */}
-            <div className="auth-input-group">
-              <div className="auth-label-row">
-                <label className="auth-label" htmlFor="password">Mật khẩu</label>
-                <Link to="/forgot" className="auth-link">Quên mật khẩu?</Link>
-              </div>
-              <div className="auth-input-wrapper">
-                <Lock className="auth-icon-left" size={18} />
-                <input
-                  id="password" name="password"
-                  type={showPwd ? 'text' : 'password'}
-                  className={`auth-input${errors.password ? ' err' : ''}`}
-                  placeholder="••••••••"
-                  value={form.password} onChange={handleChange}
-                />
-                <button
-                  type="button" className="auth-icon-right"
-                  onClick={() => setShowPwd(v => !v)}
-                  tabIndex={-1}
-                >
-                  {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-              {errors.password && <span className="auth-error-text">{errors.password}</span>}
-            </div>
-
-            {/* Remember */}
-            <div className="auth-check-row">
+            {/* Remember Checkbox */}
+            <div className="auth-check-row mb-4">
               <input
                 type="checkbox" id="remember" name="remember"
                 checked={form.remember} onChange={handleChange}
@@ -155,28 +155,34 @@ export default function LoginPage() {
               </label>
             </div>
 
-            <button
-              type="submit"
-              className="auth-btn-primary"
-              disabled={loading}
+            {/* Nút Submit sử dụng Button Component */}
+            <Button 
+              type="submit" 
+              variant="primary" 
+              fullWidth 
+              loading={loading}
+              className="py-2 fw-bold"
             >
-              {loading ? <span className="spinner" style={{ borderTopColor: 'white' }} /> : 'Đăng nhập →'}
-            </button>
+              Đăng nhập →
+            </Button>
+            
           </form>
 
-          <div className="auth-divider-row">
+          <div className="auth-divider-row my-4">
             <div className="auth-divider-line"></div>
             <span style={{ padding: '0 12px' }}>HOẶC ĐĂNG NHẬP VỚI</span>
             <div className="auth-divider-line"></div>
           </div>
 
-          <button
-            type="button" className="auth-btn-google"
-            onClick={handleGoogle} disabled={googleLoading}
+          <Button 
+            type="button" 
+            variant="outline-dark" 
+            fullWidth 
+            loading={googleLoading}
+            onClick={handleGoogle}
+            className="d-flex align-items-center justify-content-center gap-2 py-2"
           >
-            {googleLoading ? (
-              <span className="spinner spinner-dark" />
-            ) : (
+            {!googleLoading && (
               <svg width="20" height="20" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -185,9 +191,9 @@ export default function LoginPage() {
               </svg>
             )}
             Đăng nhập bằng Google
-          </button>
+          </Button>
 
-          <div className="auth-footer">
+          <div className="auth-footer mt-4 text-center">
             Chưa có tài khoản? <Link to="/register" className="auth-link">Đăng ký ngay</Link>
           </div>
 

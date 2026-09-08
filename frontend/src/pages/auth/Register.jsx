@@ -1,19 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { User, Mail, Lock, Eye, EyeOff, KeyRound } from 'lucide-react';
+import { toast } from 'react-toastify';
+
+// Import các UI Component hạt nhân
+import Input from '../../components/Input';
+import Button from '../../components/Button';
+import Alert from '../../components/Alert';
 
 const validateEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
-export default function RegisterPage() {
+export default function Register() {
   const navigate = useNavigate();
   const { register, verifyOtp } = useAuth();
 
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' });
   const [otp, setOtp] = useState('');
   const [errors, setErrors] = useState({});
+  const [globalErr, setGlobalErr] = useState('');
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState(null);
 
   const [showPwd, setShowPwd] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -21,16 +27,11 @@ export default function RegisterPage() {
   // States quản lý luồng màn hình
   const [step, setStep] = useState('register'); // 'register' | 'otp'
 
-  useEffect(() => {
-    if (!toast) return;
-    const t = setTimeout(() => { setToast(null); }, 2500);
-    return () => clearTimeout(t);
-  }, [toast]);
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((p) => ({ ...p, [name]: value }));
     if (errors[name]) setErrors((p) => ({ ...p, [name]: '' }));
+    if (globalErr) setGlobalErr('');
   };
 
   const validate = () => {
@@ -52,15 +53,16 @@ export default function RegisterPage() {
     if (!validate()) return;
     setLoading(true);
 
-    const res = await register(form.email, form.password);
+    const res = await register(form.email, form.password, form.confirm);
     setLoading(false);
 
     if (!res.success) {
-      setErrors((p) => ({ ...p, email: res.error }));
+      setGlobalErr(res.error);
       return;
     }
-    setToast({ type: 'success', msg: 'Mã xác thực đã được gửi tới Email của bạn!' });
+    toast.success('Mã xác thực đã được gửi tới Email của bạn!');
     setStep('otp');
+    setGlobalErr(''); // Xóa lỗi cũ khi sang màn hình mới
   };
 
   // Nút xác thực OTP
@@ -76,11 +78,11 @@ export default function RegisterPage() {
     setLoading(false);
 
     if (!res.success) {
-      setErrors({ otp: res.error });
+      setGlobalErr(res.error);
       return;
     }
 
-    setToast({ type: 'success', msg: 'Xác thực thành công! Đang chuyển hướng...' });
+    toast.success('Xác thực thành công! Đang chuyển hướng...');
     // setTimeout(() => navigate('/feed'), 1000); // Route bảo vệ sẽ tự chuyển hướng
   };
 
@@ -113,92 +115,100 @@ export default function RegisterPage() {
         <div className="auth-panel">
           <div className="auth-panel-inner">
 
-            {toast && (
-              <div className="alert alert-success" style={{ marginBottom: 20 }}>
-                {toast.msg}
-              </div>
-            )}
-
             {/* BƯỚC 1: FORM ĐĂNG KÝ */}
             {step === 'register' && (
               <>
-                <div className="form-head">
-                  <h2>Tạo tài khoản</h2>
-                  <p>Nhập thông tin của bạn để bắt đầu với UniVerse AI.</p>
+                <div className="form-head mb-4">
+                  <h2 className="fw-bold mb-2">Tạo tài khoản</h2>
+                  <p className="text-muted">Nhập thông tin của bạn để bắt đầu với UniVerse AI.</p>
                 </div>
 
                 <form onSubmit={handleSubmit} noValidate>
-                  <div className="field">
-                    <label className="field-label">Họ và tên</label>
-                    <div className="input-box">
-                      <User className="input-icon" size={18} />
-                      <input
-                        name="name" type="text"
-                        className={`input${errors.name ? ' err' : ''}`}
-                        placeholder="Nguyễn Văn A"
-                        value={form.name} onChange={handleChange}
-                      />
-                    </div>
-                    {errors.name && <span className="field-error">{errors.name}</span>}
+                  
+                  {/* Form-level Error */}
+                  <Alert type="danger" className="mb-4">
+                    {globalErr}
+                  </Alert>
+
+                  <Input 
+                    label="Họ và tên"
+                    icon={User}
+                    name="name" 
+                    type="text"
+                    placeholder="Nguyễn Văn A"
+                    value={form.name} 
+                    onChange={handleChange}
+                    error={errors.name}
+                  />
+
+                  <Input 
+                    label="Email"
+                    icon={Mail}
+                    name="email" 
+                    type="email"
+                    placeholder="email@example.com"
+                    value={form.email} 
+                    onChange={handleChange}
+                    error={errors.email}
+                  />
+
+                  <div className="mb-3 position-relative">
+                    <label className="fw-medium mb-1 d-block">Mật khẩu</label>
+                    <Input 
+                      icon={Lock}
+                      name="password"
+                      type={showPwd ? 'text' : 'password'}
+                      placeholder="••••••••"
+                      value={form.password} 
+                      onChange={handleChange}
+                      error={errors.password}
+                      className="mb-0"
+                    />
+                    <button 
+                      type="button" 
+                      className="position-absolute border-0 bg-transparent" 
+                      onClick={() => setShowPwd(!showPwd)}
+                      style={{ right: '10px', top: '35px', color: 'var(--bs-gray-500)', zIndex: 20 }}
+                    >
+                      {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
                   </div>
 
-                  <div className="field">
-                    <label className="field-label">Email</label>
-                    <div className="input-box">
-                      <Mail className="input-icon" size={18} />
-                      <input
-                        name="email" type="email"
-                        className={`input${errors.email ? ' err' : ''}`}
-                        placeholder="email@example.com"
-                        value={form.email} onChange={handleChange}
-                      />
-                    </div>
-                    {errors.email && <span className="field-error">{errors.email}</span>}
+                  <div className="mb-4 position-relative">
+                    <label className="fw-medium mb-1 d-block">Xác nhận mật khẩu</label>
+                    <Input 
+                      icon={Lock}
+                      name="confirm"
+                      type={showConfirm ? 'text' : 'password'}
+                      placeholder="••••••••"
+                      value={form.confirm} 
+                      onChange={handleChange}
+                      error={errors.confirm}
+                      className="mb-0"
+                    />
+                    <button 
+                      type="button" 
+                      className="position-absolute border-0 bg-transparent" 
+                      onClick={() => setShowConfirm(!showConfirm)}
+                      style={{ right: '10px', top: '35px', color: 'var(--bs-gray-500)', zIndex: 20 }}
+                    >
+                      {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
                   </div>
 
-                  <div className="field">
-                    <label className="field-label">Mật khẩu</label>
-                    <div className="input-box">
-                      <Lock className="input-icon" size={18} />
-                      <input
-                        name="password"
-                        type={showPwd ? 'text' : 'password'}
-                        className={`input${errors.password ? ' err' : ''}`}
-                        placeholder="••••••••"
-                        value={form.password} onChange={handleChange}
-                      />
-                      <button type="button" className="input-suffix" onClick={() => setShowPwd(v => !v)}>
-                        {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
-                    </div>
-                    {errors.password && <span className="field-error">{errors.password}</span>}
-                  </div>
-
-                  <div className="field" style={{ marginBottom: 28 }}>
-                    <label className="field-label">Xác nhận mật khẩu</label>
-                    <div className="input-box">
-                      <Lock className="input-icon" size={18} />
-                      <input
-                        name="confirm"
-                        type={showConfirm ? 'text' : 'password'}
-                        className={`input${errors.confirm ? ' err' : ''}`}
-                        placeholder="••••••••"
-                        value={form.confirm} onChange={handleChange}
-                      />
-                      <button type="button" className="input-suffix" onClick={() => setShowConfirm(v => !v)}>
-                        {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
-                    </div>
-                    {errors.confirm && <span className="field-error">{errors.confirm}</span>}
-                  </div>
-
-                  <button type="submit" className="btn btn-primary btn-full btn-lg" disabled={loading}>
-                    {loading ? <span className="spinner" /> : 'Đăng ký tài khoản'}
-                  </button>
+                  <Button 
+                    type="submit" 
+                    variant="primary" 
+                    fullWidth 
+                    loading={loading}
+                    className="py-2 fw-bold"
+                  >
+                    Đăng ký tài khoản
+                  </Button>
                 </form>
 
-                <div className="auth-link-row">
-                  Đã có tài khoản? <Link to="/" className="text-link">Đăng nhập tại đây</Link>
+                <div className="auth-link-row mt-4 text-center">
+                  Đã có tài khoản? <Link to="/" className="text-primary text-decoration-none fw-medium">Đăng nhập tại đây</Link>
                 </div>
               </>
             )}
@@ -206,35 +216,46 @@ export default function RegisterPage() {
             {/* BƯỚC 2: NHẬP OTP */}
             {step === 'otp' && (
               <>
-                <div className="form-head">
-                  <h2>Xác thực Email</h2>
-                  <p>Mã OTP 6 số đã được gửi tới <strong>{form.email}</strong>. Mã sẽ hết hạn sau 5 phút.</p>
+                <div className="form-head mb-4">
+                  <h2 className="fw-bold mb-2">Xác thực Email</h2>
+                  <p className="text-muted">Mã OTP 6 số đã được gửi tới <strong>{form.email}</strong>. Mã sẽ hết hạn sau 5 phút.</p>
                 </div>
 
-                <form onSubmit={handleVerifyOtp}>
-                  <div className="field" style={{ marginBottom: 28 }}>
-                    <label className="field-label">Mã OTP</label>
-                    <div className="input-box">
-                      <KeyRound className="input-icon" size={18} />
-                      <input
-                        type="text"
-                        maxLength="6"
-                        className={`input${errors.otp ? ' err' : ''}`}
-                        placeholder="Nhập 6 số..."
-                        value={otp} onChange={e => { setOtp(e.target.value); setErrors({}); }}
-                        style={{ fontSize: 15 }}
-                      />
-                    </div>
-                    {errors.otp && <span className="field-error">{errors.otp}</span>}
-                  </div>
+                <form onSubmit={handleVerifyOtp} noValidate>
+                  {/* Form-level Error for OTP failures */}
+                  <Alert type="danger" className="mb-4">
+                    {globalErr}
+                  </Alert>
 
-                  <button type="submit" className="btn btn-primary btn-full btn-lg" disabled={loading}>
-                    {loading ? <span className="spinner" /> : 'Xác nhận mã OTP'}
-                  </button>
+                  <Input 
+                    label="Mã OTP"
+                    icon={KeyRound}
+                    type="text"
+                    maxLength="6"
+                    placeholder="Nhập 6 số..."
+                    value={otp} 
+                    onChange={e => { setOtp(e.target.value); setErrors({}); setGlobalErr(''); }}
+                    error={errors.otp}
+                    className="mb-4"
+                    style={{ fontSize: 16, letterSpacing: '2px' }}
+                  />
+
+                  <Button 
+                    type="submit" 
+                    variant="primary" 
+                    fullWidth 
+                    loading={loading}
+                    className="py-2 fw-bold"
+                  >
+                    Xác nhận mã OTP
+                  </Button>
                 </form>
 
-                <div className="auth-link-row" style={{ marginTop: 24 }}>
-                  <button className="text-link" onClick={() => setStep('register')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14 }}>
+                <div className="auth-link-row mt-4 text-center">
+                  <button 
+                    className="text-primary text-decoration-none fw-medium bg-transparent border-0" 
+                    onClick={() => { setStep('register'); setGlobalErr(''); }}
+                  >
                     Quay lại
                   </button>
                 </div>
