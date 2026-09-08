@@ -19,7 +19,6 @@ export default function Login() {
   const [form, setForm] = useState({ email: '', password: '', remember: false });
   const [errors, setErrors] = useState({});
   const [globalErr, setGlobalErr] = useState('');
-  const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
@@ -112,36 +111,23 @@ export default function Login() {
               error={errors.email}
             />
 
-            {/* Password Input (có nút show/hide) */}
-            <div className="mb-3 position-relative">
-              <div className="d-flex justify-content-between align-items-center mb-1">
-                <label className="fw-medium mb-0" htmlFor="password">Mật khẩu</label>
-                <Link to="/forgot" className="text-decoration-none" style={{ fontSize: '14px', color: 'var(--primary)' }}>Quên mật khẩu?</Link>
-              </div>
-              
-              <Input 
-                icon={Lock}
-                id="password" 
-                name="password"
-                type={showPwd ? 'text' : 'password'}
-                placeholder="••••••••"
-                value={form.password} 
-                onChange={handleChange}
-                error={errors.password}
-                className="mb-0" // Xóa margin bottom mặc định của Input vì đã bọc bằng div
-              />
-              
-              {/* Nút bấm ẩn/hiện mật khẩu (nằm đè lên Input) */}
-              <button
-                type="button" 
-                onClick={() => setShowPwd(!showPwd)}
-                tabIndex={-1}
-                className="position-absolute border-0 bg-transparent"
-                style={{ right: '10px', top: '35px', color: 'var(--bs-gray-500)', zIndex: 20 }}
-              >
-                {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
+            {/* Password Input (có nút show/hide tự động từ Component Input) */}
+            <Input 
+              label={
+                <div className="d-flex justify-content-between align-items-center w-100">
+                  <span>Mật khẩu</span>
+                  <Link to="/forgot" className="text-decoration-none" style={{ fontSize: '14px', color: 'var(--primary)' }}>Quên mật khẩu?</Link>
+                </div>
+              }
+              icon={Lock}
+              id="password" 
+              name="password"
+              type="password"
+              placeholder="••••••••"
+              value={form.password} 
+              onChange={handleChange}
+              error={errors.password}
+            />
 
             {/* Remember Checkbox */}
             <div className="auth-check-row mb-4">

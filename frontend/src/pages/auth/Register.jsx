@@ -21,9 +21,6 @@ export default function Register() {
   const [globalErr, setGlobalErr] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const [showPwd, setShowPwd] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-
   // States quản lý luồng màn hình
   const [step, setStep] = useState('register'); // 'register' | 'otp'
 
@@ -152,49 +149,28 @@ export default function Register() {
                     error={errors.email}
                   />
 
-                  <div className="mb-3 position-relative">
-                    <label className="fw-medium mb-1 d-block">Mật khẩu</label>
-                    <Input 
-                      icon={Lock}
-                      name="password"
-                      type={showPwd ? 'text' : 'password'}
-                      placeholder="••••••••"
-                      value={form.password} 
-                      onChange={handleChange}
-                      error={errors.password}
-                      className="mb-0"
-                    />
-                    <button 
-                      type="button" 
-                      className="position-absolute border-0 bg-transparent" 
-                      onClick={() => setShowPwd(!showPwd)}
-                      style={{ right: '10px', top: '35px', color: 'var(--bs-gray-500)', zIndex: 20 }}
-                    >
-                      {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                  </div>
+                  <Input 
+                    label="Mật khẩu"
+                    icon={Lock}
+                    name="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={form.password} 
+                    onChange={handleChange}
+                    error={errors.password}
+                  />
 
-                  <div className="mb-4 position-relative">
-                    <label className="fw-medium mb-1 d-block">Xác nhận mật khẩu</label>
-                    <Input 
-                      icon={Lock}
-                      name="confirm"
-                      type={showConfirm ? 'text' : 'password'}
-                      placeholder="••••••••"
-                      value={form.confirm} 
-                      onChange={handleChange}
-                      error={errors.confirm}
-                      className="mb-0"
-                    />
-                    <button 
-                      type="button" 
-                      className="position-absolute border-0 bg-transparent" 
-                      onClick={() => setShowConfirm(!showConfirm)}
-                      style={{ right: '10px', top: '35px', color: 'var(--bs-gray-500)', zIndex: 20 }}
-                    >
-                      {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                  </div>
+                  <Input 
+                    label="Xác nhận mật khẩu"
+                    icon={Lock}
+                    name="confirm"
+                    type="password"
+                    placeholder="••••••••"
+                    value={form.confirm} 
+                    onChange={handleChange}
+                    error={errors.confirm}
+                    className="mb-4"
+                  />
 
                   <Button 
                     type="submit" 

@@ -204,7 +204,6 @@ img { max-width: 100%; height: auto; display: block; }
 .auth-error-message {
   padding: 10px 14px;
   border-radius: 8px;
-  border: 1px solid #FCA5A5;
   background-color: #FEF2F2;
   color: #DC2626;
   font-size: 14px;
@@ -264,7 +263,7 @@ img { max-width: 100%; height: auto; display: block; }
   width: 100%;
   padding: 12px 40px;
   border-radius: 8px;
-  border: 1px solid #E5E7EB;
+  border: 1px solid #858c9b;
   background-color: #FFFFFF;
   font-size: 15px;
   transition: border-color 0.2s;
@@ -384,7 +383,7 @@ img { max-width: 100%; height: auto; display: block; }
 .alert {
   display: flex; align-items: flex-start; gap: 9px;
   padding: 11px 13px; border-radius: var(--r-md);
-  font-size: 0.855rem; border: 1px solid; margin-bottom: 16px;
+  font-size: 0.855rem; margin-bottom: 16px;
 }
 .alert-error   { background: var(--error-bg);   border-color: var(--error-border);   color: #991B1B; }
 .alert-success { background: var(--success-bg); border-color: var(--success-border); color: #166534; }

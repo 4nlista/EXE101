@@ -1,47 +1,65 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Form } from 'react-bootstrap';
+import { Eye, EyeOff } from 'lucide-react';
 import clsx from 'clsx';
 
-// Component Input dùng chung, hỗ trợ hiển thị lỗi tại chỗ (Field-level error)
 export default function Input({
-  label,         // Tên nhãn của ô nhập (VD: "Mật khẩu")
-  error,         // Chuỗi thông báo lỗi, nếu có sẽ tự động báo viền đỏ (VD: "Mật khẩu quá ngắn")
-  className,     // Các class CSS bổ sung
-  icon: Icon,    // Component Icon hiển thị bên trong ô (từ lucide-react)
-  ...props       // Các thuộc tính mặc định của thẻ input (type, placeholder, value, onChange...)
+  label,
+  error,
+  className,
+  icon: Icon,
+  type = 'text',
+  ...props
 }) {
+  const [showPassword, setShowPassword] = useState(false);
+  const isPassword = type === 'password';
+  const currentType = isPassword ? (showPassword ? 'text' : 'password') : type;
+
   return (
     <Form.Group className={clsx('mb-3', className)}>
-      {/* Hiển thị tiêu đề Label (nếu được truyền vào) */}
-      {label && <Form.Label className="fw-medium">{label}</Form.Label>}
+      {label && (
+        <Form.Label className="fw-medium w-100 mb-1">
+          {label}
+        </Form.Label>
+      )}
 
+      {/* Khối chứa input và icon, tách biệt khỏi phần hiển thị lỗi để tránh lỗi lệch icon (align center) */}
       <div className="position-relative">
-        {/* Nếu truyền vào Icon, đặt nó ở góc trái ô nhập */}
         {Icon && (
           <span
             className="position-absolute top-50 translate-middle-y ms-3"
-            style={{ zIndex: 10, color: 'var(--bs-gray-500)' }}
+            style={{ zIndex: 10, color: 'var(--bs-gray-500)', pointerEvents: 'none' }}
           >
             <Icon size={18} />
           </span>
         )}
 
-        {/* Thẻ input thực tế */}
         <Form.Control
-          // Nếu có Icon thì lùi chữ sang phải (ps-5) để không bị đè lên Icon
-          className={clsx(Icon && 'ps-5')}
-          // Nếu có chuỗi lỗi (error), Bootstrap sẽ tự bôi đỏ viền
-          isInvalid={!!error}
+          type={currentType}
+          className={clsx(Icon && 'ps-5', isPassword && 'pe-5')}
           {...props}
         />
 
-        {/* Thông báo lỗi chữ màu đỏ ở ngay dưới ô nhập */}
-        {error && (
-          <Form.Control.Feedback type="invalid">
-            {error}
-          </Form.Control.Feedback>
+        {/* Nút bấm ẩn hiện mật khẩu tự động tích hợp */}
+        {isPassword && (
+          <button
+            type="button"
+            className="position-absolute top-50 translate-middle-y border-0 bg-transparent"
+            style={{ right: '10px', zIndex: 10, color: 'var(--bs-gray-500)' }}
+            onClick={() => setShowPassword(!showPassword)}
+            tabIndex={-1}
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
         )}
       </div>
+
+      {/* Tách Form.Control.Feedback ra ngoài div.position-relative để không làm hỏng chiều cao của div */}
+      {error && (
+        <Form.Control.Feedback type="invalid" className="d-block mt-1 fw-medium" style={{ fontSize: '0.875rem' }}>
+          {error}
+        </Form.Control.Feedback>
+      )}
     </Form.Group>
   );
 }
