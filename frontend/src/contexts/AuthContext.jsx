@@ -43,17 +43,27 @@ export function AuthProvider({ children }) {
   };
 
   // ---- Google Login ----
-  const loginWithGoogle = async () => {
-    const response = await authService.loginWithGoogle();
-    if (response.success) {
-      const { user } = response.data;
-      setCurrentUser(user);
-      setIsAuthenticated(true);
-      setShowSetup(true);
-      localStorage.setItem('universe_user', JSON.stringify(user));
-      return { success: true, needsSetup: true };
+  const loginWithGoogle = async (googleToken) => {
+    try {
+      const response = await authService.loginWithGoogle(googleToken);
+      if (response.success) {
+        const { token, user } = response.data;
+        setCurrentUser(user);
+        setIsAuthenticated(true);
+        
+        // Hiện Setup nếu user mới chưa có đủ thông tin
+        if (!user.onboardingCompleted) {
+          setShowSetup(true);
+        }
+
+        localStorage.setItem('token', token);
+        localStorage.setItem('universe_user', JSON.stringify(user));
+        return { success: true };
+      }
+      return { success: false, error: response.message || 'Google Login Failed' };
+    } catch (error) {
+      return { success: false, error: error.message || 'Lỗi kết nối' };
     }
-    return { success: false, error: 'Google Login Failed' };
   };
 
   // ---- Register ----

@@ -12,6 +12,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@react-oauth/google": "^0.13.5",
     "axios": "^1.18.1",
     "bootstrap": "^5.3.8",
     "clsx": "^2.1.1",

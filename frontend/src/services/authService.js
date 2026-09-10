@@ -17,26 +17,7 @@ export const verifyOtp = async (name, email, otp, password) => {
   return await axiosClient.post('/auth/verify-otp', { name, email, otp, password });
 };
 
-// Hàm mô phỏng Google Login (chưa nối API thật)
-export const loginWithGoogle = async () => {
-  // TODO: Nối API /auth/login-google sau khi có Firebase/Google Auth
-  return {
-    success: true,
-    data: {
-      user: {
-        id: Date.now(),
-        email: 'google.user@gmail.com',
-        name: 'Google User',
-        avatar: null,
-        isProfileComplete: false,
-        occupation: '',
-        organization: '',
-        skills: [],
-        fields: [],
-        level: '',
-        onboardingCompleted: false
-      },
-      token: 'dummy-google-token'
-    }
-  };
+// Gọi API /auth/login-google với token lấy từ Google
+export const loginWithGoogle = async (googleToken) => {
+  return await axiosClient.post('/auth/login-google', { token: googleToken });
 };
