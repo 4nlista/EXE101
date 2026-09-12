@@ -99,126 +99,128 @@ export default function ForgotPassword() {
         </div>
         <div className="auth-hero-content">
           <img
-            src={ResetImg}
-            alt="Reset Password Illustration"
+            src={IconLoginImg}
+            alt="Forgot Password Illustration"
             className="auth-hero-img"
           />
           <p className="auth-hero-slogan">
-            Đặt lại mật khẩu để bảo vệ tài khoản của bạn. Hãy chọn một mật khẩu mạnh và dễ nhớ.
+            Hệ thống hỗ trợ ghép nhóm thông minh, giúp người dùng dễ dàng tìm kiếm những người thành viên phù hợp nhất dựa trên kỹ năng và chuyên ngành để nâng cao hiệu quả.
           </p>
         </div>
       </div>
 
       {/* ── Right Form ── */}
       <div className="auth-panel-split">
-        <div className="auth-panel-inner-split">
+        <div className="auth-panel-inner-split d-flex align-items-center justify-content-center">
 
-          {/* ════════ BƯỚC 1: NHẬP EMAIL ════════ */}
-          {step === 1 && (
-            <>
-              <div className="auth-header">
-                <h2 className="auth-heading">Quên mật khẩu</h2>
-                <p style={{ color: '#6B7280', fontSize: '14px', marginTop: '8px' }}>
-                  Nhập email liên kết với tài khoản của bạn để đặt lại mật khẩu.
-                </p>
-              </div>
+          {/* Wrapper Card cho Form */}
+          <div className="auth-card-wrapper">
+            {/* ════════ BƯỚC 1: NHẬP EMAIL ════════ */}
+            {step === 1 && (
+              <>
+                <div className="auth-header text-center">
+                  <h2 className="auth-heading">Quên mật khẩu</h2>
+                  <p style={{ color: '#6B7280', fontSize: '14px', marginTop: '8px' }}>
+                    Nhập email liên kết với tài khoản của bạn để đặt lại mật khẩu.
+                  </p>
+                </div>
 
-              <form onSubmit={handleCheckEmail} noValidate>
-                {/* Lỗi Form-level */}
-                <Alert type="danger">{globalErr}</Alert>
+                <form onSubmit={handleCheckEmail} noValidate>
+                  {/* Lỗi Form-level */}
+                  <Alert type="danger">{globalErr}</Alert>
 
-                <Input
-                  label="Email"
-                  icon={Mail}
-                  id="forgot-email"
-                  name="email"
-                  type="email"
-                  placeholder="user@example.com"
-                  value={email}
-                  onChange={(e) => { setEmail(e.target.value); if (errors.email) setErrors({}); if (globalErr) setGlobalErr(''); }}
-                  error={errors.email}
-                />
+                  <Input
+                    label="Email"
+                    icon={Mail}
+                    id="forgot-email"
+                    name="email"
+                    type="email"
+                    placeholder="user@example.com"
+                    value={email}
+                    onChange={(e) => { setEmail(e.target.value); if (errors.email) setErrors({}); if (globalErr) setGlobalErr(''); }}
+                    error={errors.email}
+                  />
 
-                <Button
-                  type="submit"
-                  variant="primary"
-                  fullWidth
-                  loading={loading}
-                  className="py-2 fw-bold mt-3"
-                >
-                  Tiếp tục →
-                </Button>
-              </form>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    fullWidth
+                    loading={loading}
+                    className="py-2 fw-bold mt-3"
+                  >
+                    Tiếp tục →
+                  </Button>
+                </form>
 
-              <div className="auth-footer mt-4 text-center">
-                <Link to="/" className="auth-link d-inline-flex align-items-center gap-1">
-                  <ArrowLeft size={16} /> Quay lại đăng nhập
-                </Link>
-              </div>
-            </>
-          )}
+                <div className="auth-footer mt-4 text-center">
+                  <Link to="/" className="auth-link d-inline-flex align-items-center gap-1 auth-link-underline">
+                    <ArrowLeft size={16} /> Quay lại đăng nhập
+                  </Link>
+                </div>
+              </>
+            )}
 
-          {/* ════════ BƯỚC 2: NHẬP MẬT KHẨU MỚI ════════ */}
-          {step === 2 && (
-            <>
-              <div className="auth-header">
-                <h2 className="auth-heading">Đặt lại mật khẩu</h2>
-                <p style={{ color: '#6B7280', fontSize: '14px', marginTop: '8px' }}>
-                  Nhập mật khẩu mới cho tài khoản <strong>{email}</strong>
-                </p>
-              </div>
+            {/* ════════ BƯỚC 2: NHẬP MẬT KHẨU MỚI ════════ */}
+            {step === 2 && (
+              <>
+                <div className="auth-header text-center">
+                  <h2 className="auth-heading">Đặt lại mật khẩu</h2>
+                  <p style={{ color: '#6B7280', fontSize: '14px', marginTop: '8px' }}>
+                    Nhập mật khẩu mới cho tài khoản <strong>{email}</strong>
+                  </p>
+                </div>
 
-              <form onSubmit={handleResetPassword} noValidate>
-                {/* Lỗi Form-level */}
-                <Alert type="danger">{globalErr}</Alert>
+                <form onSubmit={handleResetPassword} noValidate>
+                  {/* Lỗi Form-level */}
+                  <Alert type="danger">{globalErr}</Alert>
 
-                <Input
-                  label="Mật khẩu mới"
-                  icon={Lock}
-                  id="new-password"
-                  name="newPassword"
-                  type="password"
-                  placeholder="••••••••"
-                  value={form.newPassword}
-                  onChange={handleFormChange}
-                  error={errors.newPassword}
-                />
+                  <Input
+                    label="Mật khẩu mới"
+                    icon={Lock}
+                    id="new-password"
+                    name="newPassword"
+                    type="password"
+                    placeholder="••••••••"
+                    value={form.newPassword}
+                    onChange={handleFormChange}
+                    error={errors.newPassword}
+                  />
 
-                <Input
-                  label="Xác nhận mật khẩu mới"
-                  icon={Lock}
-                  id="confirm-new-password"
-                  name="confirmNewPassword"
-                  type="password"
-                  placeholder="••••••••"
-                  value={form.confirmNewPassword}
-                  onChange={handleFormChange}
-                  error={errors.confirmNewPassword}
-                />
+                  <Input
+                    label="Xác nhận mật khẩu mới"
+                    icon={Lock}
+                    id="confirm-new-password"
+                    name="confirmNewPassword"
+                    type="password"
+                    placeholder="••••••••"
+                    value={form.confirmNewPassword}
+                    onChange={handleFormChange}
+                    error={errors.confirmNewPassword}
+                  />
 
-                <Button
-                  type="submit"
-                  variant="primary"
-                  fullWidth
-                  loading={loading}
-                  className="py-2 fw-bold mt-3"
-                >
-                  Đặt lại mật khẩu
-                </Button>
-              </form>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    fullWidth
+                    loading={loading}
+                    className="py-2 fw-bold mt-3"
+                  >
+                    Đặt lại mật khẩu
+                  </Button>
+                </form>
 
-              <div className="auth-footer mt-4 text-center">
-                <button
-                  onClick={() => { setStep(1); setErrors({}); setGlobalErr(''); setForm({ newPassword: '', confirmNewPassword: '' }); }}
-                  className="auth-link d-inline-flex align-items-center gap-1"
-                  style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-                >
-                  <ArrowLeft size={16} /> Nhập lại email
-                </button>
-              </div>
-            </>
-          )}
+                <div className="auth-footer mt-4 text-center">
+                  <button
+                    onClick={() => { setStep(1); setErrors({}); setGlobalErr(''); setForm({ newPassword: '', confirmNewPassword: '' }); }}
+                    className="auth-link d-inline-flex align-items-center gap-1 auth-link-underline"
+                  >
+                    <ArrowLeft size={16} /> Nhập lại email
+                  </button>
+                </div>
+              </>
+            )}
 
+          </div> {/* End Wrapper Card */}
         </div>
       </div>
     </div>
