@@ -111,7 +111,6 @@ export default function ForgotPassword() {
 
       {/* ── Right Form ── */}
       <div className="auth-panel-split">
-        <div className="auth-panel-inner-split d-flex align-items-center justify-content-center">
 
           {/* Wrapper Card cho Form */}
           <div className="auth-card-wrapper">
@@ -120,7 +119,7 @@ export default function ForgotPassword() {
               <>
                 <div className="auth-header text-center">
                   <h2 className="auth-heading">Quên mật khẩu</h2>
-                  <p style={{ color: '#6B7280', fontSize: '14px', marginTop: '8px' }}>
+                  <p className="auth-subtitle">
                     Nhập email liên kết với tài khoản của bạn để đặt lại mật khẩu.
                   </p>
                 </div>
@@ -165,7 +164,7 @@ export default function ForgotPassword() {
               <>
                 <div className="auth-header text-center">
                   <h2 className="auth-heading">Đặt lại mật khẩu</h2>
-                  <p style={{ color: '#6B7280', fontSize: '14px', marginTop: '8px' }}>
+                  <p className="auth-subtitle">
                     Nhập mật khẩu mới cho tài khoản <strong>{email}</strong>
                   </p>
                 </div>
@@ -221,7 +220,6 @@ export default function ForgotPassword() {
             )}
 
           </div> {/* End Wrapper Card */}
-        </div>
       </div>
     </div>
   );

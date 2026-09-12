@@ -158,13 +158,23 @@ img { max-width: 100%; height: auto; display: block; }
 }
 
 .auth-card-wrapper {
-  background: #ffffff;
-  padding: 40px;
+  background: transparent;
+  padding: 56px 48px; /* Tăng padding để cao và rộng hơn */
   border-radius: 16px;
-  box-shadow: 0px 4px 24px rgba(0, 0, 0, 0.06);
-  border: 1px solid #f0f0f0;
+  box-shadow: 0px 4px 24px rgba(224, 123, 42, 0.1);
+  border: 1px solid var(--primary);
   width: 100%;
-  max-width: 480px;
+  max-width: 520px; /* Tăng chiều rộng tối đa */
+  min-height: 420px; /* Định hình chiều cao tối thiểu */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.auth-subtitle {
+  color: var(--text-secondary);
+  font-size: 15px;
+  margin-top: 8px;
 }
 
 .auth-link-underline {
