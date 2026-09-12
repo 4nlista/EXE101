@@ -5,10 +5,17 @@ const Otp = require('../models/Otp');
 const sendEmail = require('../utils/emailSender');
 
 /**
- * Tạo mã OTP ngẫu nhiên 6 số
+ * Tạo mã OTP ngẫu nhiên 6 số (dùng cho đăng ký)
  */
 const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
+};
+
+/**
+ * Tạo mã OTP ngẫu nhiên 4 số (dùng cho quên mật khẩu)
+ */
+const generateForgotOTP = () => {
+  return Math.floor(1000 + Math.random() * 9000).toString();
 };
 
 /**
@@ -261,8 +268,7 @@ const loginGoogle = async (googleToken) => {
 };
 
 /**
- * Quên mật khẩu - Kiểm tra email có tồn tại trong hệ thống không
- * Nếu tài khoản đăng ký bằng Google (không có password) thì chặn lại
+ * Quên mật khẩu - Kiểm tra email + Tạo và gửi OTP 4 số về email
  */
 const forgotPassword = async (email) => {
   // Tìm user theo email
@@ -280,13 +286,87 @@ const forgotPassword = async (email) => {
     throw error;
   }
 
-  return { message: 'Email hợp lệ. Vui lòng nhập mật khẩu mới.' };
+  // Tạo mã OTP 4 số
+  const otpCode = generateForgotOTP();
+
+  // Xóa OTP cũ của type 'forgot' của email này
+  await Otp.deleteMany({ email, type: 'forgot' });
+
+  // Lưu OTP vào DB (hết hạn sau 15 phút)
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+  await Otp.create({
+    email,
+    code: otpCode,
+    type: 'forgot',
+    expiresAt
+  });
+
+  // Gửi email chứa mã OTP
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+      <h2 style="color: #E07B2A; text-align: center;">UniVerse AI</h2>
+      <p>Xin chào <strong>${user.name || email}</strong>,</p>
+      <p>Bạn đang yêu cầu đặt lại mật khẩu. Đây là mã xác thực (OTP) của bạn:</p>
+      <div style="text-align: center; margin: 24px 0;">
+        <span style="display: inline-block; padding: 12px 32px; font-size: 32px; font-weight: bold; background-color: #FEF3E9; color: #E07B2A; letter-spacing: 10px; border-radius: 8px; border: 2px solid #E07B2A;">${otpCode}</span>
+      </div>
+      <p style="color: #ef4444; font-size: 14px;">Mã này có hiệu lực trong <strong>15 phút</strong>. Vui lòng không chia sẻ cho bất kỳ ai.</p>
+      <p style="color: #6B7280; font-size: 13px;">Nếu bạn không yêu cầu điều này, hãy bỏ qua email này.</p>
+    </div>
+  `;
+  await sendEmail(email, 'Mã xác thực đặt lại mật khẩu UniVerse AI', htmlContent);
+
+  return { message: 'Mã OTP đã được gửi tới email của bạn. Vui lòng kiểm tra hộp thư.' };
+};
+
+/**
+ * Quên mật khẩu - Xác thực mã OTP 4 số
+ */
+const verifyForgotOtp = async (email, otp) => {
+  // Tìm OTP còn hiệu lực (chưa dùng, đúng type 'forgot')
+  const otpRecord = await Otp.findOne({ email, type: 'forgot', isUsed: false }).sort({ createdAt: -1 });
+
+  if (!otpRecord) {
+    const error = new Error('Không tìm thấy mã OTP hoặc mã đã được sử dụng. Vui lòng gửi lại.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  // Kiểm tra hết hạn
+  if (otpRecord.expiresAt < new Date()) {
+    const error = new Error('Mã OTP đã hết hạn. Vui lòng gửi lại mã mới.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  // Kiểm tra mã OTP
+  if (otpRecord.code !== otp) {
+    const error = new Error('Mã OTP không chính xác. Vui lòng kiểm tra lại.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  // Đánh dấu OTP đã xác thực thành công (isVerified = true, isUsed = true)
+  otpRecord.isUsed = true;
+  otpRecord.isVerified = true;
+  await otpRecord.save();
+
+  return { message: 'Xác thực OTP thành công. Vui lòng nhập mật khẩu mới.' };
 };
 
 /**
  * Đặt lại mật khẩu mới cho tài khoản
+ * Bắc buộc phải có OTP đã được xác thực trước đó
  */
 const resetPassword = async (email, newPassword) => {
+  // Kiểm tra OTP đã verify chưa (bảo mật: chặn bypass)
+  const verifiedOtp = await Otp.findOne({ email, type: 'forgot', isVerified: true });
+  if (!verifiedOtp) {
+    const error = new Error('Phiên xác thực không hợp lệ. Vui lòng thực hiện lại từ bước nhập email.');
+    error.statusCode = 403;
+    throw error;
+  }
+
   // Tìm user theo email
   const user = await User.findOne({ email });
   if (!user) {
@@ -298,9 +378,11 @@ const resetPassword = async (email, newPassword) => {
   // Mã hóa mật khẩu mới và cập nhật vào database
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(newPassword, salt);
-
   user.password = hashedPassword;
   await user.save();
+
+  // Xóa OTP đã dùng khỏi DB
+  await Otp.deleteMany({ email, type: 'forgot' });
 
   return { message: 'Đặt lại mật khẩu thành công. Vui lòng đăng nhập lại.' };
 };
@@ -311,5 +393,6 @@ module.exports = {
   verifyOtp,
   loginGoogle,
   forgotPassword,
+  verifyForgotOtp,
   resetPassword
 };

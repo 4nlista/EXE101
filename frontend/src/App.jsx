@@ -4,6 +4,7 @@ import { useAuth } from './contexts/AuthContext';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import ForgotPassword from './pages/auth/ForgotPassword';
+import ResetPassword from './pages/auth/ResetPassword';
 import AppLayout from './layouts/AppLayout';
 import Feed from './pages/feed/Feed';
 import ProjectDetail from './pages/feed/ProjectDetail';
@@ -33,6 +34,7 @@ export default function App() {
       <Route path="/" element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
       <Route path="/forgot" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+      <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
       
       {/* App Layout cho các trang sau đăng nhập */}
       <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>

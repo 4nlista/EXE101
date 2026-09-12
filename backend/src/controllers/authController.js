@@ -1,5 +1,5 @@
 const authService = require('../services/authService');
-const { loginSchema, registerSchema, verifyOtpSchema, forgotPasswordSchema, resetPasswordSchema } = require('../validations/authValidation');
+const { loginSchema, registerSchema, verifyOtpSchema, forgotPasswordSchema, verifyForgotOtpSchema, resetPasswordSchema } = require('../validations/authValidation');
 
 /**
  * Controller xử lý API Đăng nhập
@@ -130,7 +130,7 @@ const loginGoogle = async (req, res, next) => {
 };
 
 /**
- * Controller xử lý API Quên mật khẩu (Kiểm tra email)
+ * Controller xử lý API Quên mật khẩu (Gửi mã OTP về email)
  * POST /api/auth/forgot-password
  */
 const forgotPassword = async (req, res, next) => {
@@ -145,6 +145,32 @@ const forgotPassword = async (req, res, next) => {
 
     const { email } = value;
     const result = await authService.forgotPassword(email);
+
+    res.status(200).json({
+      success: true,
+      message: result.message
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * Controller xử lý API Xác thực OTP quên mật khẩu
+ * POST /api/auth/verify-forgot-otp
+ */
+const verifyForgotOtp = async (req, res, next) => {
+  try {
+    const { error, value } = verifyForgotOtpSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.details[0].message
+      });
+    }
+
+    const { email, otp } = value;
+    const result = await authService.verifyForgotOtp(email, otp);
 
     res.status(200).json({
       success: true,
@@ -187,5 +213,6 @@ module.exports = {
   verifyOtp,
   loginGoogle,
   forgotPassword,
+  verifyForgotOtp,
   resetPassword
 };

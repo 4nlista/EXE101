@@ -14,8 +14,11 @@ router.post('/verify-otp', authController.verifyOtp);
 // [POST] Đăng nhập bằng Google
 router.post('/login-google', authController.loginGoogle);
 
-// [POST] Quên mật khẩu (kiểm tra email)
+// [POST] Quên mật khẩu (Gửi OTP về email)
 router.post('/forgot-password', authController.forgotPassword);
+
+// [POST] Xác thực OTP quên mật khẩu
+router.post('/verify-forgot-otp', authController.verifyForgotOtp);
 
 // [POST] Đặt lại mật khẩu mới
 router.post('/reset-password', authController.resetPassword);

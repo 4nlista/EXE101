@@ -22,12 +22,17 @@ export const loginWithGoogle = async (googleToken) => {
   return await axiosClient.post('/auth/login-google', { token: googleToken });
 };
 
-// Quên mật khẩu - kiểm tra email có tồn tại không
+// Quên mật khẩu - kiểm tra email và gửi mã OTP 4 số
 export const forgotPassword = async (email) => {
   return await axiosClient.post('/auth/forgot-password', { email });
 };
 
-// Đặt lại mật khẩu mới
+// Quên mật khẩu - xác thực mã OTP 4 số
+export const verifyForgotOtp = async (email, otp) => {
+  return await axiosClient.post('/auth/verify-forgot-otp', { email, otp });
+};
+
+// Đặt lại mật khẩu mới (sau khi đã xác thực OTP)
 export const resetPassword = async (email, newPassword, confirmNewPassword) => {
   return await axiosClient.post('/auth/reset-password', { email, newPassword, confirmNewPassword });
 };

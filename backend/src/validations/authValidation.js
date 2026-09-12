@@ -54,7 +54,7 @@ const loginGoogleSchema = Joi.object({
   })
 });
 
-// Schema validate cho Quên mật khẩu (chỉ cần email)
+// Schema validate cho Quên mật khẩu - Bước 1 (chỉ cần email)
 const forgotPasswordSchema = Joi.object({
   email: Joi.string().email().required().messages({
     'string.email': 'Email không hợp lệ.',
@@ -63,7 +63,22 @@ const forgotPasswordSchema = Joi.object({
   })
 });
 
-// Schema validate cho Đặt lại mật khẩu (email + mật khẩu mới + xác nhận)
+// Schema validate cho Quên mật khẩu - Bước 2: Xác thực OTP 4 số
+const verifyForgotOtpSchema = Joi.object({
+  email: Joi.string().email().required().messages({
+    'string.email': 'Email không hợp lệ.',
+    'string.empty': 'Email không được để trống.',
+    'any.required': 'Vui lòng nhập Email.'
+  }),
+  otp: Joi.string().length(4).pattern(/^[0-9]+$/).required().messages({
+    'string.length': 'Mã OTP phải gồm 4 chữ số.',
+    'string.pattern.base': 'Mã OTP chỉ chứa các chữ số.',
+    'string.empty': 'Mã OTP không được để trống.',
+    'any.required': 'Vui lòng nhập mã OTP.'
+  })
+});
+
+// Schema validate cho Đặt lại mật khẩu (chỉ cần email + mật khẩu mới)
 const resetPasswordSchema = Joi.object({
   email: Joi.string().email().required().messages({
     'string.email': 'Email không hợp lệ.',
@@ -87,5 +102,6 @@ module.exports = {
   verifyOtpSchema,
   loginGoogleSchema,
   forgotPasswordSchema,
+  verifyForgotOtpSchema,
   resetPasswordSchema
 };

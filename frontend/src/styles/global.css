@@ -178,10 +178,42 @@ img { max-width: 100%; height: auto; display: block; }
 }
 
 .auth-link-underline {
-  text-decoration: underline;
+  text-decoration: underline !important;
   background: none;
   border: none;
   cursor: pointer;
+}
+
+/* 4 ô nhập OTP */
+.otp-box-wrapper {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.otp-box {
+  width: 56px;
+  height: 64px;
+  border: 2px solid var(--border-strong);
+  border-radius: 12px;
+  font-size: 28px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--text-primary);
+  background: #fff;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  caret-color: var(--primary);
+}
+
+.otp-box:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(224, 123, 42, 0.15);
+}
+
+.otp-box.otp-box--error {
+  border-color: var(--danger, #DC2626);
 }
 
 .auth-panel-split {
