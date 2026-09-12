@@ -21,3 +21,13 @@ export const verifyOtp = async (name, email, otp, password) => {
 export const loginWithGoogle = async (googleToken) => {
   return await axiosClient.post('/auth/login-google', { token: googleToken });
 };
+
+// Quên mật khẩu - kiểm tra email có tồn tại không
+export const forgotPassword = async (email) => {
+  return await axiosClient.post('/auth/forgot-password', { email });
+};
+
+// Đặt lại mật khẩu mới
+export const resetPassword = async (email, newPassword, confirmNewPassword) => {
+  return await axiosClient.post('/auth/reset-password', { email, newPassword, confirmNewPassword });
+};

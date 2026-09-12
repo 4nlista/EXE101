@@ -1,159 +1,225 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Mail, KeyRound, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, ArrowLeft, CheckCircle } from 'lucide-react';
+import { toast } from 'react-toastify';
+import LogoImg from '../../../src/assets/images/Logo.png';
+import IconLoginImg from '../../../src/assets/images/Icon_login.png';
+import * as authService from '../../services/authService';
 
-export default function ForgotPasswordPage() {
+// Import các UI Component hạt nhân
+import Input from '../../components/Input';
+import Button from '../../components/Button';
+import Alert from '../../components/Alert';
+
+const validateEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+
+export default function ForgotPassword() {
   const navigate = useNavigate();
+
+  // Bước 1: Nhập email | Bước 2: Nhập mật khẩu mới
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
-  const [err, setErr] = useState('');
+  const [form, setForm] = useState({ newPassword: '', confirmNewPassword: '' });
+  const [errors, setErrors] = useState({});
+  const [globalErr, setGlobalErr] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // OTP
-  const [otp, setOtp] = useState(['', '', '', '']);
-  const otpRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
-  const [countdown, setCountdown] = useState(60);
-  const [otpErr, setOtpErr] = useState('');
-  const [isShake, setIsShake] = useState(false);
-
-  useEffect(() => {
-    let timer;
-    if (step === 2 && countdown > 0) {
-      timer = setInterval(() => setCountdown(c => c - 1), 1000);
-    }
-    return () => clearInterval(timer);
-  }, [step, countdown]);
-
-  const handleSendCode = async (e) => {
+  // ── Xử lý Bước 1: Kiểm tra email ──
+  const handleCheckEmail = async (e) => {
     e.preventDefault();
-    if (!email) { setErr('Vui lòng nhập email'); return; }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setErr('Email không hợp lệ'); return; }
+    const errs = {};
+    if (!email) errs.email = 'Vui lòng nhập email';
+    else if (!validateEmail(email)) errs.email = 'Email sai định dạng';
+    setErrors(errs);
+    if (Object.keys(errs).length > 0) return;
+
     setLoading(true);
-    await new Promise(r => setTimeout(r, 800));
+    setGlobalErr('');
+    try {
+      const res = await authService.forgotPassword(email);
+      if (res.success) {
+        // Email hợp lệ, chuyển sang bước nhập mật khẩu mới
+        setStep(2);
+        setErrors({});
+      } else {
+        setGlobalErr(res.message || 'Không thể xác minh email.');
+      }
+    } catch (error) {
+      setGlobalErr(error.message === 'Network Error'
+        ? 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại mạng.'
+        : error.message);
+    }
     setLoading(false);
-    setStep(2);
-    setCountdown(60);
-    setOtpErr('');
   };
 
-  const handleOtpChange = (idx, val) => {
-    if (!/^[0-9]*$/.test(val)) return;
-    const newOtp = [...otp];
-    newOtp[idx] = val;
-    setOtp(newOtp);
-    if (val && idx < 3) otpRefs[idx + 1].current.focus();
-  };
+  // ── Xử lý Bước 2: Đặt lại mật khẩu ──
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    const errs = {};
+    if (!form.newPassword) errs.newPassword = 'Vui lòng nhập mật khẩu mới';
+    else if (form.newPassword.length < 6) errs.newPassword = 'Mật khẩu phải có ít nhất 6 ký tự';
+    if (!form.confirmNewPassword) errs.confirmNewPassword = 'Vui lòng xác nhận mật khẩu';
+    else if (form.newPassword !== form.confirmNewPassword) errs.confirmNewPassword = 'Mật khẩu xác nhận không khớp';
+    setErrors(errs);
+    if (Object.keys(errs).length > 0) return;
 
-  const handleOtpKeyDown = (idx, e) => {
-    if (e.key === 'Backspace' && !otp[idx] && idx > 0) {
-      otpRefs[idx - 1].current.focus();
-    }
-  };
-
-  const verifyOtp = async () => {
-    const code = otp.join('');
-    if (code.length < 4) {
-      setOtpErr('Vui lòng nhập đủ 4 số'); setIsShake(true);
-      setTimeout(() => setIsShake(false), 400); return;
-    }
     setLoading(true);
-    await new Promise(r => setTimeout(r, 800));
-    setLoading(false);
-    
-    if (code !== '1234') { // Mock check
-      setOtpErr('Mã xác nhận không đúng'); setIsShake(true);
-      setTimeout(() => setIsShake(false), 400); return;
+    setGlobalErr('');
+    try {
+      const res = await authService.resetPassword(email, form.newPassword, form.confirmNewPassword);
+      if (res.success) {
+        toast.success('Đặt lại mật khẩu thành công! Vui lòng đăng nhập lại.');
+        navigate('/');
+      } else {
+        setGlobalErr(res.message || 'Đặt lại mật khẩu thất bại.');
+      }
+    } catch (error) {
+      setGlobalErr(error.message === 'Network Error'
+        ? 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại mạng.'
+        : error.message);
     }
-    navigate('/');
+    setLoading(false);
   };
 
-  const handleResend = () => {
-    if (countdown > 0) return;
-    setCountdown(60);
-    setOtp(['', '', '', '']);
-    setOtpErr('');
-    otpRefs[0].current.focus();
+  // Xử lý khi gõ vào input mật khẩu
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setForm((p) => ({ ...p, [name]: value }));
+    if (errors[name]) setErrors((p) => ({ ...p, [name]: '' }));
+    if (globalErr) setGlobalErr('');
   };
 
   return (
-    <div className="page-center">
-      <div className="auth-card">
-        {step === 1 && (
-          <div className="step-content">
-            <div className="auth-card-icon"><KeyRound size={22} /></div>
-            <h2>Quên mật khẩu?</h2>
-            <p className="subtitle">Nhập email liên kết với tài khoản của bạn, chúng tôi sẽ gửi mã khôi phục.</p>
-            
-            <form onSubmit={handleSendCode}>
-              <div className="field" style={{ marginBottom: 24 }}>
-                <label className="field-label">Email</label>
-                <div className="input-box">
-                  <Mail className="input-icon" size={18} />
-                  <input
-                    type="email" className={`input${err ? ' err' : ''}`}
-                    placeholder="email@example.com"
-                    value={email} onChange={(e) => { setEmail(e.target.value); setErr(''); }}
-                  />
-                </div>
-                {err && <span className="field-error">{err}</span>}
+    <div className="auth-layout-split">
+      {/* ── Left Hero (Tái sử dụng layout từ Login) ── */}
+      <div className="auth-hero-split">
+        <div className="auth-brand-wrapper">
+          <img src={LogoImg} alt="UniVerse AI Logo" className="auth-brand-logo" />
+          <span className="auth-brand-text">UniVerse AI</span>
+        </div>
+        <div className="auth-hero-content">
+          <img
+            src={ResetImg}
+            alt="Reset Password Illustration"
+            className="auth-hero-img"
+          />
+          <p className="auth-hero-slogan">
+            Đặt lại mật khẩu để bảo vệ tài khoản của bạn. Hãy chọn một mật khẩu mạnh và dễ nhớ.
+          </p>
+        </div>
+      </div>
+
+      {/* ── Right Form ── */}
+      <div className="auth-panel-split">
+        <div className="auth-panel-inner-split">
+
+          {/* ════════ BƯỚC 1: NHẬP EMAIL ════════ */}
+          {step === 1 && (
+            <>
+              <div className="auth-header">
+                <h2 className="auth-heading">Quên mật khẩu</h2>
+                <p style={{ color: '#6B7280', fontSize: '14px', marginTop: '8px' }}>
+                  Nhập email liên kết với tài khoản của bạn để đặt lại mật khẩu.
+                </p>
               </div>
 
-              <button type="submit" className="btn btn-primary btn-full btn-lg" disabled={loading}>
-                {loading ? <span className="spinner" /> : 'Gửi mã xác nhận'}
-              </button>
-            </form>
+              <form onSubmit={handleCheckEmail} noValidate>
+                {/* Lỗi Form-level */}
+                <Alert type="danger">{globalErr}</Alert>
 
-            <div style={{ textAlign: 'center', marginTop: '20px' }}>
-              <Link to="/" className="back-link"><ArrowLeft size={16} /> Quay lại đăng nhập</Link>
-            </div>
-          </div>
-        )}
-
-        {step === 2 && (
-          <div className="step-content">
-            <div className="auth-card-icon"><Mail size={22} /></div>
-            <h2>Kiểm tra Email</h2>
-            <p className="subtitle">
-              Mã xác nhận gồm 4 số đã được gửi đến<br />
-              <strong>{email}</strong>
-            </p>
-
-            <div className={`otp-row ${isShake ? 'otp-shake' : ''}`}>
-              {otp.map((v, i) => (
-                <input
-                  key={i} ref={otpRefs[i]}
-                  type="text" maxLength={1}
-                  className={`otp-box ${v ? 'filled' : ''} ${otpErr ? 'err' : ''}`}
-                  value={v}
-                  onChange={(e) => handleOtpChange(i, e.target.value)}
-                  onKeyDown={(e) => handleOtpKeyDown(i, e)}
+                <Input
+                  label="Email"
+                  icon={Mail}
+                  id="forgot-email"
+                  name="email"
+                  type="email"
+                  placeholder="user@example.com"
+                  value={email}
+                  onChange={(e) => { setEmail(e.target.value); if (errors.email) setErrors({}); if (globalErr) setGlobalErr(''); }}
+                  error={errors.email}
                 />
-              ))}
-            </div>
 
-            {otpErr && (
-              <div style={{ textAlign: 'center', color: 'var(--error)', fontSize: '0.8rem', marginBottom: '12px' }}>
-                {otpErr}
+                <Button
+                  type="submit"
+                  variant="primary"
+                  fullWidth
+                  loading={loading}
+                  className="py-2 fw-bold mt-3"
+                >
+                  Tiếp tục →
+                </Button>
+              </form>
+
+              <div className="auth-footer mt-4 text-center">
+                <Link to="/" className="auth-link d-inline-flex align-items-center gap-1">
+                  <ArrowLeft size={16} /> Quay lại đăng nhập
+                </Link>
               </div>
-            )}
+            </>
+          )}
 
-            <button onClick={verifyOtp} className="btn btn-primary btn-full btn-lg" disabled={loading}>
-              {loading ? <span className="spinner" /> : 'Xác nhận mã'}
-            </button>
+          {/* ════════ BƯỚC 2: NHẬP MẬT KHẨU MỚI ════════ */}
+          {step === 2 && (
+            <>
+              <div className="auth-header">
+                <h2 className="auth-heading">Đặt lại mật khẩu</h2>
+                <p style={{ color: '#6B7280', fontSize: '14px', marginTop: '8px' }}>
+                  Nhập mật khẩu mới cho tài khoản <strong>{email}</strong>
+                </p>
+              </div>
 
-            <div className="otp-resend-row">
-              {countdown > 0 ? (
-                <div className="otp-timer">Gửi lại mã sau <span className="t">{countdown}s</span></div>
-              ) : (
-                <div>Bạn không nhận được mã? <button onClick={handleResend} className="resend-btn">Gửi lại mã</button></div>
-              )}
-            </div>
+              <form onSubmit={handleResetPassword} noValidate>
+                {/* Lỗi Form-level */}
+                <Alert type="danger">{globalErr}</Alert>
 
-            <div style={{ textAlign: 'center', marginTop: '20px' }}>
-              <button onClick={() => setStep(1)} className="back-link"><ArrowLeft size={16} /> Nhập lại email</button>
-            </div>
-          </div>
-        )}
+                <Input
+                  label="Mật khẩu mới"
+                  icon={Lock}
+                  id="new-password"
+                  name="newPassword"
+                  type="password"
+                  placeholder="••••••••"
+                  value={form.newPassword}
+                  onChange={handleFormChange}
+                  error={errors.newPassword}
+                />
+
+                <Input
+                  label="Xác nhận mật khẩu mới"
+                  icon={Lock}
+                  id="confirm-new-password"
+                  name="confirmNewPassword"
+                  type="password"
+                  placeholder="••••••••"
+                  value={form.confirmNewPassword}
+                  onChange={handleFormChange}
+                  error={errors.confirmNewPassword}
+                />
+
+                <Button
+                  type="submit"
+                  variant="primary"
+                  fullWidth
+                  loading={loading}
+                  className="py-2 fw-bold mt-3"
+                >
+                  Đặt lại mật khẩu
+                </Button>
+              </form>
+
+              <div className="auth-footer mt-4 text-center">
+                <button
+                  onClick={() => { setStep(1); setErrors({}); setGlobalErr(''); setForm({ newPassword: '', confirmNewPassword: '' }); }}
+                  className="auth-link d-inline-flex align-items-center gap-1"
+                  style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+                >
+                  <ArrowLeft size={16} /> Nhập lại email
+                </button>
+              </div>
+            </>
+          )}
+
+        </div>
       </div>
     </div>
   );

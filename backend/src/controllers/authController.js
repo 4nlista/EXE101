@@ -1,5 +1,5 @@
 const authService = require('../services/authService');
-const { loginSchema, registerSchema, verifyOtpSchema } = require('../validations/authValidation');
+const { loginSchema, registerSchema, verifyOtpSchema, forgotPasswordSchema, resetPasswordSchema } = require('../validations/authValidation');
 
 /**
  * Controller xử lý API Đăng nhập
@@ -129,9 +129,63 @@ const loginGoogle = async (req, res, next) => {
   }
 };
 
+/**
+ * Controller xử lý API Quên mật khẩu (Kiểm tra email)
+ * POST /api/auth/forgot-password
+ */
+const forgotPassword = async (req, res, next) => {
+  try {
+    const { error, value } = forgotPasswordSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.details[0].message
+      });
+    }
+
+    const { email } = value;
+    const result = await authService.forgotPassword(email);
+
+    res.status(200).json({
+      success: true,
+      message: result.message
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * Controller xử lý API Đặt lại mật khẩu
+ * POST /api/auth/reset-password
+ */
+const resetPassword = async (req, res, next) => {
+  try {
+    const { error, value } = resetPasswordSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.details[0].message
+      });
+    }
+
+    const { email, newPassword } = value;
+    const result = await authService.resetPassword(email, newPassword);
+
+    res.status(200).json({
+      success: true,
+      message: result.message
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   login,
   register,
   verifyOtp,
-  loginGoogle
+  loginGoogle,
+  forgotPassword,
+  resetPassword
 };

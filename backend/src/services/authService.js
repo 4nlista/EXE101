@@ -260,9 +260,56 @@ const loginGoogle = async (googleToken) => {
   };
 };
 
+/**
+ * Quên mật khẩu - Kiểm tra email có tồn tại trong hệ thống không
+ * Nếu tài khoản đăng ký bằng Google (không có password) thì chặn lại
+ */
+const forgotPassword = async (email) => {
+  // Tìm user theo email
+  const user = await User.findOne({ email });
+  if (!user) {
+    const error = new Error('Email này chưa được đăng ký trong hệ thống.');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  // Chặn nếu tài khoản được tạo bằng Google (không có mật khẩu để reset)
+  if (!user.password) {
+    const error = new Error('Tài khoản này được đăng ký bằng Google. Vui lòng đăng nhập bằng Google.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  return { message: 'Email hợp lệ. Vui lòng nhập mật khẩu mới.' };
+};
+
+/**
+ * Đặt lại mật khẩu mới cho tài khoản
+ */
+const resetPassword = async (email, newPassword) => {
+  // Tìm user theo email
+  const user = await User.findOne({ email });
+  if (!user) {
+    const error = new Error('Email không tồn tại.');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  // Mã hóa mật khẩu mới và cập nhật vào database
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+  user.password = hashedPassword;
+  await user.save();
+
+  return { message: 'Đặt lại mật khẩu thành công. Vui lòng đăng nhập lại.' };
+};
+
 module.exports = {
   loginUser,
   registerUser,
   verifyOtp,
-  loginGoogle
+  loginGoogle,
+  forgotPassword,
+  resetPassword
 };
