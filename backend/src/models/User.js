@@ -2,44 +2,6 @@ const mongoose = require('mongoose');
 const { IS_ACTIVE, PROJECT_HISTORY_TYPE, PROJECT_HISTORY_ROLE } = require('../constants/userEnum');
 const { PACKAGE_TYPE } = require('../constants/subscriptionEnum');
 
-// Schema lịch sử dự án (nhúng trực tiếp trong user)
-const projectHistorySchema = new mongoose.Schema(
-  {
-    // Loại dự án: 'personal' | 'group'
-    type: {
-      type: String,
-      enum: Object.values(PROJECT_HISTORY_TYPE)
-    },
-    // Tên dự án
-    projectName: {
-      type: String,
-      required: true
-    },
-    // Mô tả dự án
-    description: {
-      type: String
-    },
-    // Ngày bắt đầu
-    startDate: {
-      type: Date
-    },
-    // Ngày kết thúc
-    endDate: {
-      type: Date
-    },
-    // Vai trò: 'leader' | 'member' (chỉ hiện khi type = 'group')
-    role: {
-      type: String,
-      enum: Object.values(PROJECT_HISTORY_ROLE)
-    },
-    // Nhiệm vụ cụ thể (chỉ hiện khi type = 'group')
-    task: {
-      type: String
-    }
-  },
-  { _id: true }
-);
-
 // Schema thông tin tài khoản, hồ sơ cá nhân, học tập và năng lực
 const userSchema = new mongoose.Schema(
   {
@@ -127,8 +89,8 @@ const userSchema = new mongoose.Schema(
     mainSkills: [{
       type: String
     }],
-    // Lịch sử dự án đã tham gia (nhúng trực tiếp)
-    projectHistory: [projectHistorySchema],
+    // Lịch sử dự án đã được tách ra collection riêng ProjectHistory
+    // không còn embed trực tiếp ở đây nữa.
 
     // ===== BƯỚC 4: MỤC TIÊU =====
 

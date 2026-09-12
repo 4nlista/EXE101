@@ -15,6 +15,7 @@ import Messages from './pages/messages/Messages';
 import AIHub from './pages/ai/AIHub';
 import Dashboard from './pages/dashboard/Dashboard';
 import Settings from './pages/settings/Settings';
+import ProfileOnboarding from './pages/profile/ProfileOnboarding';
 
 // Bảo vệ route: chưa login → redirect về trang chủ
 function ProtectedRoute({ children }) {
@@ -35,6 +36,9 @@ export default function App() {
       <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
       <Route path="/forgot" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
       <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
+      
+      {/* Route riêng cho Onboarding */}
+      <Route path="/onboarding" element={<ProtectedRoute><ProfileOnboarding /></ProtectedRoute>} />
       
       {/* App Layout cho các trang sau đăng nhập */}
       <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>

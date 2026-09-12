@@ -1,5 +1,6 @@
 const Department = require('../models/Department');
 const Major = require('../models/Major');
+const Skill = require('../models/Skill');
 
 /**
  * GET /api/master-data/departments
@@ -36,18 +37,21 @@ const getMajorsByDepartment = async (req, res, next) => {
 
 /**
  * GET /api/master-data/skills
- * Lấy danh sách kỹ năng gợi ý 
+ * Lấy danh sách kỹ năng gợi ý (chỉ lấy những kỹ năng đã được duyệt)
  */
 const getSkills = async (req, res, next) => {
   try {
-    const SKILLS = [
-      'React', 'Node.js', 'Figma', 'Python', 'Marketing', 
-      'Data Analysis', 'UI/UX Design', 'Project Management',
-      'Java', 'C++', 'Photoshop', 'Illustrator', 'SEO', 'Content Writing'
-    ];
+    const skills = await Skill.find({ isApproved: true })
+      .select('name usageCount')
+      .sort({ usageCount: -1 }); // Sắp xếp theo số người dùng từ cao xuống thấp
+      
+    // Trả về mảng string cho tiện lợi phía frontend (react-select)
+    // Hoặc trả về mảng object tùy frontend cần, tôi sẽ trả về mảng chuỗi name để phù hợp với code cũ
+    const skillNames = skills.map(s => s.name);
+
     res.status(200).json({
       success: true,
-      data: SKILLS
+      data: skillNames
     });
   } catch (err) {
     next(err);
