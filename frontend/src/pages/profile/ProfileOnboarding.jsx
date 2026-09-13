@@ -412,7 +412,7 @@ const ProfileOnboarding = () => {
       </Form.Group>
 
       <div className="d-flex justify-content-between align-items-center mb-3 mt-5">
-        <Form.Label className="fw-bold mb-0">Lịch sử dự án</Form.Label>
+        <Form.Label className="fw-bold mb-0">Lịch sử dự án <span className="text-danger">*</span></Form.Label>
         <Button variant="primary" className="rounded-pill shadow-sm px-3 fw-medium" size="sm" onClick={() => handleOpenProject(-1)}>
           + Thêm dự án
         </Button>
@@ -425,17 +425,17 @@ const ProfileOnboarding = () => {
       ) : (
         <div className="border rounded-3 overflow-hidden bg-white">
           <Table responsive hover className="mb-0 align-middle text-nowrap">
-            <thead style={{ backgroundColor: '#bec3c7ff' }}>
+            <thead style={{ backgroundColor: '#f8f9fa' }}>
               <tr>
-                <th className="py-3 px-4 fw-semibold border-bottom text-muted" style={{ fontSize: '0.85rem', backgroundColor: '#f8f9fa' }}>Loại</th>
-                <th className="py-3 px-4 fw-semibold border-bottom text-muted" style={{ fontSize: '0.85rem', backgroundColor: '#f8f9fa' }}>Tên dự án</th>
-                <th className="py-3 px-4 fw-semibold border-bottom text-muted text-end" style={{ fontSize: '0.85rem', backgroundColor: '#f8f9fa' }}>Thao tác</th>
+                <th className="px-4 fw-semibold border-bottom text-muted" style={{ fontSize: '0.85rem', backgroundColor: '#f8f9fa' }}>Loại</th>
+                <th className="px-4 fw-semibold border-bottom text-muted" style={{ fontSize: '0.85rem', backgroundColor: '#f8f9fa' }}>Tên dự án</th>
+                <th className="px-4 fw-semibold border-bottom text-muted text-end" style={{ fontSize: '0.85rem', backgroundColor: '#f8f9fa' }}>Thao tác</th>
               </tr>
             </thead>
             <tbody>
               {formData.projectHistory.map((proj, idx) => (
                 <tr key={idx} style={{ transition: 'all 0.2s ease', cursor: 'pointer' }}>
-                  <td className="py-3 px-4 border-bottom">
+                  <td className="px-4 border-bottom">
                     <span
                       className="rounded-pill px-3 py-1 fw-medium"
                       style={
@@ -447,8 +447,8 @@ const ProfileOnboarding = () => {
                       {proj.type === 'personal' ? 'Cá nhân' : 'Nhóm'}
                     </span>
                   </td>
-                  <td className="py-3 px-4 fw-medium text-dark border-bottom">{proj.projectName}</td>
-                  <td className="py-3 px-4 text-end border-bottom">
+                  <td className="px-4 fw-medium text-dark border-bottom">{proj.projectName}</td>
+                  <td className="px-4 text-end border-bottom">
                     <div className="d-flex gap-2 justify-content-end">
                       <Button variant="light" size="sm" className="rounded border bg-white d-flex align-items-center justify-content-center text-secondary" onClick={() => handleOpenProject(idx)} title="Chỉnh sửa">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="16" height="16">
