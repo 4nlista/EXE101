@@ -57,13 +57,13 @@ const ProfileOnboarding = () => {
   }, []);
 
   useEffect(() => {
-    if (formData.semester >= 5 && formData.departmentId) {
+    if (formData.departmentId) {
       fetchMajors(formData.departmentId);
     } else {
       setMajors([]);
       setFormData(prev => ({ ...prev, majorId: '' }));
     }
-  }, [formData.semester, formData.departmentId]);
+  }, [formData.departmentId]);
 
   const fetchDepartments = async () => {
     try {
@@ -155,8 +155,8 @@ const ProfileOnboarding = () => {
       if (!formData.departmentId) {
         newErrors.departmentId = "Vui lòng chọn Ngành học";
       }
-      if (formData.semester >= 5 && !formData.majorId) {
-        newErrors.majorId = "Vui lòng chọn Chuyên ngành (kỳ 5 trở lên)";
+      if (!formData.majorId) {
+        newErrors.majorId = "Vui lòng chọn Chuyên ngành";
       }
     }
 
@@ -361,18 +361,16 @@ const ProfileOnboarding = () => {
         <Form.Control.Feedback type="invalid">{errors.departmentId}</Form.Control.Feedback>
       </Form.Group>
       
-      {formData.semester >= 5 && (
-        <Form.Group className="mb-3 p-3 bg-light rounded border">
-          <Form.Label className="text-primary fw-bold">Chuyên ngành * (Dành cho kỳ 5 trở lên)</Form.Label>
-          <Form.Select name="majorId" value={formData.majorId} onChange={handleChange} isInvalid={!!errors.majorId}>
-            <option value="">-- Chọn chuyên ngành --</option>
-            {majors.map(m => (
-              <option key={m._id} value={m._id}>{m.name}</option>
-            ))}
-          </Form.Select>
-          <Form.Control.Feedback type="invalid">{errors.majorId}</Form.Control.Feedback>
-        </Form.Group>
-      )}
+      <Form.Group className="mb-3 p-3 bg-light rounded border">
+        <Form.Label className="text-primary fw-bold">Chuyên ngành *</Form.Label>
+        <Form.Select name="majorId" value={formData.majorId} onChange={handleChange} isInvalid={!!errors.majorId}>
+          <option value="">-- Chọn chuyên ngành --</option>
+          {majors.map(m => (
+            <option key={m._id} value={m._id}>{m.name}</option>
+          ))}
+        </Form.Select>
+        <Form.Control.Feedback type="invalid">{errors.majorId}</Form.Control.Feedback>
+      </Form.Group>
     </div>
   );
 
