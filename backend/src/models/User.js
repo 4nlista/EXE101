@@ -45,7 +45,8 @@ const userSchema = new mongoose.Schema(
 
     // Họ và Tên đầy đủ
     name: {
-      type: String
+      type: String,
+      match: [/^[\p{L}\s]+$/u, 'Họ và tên chỉ được chứa chữ cái và khoảng trắng']
     },
     // URL ảnh đại diện
     avatar: {
@@ -53,11 +54,20 @@ const userSchema = new mongoose.Schema(
     },
     // Số điện thoại
     phone: {
-      type: String
+      type: String,
+      unique: true,
+      sparse: true,
+      match: [/^0\d{9}$/, 'Số điện thoại phải bắt đầu bằng 0 và có đúng 10 chữ số']
     },
     // Ngày sinh
     dob: {
-      type: Date
+      type: Date,
+      validate: {
+        validator: function(value) {
+          return value <= new Date();
+        },
+        message: 'Ngày sinh không được ở trong tương lai'
+      }
     },
     // Địa chỉ
     address: {

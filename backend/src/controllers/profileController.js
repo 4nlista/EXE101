@@ -18,10 +18,15 @@ const updateOnboardingProfile = async (req, res, next) => {
       semester,
       departmentId,
       majorId,
-      mainSkills, // Mảng chuỗi: ['ReactJS', 'agile scurms']
-      projectHistory, // Mảng object: [{ projectName, type, ... }]
       gradeGoal
     } = req.body;
+
+    // Phân tích cú pháp do truyền qua FormData (FormData biến array/object thành string)
+    let mainSkills = req.body.mainSkills ? JSON.parse(req.body.mainSkills) : [];
+    let projectHistory = req.body.projectHistory ? JSON.parse(req.body.projectHistory) : [];
+
+    // Avatar từ Cloudinary
+    let avatarUrl = req.file ? req.file.path : undefined;
 
     // 1. Lưu Lịch sử dự án
     // Xóa các dự án cũ (nếu có trường hợp gọi lại API)
@@ -92,13 +97,18 @@ const updateOnboardingProfile = async (req, res, next) => {
       address,
       semester,
       departmentId,
-      majorId: semester >= 5 ? majorId : null, // Kỷ <= 4 thì xóa Major
+      majorId,
       mainSkills: [...new Set(finalSkills)], // Xóa trùng lặp trong mảng
       gradeGoal,
       onboardingCompleted: true
     };
 
-    const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true });
+    if (avatarUrl) {
+      updateData.avatar = avatarUrl;
+    }
+
+    // validate logic (bắt lỗi mongoose) sẽ được gọi nhờ { runValidators: true }
+    const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true, runValidators: true });
 
     res.status(200).json({
       success: true,
