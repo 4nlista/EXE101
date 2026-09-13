@@ -33,10 +33,16 @@ const updateOnboardingProfile = async (req, res, next) => {
     await ProjectHistory.deleteMany({ userId });
     
     if (projectHistory && projectHistory.length > 0) {
-      const projectsToInsert = projectHistory.map(p => ({
-        ...p,
-        userId
-      }));
+      const projectsToInsert = projectHistory.map(p => {
+        const obj = { ...p, userId };
+        if (!obj.startDate) delete obj.startDate;
+        if (!obj.endDate) delete obj.endDate;
+        if (obj.type === 'personal') {
+          delete obj.role;
+          delete obj.task;
+        }
+        return obj;
+      });
       await ProjectHistory.insertMany(projectsToInsert);
     }
 

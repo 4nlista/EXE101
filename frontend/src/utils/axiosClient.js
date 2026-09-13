@@ -6,9 +6,6 @@ const baseURL = import.meta.env.VITE_API_BASE_URL
 
 const axiosClient = axios.create({
   baseURL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
 // Interceptor cho Request: Gắn token vào header

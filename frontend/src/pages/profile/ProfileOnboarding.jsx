@@ -180,8 +180,8 @@ const ProfileOnboarding = () => {
       }
     } catch (error) {
       // Backend Validation Errors (nếu có lỗi phone bị trùng hoặc regex mongo bắt được)
-      const errorMsg = error.response?.data?.message || 'Có lỗi xảy ra khi lưu hồ sơ';
-      if (errorMsg.includes('duplicate key')) {
+      const errorMsg = error.message || error.response?.data?.message || 'Có lỗi xảy ra khi lưu hồ sơ';
+      if (typeof errorMsg === 'string' && errorMsg.includes('duplicate key')) {
         toast.error('Số điện thoại này đã được người khác sử dụng!');
         setCurrentStep(1);
         setErrors({ phone: 'SĐT đã tồn tại trong hệ thống' });
@@ -475,7 +475,7 @@ const ProfileOnboarding = () => {
     <div className="text-center">
       <h4 className="mb-4">Mục tiêu phấn đấu</h4>
       <Form.Group className="mb-5 mx-auto" style={{ maxWidth: '400px' }}>
-        <h1 className="display-4 text-primary fw-bold mb-3">{formData.gradeGoal.toFixed(1)}</h1>
+        <h1 className="display-4 text-primary fw-bold mb-3">{Number(formData.gradeGoal).toFixed(1)}</h1>
         <Form.Range
           name="gradeGoal" min={0.0} max={4.0} step={0.1}
           value={formData.gradeGoal} onChange={handleChange}
