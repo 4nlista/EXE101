@@ -3,7 +3,7 @@ import { Container, Row, Col, Card, Form, Button, Modal, Table } from 'react-boo
 import { useNavigate } from 'react-router-dom';
 import CreatableSelect from 'react-select/creatable';
 import { toast } from 'react-toastify';
-import axios from '../../services/axios';
+import axios from '../../utils/axiosClient';
 
 const ProfileOnboarding = () => {
   const navigate = useNavigate();

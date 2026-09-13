@@ -18,15 +18,33 @@ import Settings from './pages/settings/Settings';
 import ProfileOnboarding from './pages/profile/ProfileOnboarding';
 
 // Bảo vệ route: chưa login → redirect về trang chủ
-function ProtectedRoute({ children }) {
-  const { isAuthenticated } = useAuth();
-  return isAuthenticated ? children : <Navigate to="/" replace />;
+// Nếu requireOnboarding = true và user chưa hoàn thiện hồ sơ → bắt buộc redirect sang /onboarding
+function ProtectedRoute({ children, requireOnboarding = true }) {
+  const { isAuthenticated, currentUser } = useAuth();
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
+  
+  if (requireOnboarding && currentUser && !currentUser.onboardingCompleted) {
+    return <Navigate to="/onboarding" replace />;
+  }
+  
+  return children;
 }
 
-// Route public: đã login → redirect vào dashboard
+// Route public: đã login → redirect vào trong
 function PublicRoute({ children }) {
-  const { isAuthenticated } = useAuth();
-  return isAuthenticated ? <Navigate to="/feed" replace /> : children;
+  const { isAuthenticated, currentUser } = useAuth();
+  
+  if (isAuthenticated) {
+    if (currentUser && !currentUser.onboardingCompleted) {
+      return <Navigate to="/onboarding" replace />;
+    }
+    return <Navigate to="/feed" replace />;
+  }
+  
+  return children;
 }
 
 export default function App() {
@@ -37,8 +55,8 @@ export default function App() {
       <Route path="/forgot" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
       <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
       
-      {/* Route riêng cho Onboarding */}
-      <Route path="/onboarding" element={<ProtectedRoute><ProfileOnboarding /></ProtectedRoute>} />
+      {/* Route riêng cho Onboarding (không requireOnboarding để tránh lặp vô hạn) */}
+      <Route path="/onboarding" element={<ProtectedRoute requireOnboarding={false}><ProfileOnboarding /></ProtectedRoute>} />
       
       {/* App Layout cho các trang sau đăng nhập */}
       <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
