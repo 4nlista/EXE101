@@ -176,7 +176,21 @@ const ProfileOnboarding = () => {
 
       if (res.success) {
         toast.success('Lưu hồ sơ thành công!');
-        window.location.href = '/';
+        
+        // Cập nhật LocalStorage để hệ thống (App.jsx) biết là user đã qua Onboarding
+        const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+        storedUser.onboardingCompleted = true;
+        if (res.data && res.data.avatar) storedUser.avatar = res.data.avatar;
+        localStorage.setItem('user', JSON.stringify(storedUser));
+
+        // Xóa bỏ form tạm trong session
+        sessionStorage.removeItem('onboardingStep');
+        sessionStorage.removeItem('onboardingForm');
+
+        // Dùng navigate để chuyển trang (không reload window, tránh mất Toast)
+        setTimeout(() => {
+          navigate('/');
+        }, 1500);
       }
     } catch (error) {
       // Backend Validation Errors (nếu có lỗi phone bị trùng hoặc regex mongo bắt được)
