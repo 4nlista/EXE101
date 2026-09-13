@@ -8,6 +8,7 @@ const masterDataRoutes = require('./masterDataRoutes');
 // Định tuyến các nhóm API
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
-router.use('/master-data', masterDataRoutes);
+// Các API chung (ngành học, chuyên ngành, kỹ năng)
+router.use('/', masterDataRoutes);
 
 module.exports = router;

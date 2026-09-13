@@ -1,14 +1,12 @@
-const Department = require('../models/Department');
-const Major = require('../models/Major');
-const Skill = require('../models/Skill');
+const masterDataService = require('../services/masterDataService');
 
 /**
- * GET /api/master-data/departments
+ * GET /api/departments
  * Lấy danh sách ngành học (Departments)
  */
 const getDepartments = async (req, res, next) => {
   try {
-    const departments = await Department.find({ isActive: true }).select('name description');
+    const departments = await masterDataService.getActiveDepartments();
     res.status(200).json({
       success: true,
       data: departments
@@ -19,13 +17,13 @@ const getDepartments = async (req, res, next) => {
 };
 
 /**
- * GET /api/master-data/majors/:departmentId
+ * GET /api/majors/:departmentId
  * Lấy danh sách chuyên ngành (Majors) theo ngành học (Department)
  */
 const getMajorsByDepartment = async (req, res, next) => {
   try {
     const { departmentId } = req.params;
-    const majors = await Major.find({ departmentId, isActive: true }).select('name description');
+    const majors = await masterDataService.getMajorsByDepartmentId(departmentId);
     res.status(200).json({
       success: true,
       data: majors
@@ -36,19 +34,12 @@ const getMajorsByDepartment = async (req, res, next) => {
 };
 
 /**
- * GET /api/master-data/skills
- * Lấy danh sách kỹ năng gợi ý (chỉ lấy những kỹ năng đã được duyệt)
+ * GET /api/skills
+ * Lấy danh sách kỹ năng gợi ý
  */
 const getSkills = async (req, res, next) => {
   try {
-    const skills = await Skill.find({ isApproved: true })
-      .select('name usageCount')
-      .sort({ usageCount: -1 }); // Sắp xếp theo số người dùng từ cao xuống thấp
-      
-    // Trả về mảng string cho tiện lợi phía frontend (react-select)
-    // Hoặc trả về mảng object tùy frontend cần, tôi sẽ trả về mảng chuỗi name để phù hợp với code cũ
-    const skillNames = skills.map(s => s.name);
-
+    const skillNames = await masterDataService.getApprovedSkills();
     res.status(200).json({
       success: true,
       data: skillNames

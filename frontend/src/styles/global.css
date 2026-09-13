@@ -708,7 +708,7 @@ textarea.input {
 /* ============================================================
    PROFILE SETUP MODAL
    ============================================================ */
-.modal-overlay {
+.ag-modal-overlay {
   position: fixed; inset: 0;
   background: rgba(0,0,0,0.4);
   display: flex; align-items: center; justify-content: center;
@@ -716,7 +716,7 @@ textarea.input {
   animation: fadeIn 200ms ease;
 }
 
-.modal {
+.ag-modal {
   background: var(--bg); border-radius: var(--r-xl);
   box-shadow: var(--shadow-xl);
   width: 100%; max-width: 640px;
@@ -726,26 +726,26 @@ textarea.input {
 }
 
 /* Sticky header */
-.modal-header {
+.ag-modal-header {
   padding: 22px 28px 18px;
   border-bottom: 1px solid var(--border);
   position: sticky; top: 0; background: var(--bg);
   z-index: 10; border-radius: var(--r-xl) var(--r-xl) 0 0;
 }
-.modal-header-top {
+.ag-modal-header-top {
   display: flex; justify-content: space-between; align-items: flex-start;
   margin-bottom: 18px;
 }
-.modal-title { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); }
-.modal-sub   { font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px; }
+.ag-modal-title { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); }
+.ag-modal-sub   { font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px; }
 
-.modal-skip {
+.ag-modal-skip {
   font-size: 0.8rem; color: var(--text-secondary);
   border: 1px solid var(--border); border-radius: var(--r-md);
   padding: 5px 12px; cursor: pointer; transition: all var(--t);
   background: none; font-family: var(--font); white-space: nowrap;
 }
-.modal-skip:hover { background: var(--bg-subtle); color: var(--text-primary); }
+.ag-modal-skip:hover { background: var(--bg-subtle); color: var(--text-primary); }
 
 /* Stepper */
 .stepper { display: flex; align-items: center; }
@@ -773,7 +773,7 @@ textarea.input {
 .step-line.done { background: var(--success); }
 
 /* Modal body */
-.modal-body { padding: 22px 28px; flex: 1; animation: fadeInUp 220ms ease; }
+.ag-modal-body { padding: 22px 28px; flex: 1; animation: fadeInUp 220ms ease; }
 
 /* Section label */
 .s-label {
@@ -983,14 +983,14 @@ textarea.input {
 .add-proj-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
 
 /* Modal footer */
-.modal-footer {
+.ag-modal-footer {
   padding: 16px 28px 20px; border-top: 1px solid var(--border);
   display: flex; justify-content: space-between; align-items: center;
   position: sticky; bottom: 0; background: var(--bg);
   border-radius: 0 0 var(--r-xl) var(--r-xl);
 }
-.modal-step-info { font-size: 0.8rem; color: var(--text-muted); }
-.modal-footer-btns { display: flex; gap: 8px; }
+.ag-modal-step-info { font-size: 0.8rem; color: var(--text-muted); }
+.ag-modal-footer-btns { display: flex; gap: 8px; }
 
 /* ============================================================
    DASHBOARD
@@ -1216,6 +1216,6 @@ textarea.input {
   .otp-row  { gap: 8px; }
   .stat-row { grid-template-columns: repeat(2,1fr); }
   .opt-grid-3, .opt-grid-2 { grid-template-columns: 1fr; }
-  .modal-header, .modal-body, .modal-footer { padding-left: 18px; padding-right: 18px; }
+  .ag-modal-header, .ag-modal-body, .ag-modal-footer { padding-left: 18px; padding-right: 18px; }
   .auth-card { padding: 28px 20px; }
 }
