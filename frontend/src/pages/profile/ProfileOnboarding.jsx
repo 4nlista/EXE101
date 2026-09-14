@@ -3,8 +3,9 @@ import { Container, Row, Col, Card, Form, Button, Table, Offcanvas, Badge } from
 import { useNavigate } from 'react-router-dom';
 import CreatableSelect from 'react-select/creatable';
 import { toast } from 'react-toastify';
-import axios from '../../utils/axiosClient';
+import { profileService } from '../../services/profileService';
 import { useDepartments, useMajors, useSkills } from '../../hooks/useMasterData';
+import { useOnboardingMutation } from '../../hooks/useProfile';
 
 const ProfileOnboarding = () => {
   const navigate = useNavigate();
@@ -14,8 +15,8 @@ const ProfileOnboarding = () => {
     const saved = sessionStorage.getItem('onboardingStep');
     return saved ? parseInt(saved, 10) : 1;
   });
-  const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
+  const { mutate: submitOnboarding, isPending: submitting } = useOnboardingMutation(setCurrentStep, setErrors);
 
   // ----------------------------------------
   // LẤY DỮ LIỆU TỪ REACT QUERY
@@ -147,64 +148,29 @@ const ProfileOnboarding = () => {
     setCurrentStep(prev => prev - 1);
   };
 
-  const handleSubmit = async () => {
-    try {
-      setSubmitting(true);
+  const handleSubmit = () => {
+    // Đóng gói data bằng FormData để gửi file
+    const payload = new FormData();
+    payload.append('name', formData.name);
+    payload.append('phone', formData.phone);
+    payload.append('dob', formData.dob);
+    payload.append('address', formData.address);
+    payload.append('semester', formData.semester);
+    payload.append('departmentId', formData.departmentId);
+    if (formData.majorId) payload.append('majorId', formData.majorId);
+    payload.append('gradeGoal', formData.gradeGoal);
 
-      // Đóng gói data bằng FormData để gửi file
-      const payload = new FormData();
-      payload.append('name', formData.name);
-      payload.append('phone', formData.phone);
-      payload.append('dob', formData.dob);
-      payload.append('address', formData.address);
-      payload.append('semester', formData.semester);
-      payload.append('departmentId', formData.departmentId);
-      if (formData.majorId) payload.append('majorId', formData.majorId);
-      payload.append('gradeGoal', formData.gradeGoal);
+    // Mảng phức tạp cần stringify khi ném vào FormData
+    const skillArray = formData.mainSkills.map(opt => opt.value);
+    payload.append('mainSkills', JSON.stringify(skillArray));
+    payload.append('projectHistory', JSON.stringify(formData.projectHistory));
 
-      // Mảng phức tạp cần stringify khi ném vào FormData
-      const skillArray = formData.mainSkills.map(opt => opt.value);
-      payload.append('mainSkills', JSON.stringify(skillArray));
-      payload.append('projectHistory', JSON.stringify(formData.projectHistory));
-
-      if (avatarFile) {
-        payload.append('avatar', avatarFile);
-      }
-
-      // axiosClient mặc định sẽ tự cấu hình Content-Type khi truyền FormData
-      const res = await axios.put('/users/onboarding', payload);
-
-      if (res.success) {
-        toast.success('Lưu hồ sơ thành công!');
-        
-        // Cập nhật LocalStorage để hệ thống (App.jsx) biết là user đã qua Onboarding
-        const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-        storedUser.onboardingCompleted = true;
-        if (res.data && res.data.avatar) storedUser.avatar = res.data.avatar;
-        localStorage.setItem('user', JSON.stringify(storedUser));
-
-        // Xóa bỏ form tạm trong session
-        sessionStorage.removeItem('onboardingStep');
-        sessionStorage.removeItem('onboardingForm');
-
-        // Dùng navigate để chuyển trang (không reload window, tránh mất Toast)
-        setTimeout(() => {
-          navigate('/');
-        }, 1500);
-      }
-    } catch (error) {
-      // Backend Validation Errors (nếu có lỗi phone bị trùng hoặc regex mongo bắt được)
-      const errorMsg = error.message || error.response?.data?.message || 'Có lỗi xảy ra khi lưu hồ sơ';
-      if (typeof errorMsg === 'string' && errorMsg.includes('duplicate key')) {
-        toast.error('Số điện thoại này đã được người khác sử dụng!');
-        setCurrentStep(1);
-        setErrors({ phone: 'SĐT đã tồn tại trong hệ thống' });
-      } else {
-        toast.error(errorMsg);
-      }
-    } finally {
-      setSubmitting(false);
+    if (avatarFile) {
+      payload.append('avatar', avatarFile);
     }
+
+    // React Query thực thi việc call API và lo liệu state loading/error
+    submitOnboarding(payload);
   };
 
   // ----------------------------------------

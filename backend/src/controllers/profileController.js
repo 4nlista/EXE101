@@ -22,6 +22,10 @@ const updateOnboardingProfile = async (req, res, next) => {
     } = req.body;
 
     // Phân tích cú pháp do truyền qua FormData (FormData biến array/object thành string)
+    if (!name || !phone || !departmentId) {
+      return res.status(400).json({ success: false, message: 'Dữ liệu hồ sơ bị thiếu hoặc không đúng định dạng. Xin vui lòng thử lại!' });
+    }
+
     let mainSkills = req.body.mainSkills ? JSON.parse(req.body.mainSkills) : [];
     let projectHistory = req.body.projectHistory ? JSON.parse(req.body.projectHistory) : [];
 
