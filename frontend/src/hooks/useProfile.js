@@ -1,13 +1,10 @@
 import { useMutation } from '@tanstack/react-query';
 import { profileService } from '../services/profileService';
 import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
-
 /**
  * Hook xử lý nghiệp vụ Cập nhật hồ sơ (Onboarding)
  */
 export const useOnboardingMutation = (setCurrentStep, setErrors) => {
-  const navigate = useNavigate();
 
   return useMutation({
     mutationFn: (payload) => profileService.updateOnboardingProfile(payload),
@@ -25,7 +22,7 @@ export const useOnboardingMutation = (setCurrentStep, setErrors) => {
       sessionStorage.removeItem('onboardingForm');
 
       setTimeout(() => {
-        navigate('/');
+        window.location.href = '/feed';
       }, 1500);
     },
     onError: (error) => {
