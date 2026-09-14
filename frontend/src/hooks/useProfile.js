@@ -1,28 +1,32 @@
 import { useMutation } from '@tanstack/react-query';
 import { profileService } from '../services/profileService';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+
 /**
  * Hook xử lý nghiệp vụ Cập nhật hồ sơ (Onboarding)
  */
 export const useOnboardingMutation = (setCurrentStep, setErrors) => {
+  const navigate = useNavigate();
+  const { completeProfile } = useAuth();
 
   return useMutation({
     mutationFn: (payload) => profileService.updateOnboardingProfile(payload),
     onSuccess: (res) => {
       toast.success('Lưu hồ sơ thành công!');
 
-      // Cập nhật LocalStorage
-      const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-      storedUser.onboardingCompleted = true;
-      if (res.data && res.data.avatar) storedUser.avatar = res.data.avatar;
-      localStorage.setItem('user', JSON.stringify(storedUser));
+      // Cập nhật State và Storage thông qua hàm chuẩn của AuthContext
+      completeProfile({
+        avatar: res.data?.avatar
+      });
 
       // Xóa session
       sessionStorage.removeItem('onboardingStep');
       sessionStorage.removeItem('onboardingForm');
 
       setTimeout(() => {
-        window.location.href = '/feed';
+        navigate('/feed');
       }, 1500);
     },
     onError: (error) => {
