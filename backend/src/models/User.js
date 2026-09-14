@@ -99,8 +99,11 @@ const userSchema = new mongoose.Schema(
     mainSkills: [{
       type: String
     }],
-    // Lịch sử dự án đã được tách ra collection riêng ProjectHistory
-    // không còn embed trực tiếp ở đây nữa.
+    // Lịch sử dự án (liên kết đến ProjectHistory)
+    projectHistory: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'ProjectHistory'
+    }],
 
     // ===== BƯỚC 4: MỤC TIÊU =====
 
