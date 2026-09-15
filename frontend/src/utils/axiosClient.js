@@ -40,7 +40,7 @@ axiosClient.interceptors.response.use(
     // Xử lý lỗi 401: Token hết hạn hoặc không hợp lệ
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      localStorage.removeItem('universe_user');
       // Tránh redirect liên tục nếu đang ở login
       if (window.location.pathname !== '/auth/login' && window.location.pathname !== '/') {
         window.location.href = '/'; 

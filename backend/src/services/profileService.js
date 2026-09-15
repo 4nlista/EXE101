@@ -3,6 +3,8 @@ const ProjectHistory = require('../models/ProjectHistory');
 const Skill = require('../models/Skill');
 const Fuse = require('fuse.js');
 
+// Cập nhật toàn bộ hồ sơ Onboarding của User (thông tin cá nhân, học tập, dự án)
+// Kèm theo tự động duyệt và lưu danh sách kỹ năng (Fuzzy Matching)
 const updateOnboardingProfile = async (userId, bodyData, avatarUrl) => {
   const {
     name,

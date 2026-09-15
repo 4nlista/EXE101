@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import axios from '../utils/axiosClient';
+import { masterDataService } from '../services/masterDataService';
 
 // Helper function để lấy chính xác data bất chấp cấu trúc trả về
 const extractData = (res) => {
@@ -12,7 +12,7 @@ export const useDepartments = () => {
   return useQuery({
     queryKey: ['departments'],
     queryFn: async () => {
-      const res = await axios.get('/departments');
+      const res = await masterDataService.getDepartments();
       return extractData(res);
     },
     staleTime: Infinity, // Dữ liệu này gần như không bao giờ đổi
@@ -24,7 +24,7 @@ export const useMajors = (departmentId) => {
     queryKey: ['majors', departmentId],
     queryFn: async () => {
       if (!departmentId) return [];
-      const res = await axios.get(`/majors/${departmentId}`);
+      const res = await masterDataService.getMajors(departmentId);
       return extractData(res);
     },
     enabled: !!departmentId, // Chỉ chạy khi có departmentId
@@ -36,7 +36,7 @@ export const useSkills = () => {
   return useQuery({
     queryKey: ['skills'],
     queryFn: async () => {
-      const res = await axios.get('/skills');
+      const res = await masterDataService.getSkills();
       const data = extractData(res);
       // Chuyển đổi sang format react-select
       return data.map(skill => ({ value: skill, label: skill }));

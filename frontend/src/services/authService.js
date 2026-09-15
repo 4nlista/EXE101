@@ -9,12 +9,12 @@ export const login = async (email, password) => {
   return await axiosClient.post('/auth/login', { email, password });
 };
 
-export const register = async (email, password) => {
-  return await axiosClient.post('/auth/register', { email, password });
+export const register = async (email, password, confirmPassword) => {
+  return await axiosClient.post('/auth/register', { email, password, confirmPassword });
 };
 
-export const verifyOtp = async (name, email, otp, password) => {
-  return await axiosClient.post('/auth/verify-otp', { name, email, otp, password });
+export const verifyOtp = async (email, otp, password) => {
+  return await axiosClient.post('/auth/verify-otp', { email, otp, password });
 };
 
 // Gọi API /auth/login-google với token lấy từ Google

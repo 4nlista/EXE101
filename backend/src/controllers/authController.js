@@ -67,9 +67,8 @@ const register = async (req, res, next) => {
  */
 const verifyOtp = async (req, res, next) => {
   try {
-    // Để verify otp, client cần gửi lại password để tạo User vì ta ko cache password lúc đăng ký
-    // Bổ sung password vào schema tạm thời bằng code
-    const { error, value } = verifyOtpSchema.validate({ name: req.body.name, email: req.body.email, otp: req.body.otp });
+    // 1. Validate dữ liệu đầu vào (email, otp, password)
+    const { error, value } = verifyOtpSchema.validate(req.body);
     if (error) {
       return res.status(400).json({
         success: false,
@@ -77,27 +76,22 @@ const verifyOtp = async (req, res, next) => {
       });
     }
 
-    if (!req.body.password) {
-      return res.status(400).json({
-        success: false,
-        message: 'Vui lòng cung cấp mật khẩu để hoàn tất đăng ký.'
-      });
-    }
-
-    const { name, email, otp } = value;
-    const { password } = req.body;
+    const { email, otp, password } = value;
     
-    const { token, user } = await authService.verifyOtp(name, email, otp, password);
+    // 2. Gọi logic xử lý từ Service
+    const { token, user } = await authService.verifyOtp(email, otp, password);
 
+    // 3. Trả về Response thành công kèm token và thông tin user
     res.status(201).json({
       success: true,
-      message: 'Đăng ký và xác thực thành công',
+      message: 'Đăng ký và xác thực tài khoản thành công',
       data: {
         token,
         user
       }
     });
   } catch (err) {
+    // 4. Đẩy lỗi cho error handling middleware
     next(err);
   }
 };

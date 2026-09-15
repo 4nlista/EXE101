@@ -109,7 +109,7 @@ const registerUser = async (email, password) => {
     expiresAt
   });
 
-  // 5. Gửi email
+  // 5. Gửi email và log ra console phục vụ kiểm thử môi trường dev
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
       <h2 style="color: #6366f1; text-align: center;">UniVerse AI</h2>
@@ -121,22 +121,25 @@ const registerUser = async (email, password) => {
       <p style="color: #ef4444; font-size: 14px;">Mã này sẽ hết hạn sau 5 phút. Vui lòng không chia sẻ cho bất kỳ ai.</p>
     </div>
   `;
-  await sendEmail(email, 'Mã xác thực đăng ký tài khoản UniVerse AI', htmlContent);
-
-  // 6. Lưu mật khẩu tạm thời vào đâu? 
-  // Vì OTP gửi đi, ta ko thể tạo User ngay. Khi verify OTP thành công ta mới tạo.
-  // Ta có thể cache password trong DB (ví dụ bảng Otp có thêm tempPassword) hoặc yêu cầu client gửi lại password lúc verify.
-  // Thông thường: verify xong trả về 1 tempToken, sau đó client gọi API tạo user kèm thông tin. Hoặc gửi lại pass lúc verify.
-  // Ta sẽ chọn cách: Client gửi email, otp, password lúc gọi verifyOtp.
+  
+  console.log(`🔑 [OTP REGISTER] Mã OTP đăng ký cho ${email}: ${otpCode}`);
+  
+  // Gửi email ngầm (background) để trả response HTTP tức thì (< 50ms) cho người dùng
+  sendEmail(email, 'Mã xác thực đăng ký tài khoản UniVerse AI', htmlContent).catch(err => {
+    console.error('❌ Lỗi gửi email ngầm:', err);
+  });
 
   return { message: 'Mã xác thực đã được gửi tới email của bạn.' };
 };
 
 /**
- * Xác thực OTP và Tạo User
+ * Xác thực mã OTP và hoàn tất tạo tài khoản người dùng
+ * @param {string} email - Email đăng ký
+ * @param {string} otp - Mã OTP xác thực 6 số
+ * @param {string} password - Mật khẩu đã nhập
  */
-const verifyOtp = async (name, email, otp, password) => {
-  // 1. Kiểm tra OTP hợp lệ
+const verifyOtp = async (email, otp, password) => {
+  // 1. Kiểm tra OTP hợp lệ và chưa sử dụng
   const otpRecord = await Otp.findOne({ email, isUsed: false }).sort({ createdAt: -1 });
   if (!otpRecord) {
     const error = new Error('Không tìm thấy mã OTP hoặc mã đã hết hạn.');
@@ -144,36 +147,38 @@ const verifyOtp = async (name, email, otp, password) => {
     throw error;
   }
 
-  // Check hết hạn
+  // 2. Kiểm tra thời hạn hiệu lực của OTP
   if (otpRecord.expiresAt < new Date()) {
     const error = new Error('Mã OTP đã hết hạn.');
     error.statusCode = 400;
     throw error;
   }
 
+  // 3. Kiểm tra tính chính xác của mã OTP
   if (otpRecord.code !== otp) {
     const error = new Error('Mã OTP không chính xác.');
     error.statusCode = 400;
     throw error;
   }
 
-  // Đánh dấu OTP đã dùng
+  // Đánh dấu OTP đã sử dụng
   otpRecord.isUsed = true;
   await otpRecord.save();
 
-  // 2. Tạo User mới
+  // 4. Mã hóa mật khẩu và tạo User mới (Tên mặc định lấy từ tiền tố email)
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
+  const defaultName = email ? email.split('@')[0] : 'Người dùng mới';
 
   const newUser = await User.create({
-    name: name || 'Người dùng mới',
+    name: defaultName,
     email,
     password: hashedPassword,
     roleCode: 1, // User mặc định
-    onboardingCompleted: false
+    onboardingCompleted: false // Bắt buộc hoàn tất hồ sơ sau này
   });
 
-  // 3. Đăng nhập luôn cho user và trả về token
+  // 5. Tạo JWT Token để tự động đăng nhập sau khi xác thực thành công
   const payload = {
     id: newUser._id,
     roleCode: newUser.roleCode
@@ -314,7 +319,12 @@ const forgotPassword = async (email) => {
       <p style="color: #6B7280; font-size: 13px;">Nếu bạn không yêu cầu điều này, hãy bỏ qua email này.</p>
     </div>
   `;
-  await sendEmail(email, 'Mã xác thực đặt lại mật khẩu UniVerse AI', htmlContent);
+  console.log(`🔑 [OTP FORGOT] Mã OTP quên mật khẩu cho ${email}: ${otpCode}`);
+
+  // Gửi email ngầm (background)
+  sendEmail(email, 'Mã xác thực đặt lại mật khẩu UniVerse AI', htmlContent).catch(err => {
+    console.error('❌ Lỗi gửi email ngầm:', err);
+  });
 
   return { message: 'Mã OTP đã được gửi tới email của bạn. Vui lòng kiểm tra hộp thư.' };
 };

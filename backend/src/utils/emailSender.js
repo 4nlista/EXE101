@@ -1,8 +1,29 @@
 const nodemailer = require('nodemailer');
 
+// Khởi tạo transporter dùng chung (pool: true) giúp tái sử dụng kết nối SMTP, tăng tốc độ gửi mail
+let transporter = null;
+
+const getTransporter = () => {
+  if (!transporter && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+    transporter = nodemailer.createTransport({
+      service: 'gmail',
+      pool: true, // Tái sử dụng kết nối SMTP
+      maxConnections: 5,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+  }
+  return transporter;
+};
+
+/**
+ * Hàm gửi email chung
+ */
 const sendEmail = async (to, subject, htmlContent) => {
   try {
-    // Nếu chưa cấu hình EMAIL_USER, log ra console để test dễ dàng
+    // Nếu chưa cấu hình EMAIL_USER, log ra console để giả lập
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
       console.log('----------------------------------------------------');
       console.log('⚠️ CẢNH BÁO: CHƯA CẤU HÌNH EMAIL_USER TRONG .env');
@@ -13,27 +34,20 @@ const sendEmail = async (to, subject, htmlContent) => {
       return true;
     }
 
-    const transporter = nodemailer.createTransport({
-      service: 'gmail', // Sử dụng dịch vụ Gmail
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
-    });
-
+    const mailer = getTransporter();
     const mailOptions = {
       from: `"UniVerse AI" <${process.env.EMAIL_USER}>`,
-      to: to,
-      subject: subject,
+      to,
+      subject,
       html: htmlContent
     };
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log('Email sent: ' + info.response);
+    const info = await mailer.sendMail(mailOptions);
+    console.log('✅ Email OTP đã gửi thành công tới:', to, '| Response:', info.response);
     return true;
   } catch (error) {
-    console.error('Error sending email:', error);
-    throw new Error('Không thể gửi email OTP lúc này.');
+    console.error('❌ Error sending email:', error.message);
+    return false;
   }
 };
 

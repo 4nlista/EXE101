@@ -67,9 +67,9 @@ export function AuthProvider({ children }) {
   };
 
   // ---- Register ----
-  const register = async (email, password) => {
+  const register = async (email, password, confirmPassword) => {
     try {
-      const response = await authService.register(email, password);
+      const response = await authService.register(email, password, confirmPassword);
       if (response.success) {
         return { success: true, message: response.message };
       }
@@ -80,18 +80,13 @@ export function AuthProvider({ children }) {
   };
 
   // ---- Verify OTP ----
-  const verifyOtp = async (name, email, otp, password) => {
+  const verifyOtp = async (email, otp, password) => {
     try {
-      const response = await authService.verifyOtp(name, email, otp, password);
+      const response = await authService.verifyOtp(email, otp, password);
       if (response.success) {
         const { token, user } = response.data;
         setCurrentUser(user);
         setIsAuthenticated(true);
-
-        // Hiện Modal Setup nếu chưa làm onboarding
-        if (!user.onboardingCompleted) {
-          setShowSetup(true);
-        }
 
         // Lưu vào storage
         localStorage.setItem('token', token);

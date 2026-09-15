@@ -1,27 +1,20 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import ProfileSetupModal from '../onboarding/ProfileSetupModal';
-import { 
-  Search, Bell, Settings, LogOut, ChevronDown, 
-  Users, FolderGit2, MessageSquare, Zap, Plus, ArrowRight 
+import {
+  Search, Bell, Settings, LogOut, ChevronDown,
+  Users, FolderGit2, MessageSquare, Zap, Plus, ArrowRight
 } from 'lucide-react';
 
 export default function DashboardPage() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  
-  const [showSetup, setShowSetup] = useState(user && !user.onboardingCompleted);
+
   const [showDrop, setShowDrop] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate('/');
-  };
-
-  const handleSetupComplete = (data) => {
-    console.log('Setup data:', data);
-    setShowSetup(false);
   };
 
   return (
@@ -31,12 +24,12 @@ export default function DashboardPage() {
         <Link to="/dashboard" className="app-nav-logo">
           <div className="app-nav-logo-mark">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
             </svg>
           </div>
           <div className="app-nav-logo-text">UniVerse <span className="brand">AI</span></div>
         </Link>
-        
+
         <div className="nav-sep" />
 
         <div className="app-nav-links">
@@ -53,7 +46,7 @@ export default function DashboardPage() {
             <Bell size={18} />
             <span className="notif-dot" />
           </button>
-          
+
           <div className="drop-wrap">
             <button className="user-pill" onClick={() => setShowDrop(!showDrop)}>
               <div className="user-av">T</div>
@@ -81,7 +74,7 @@ export default function DashboardPage() {
 
       {/* ── Content ── */}
       <main className="dash-content">
-        
+
         {/* Banner */}
         <div className="dash-banner">
           <div className="dash-banner-left">
@@ -92,17 +85,6 @@ export default function DashboardPage() {
             Xem gợi ý <ArrowRight size={16} />
           </button>
         </div>
-
-        {/* Incomplete profile warning */}
-        {showSetup && (
-          <div className="incomplete-bar">
-            <span>⚠️</span>
-            <div className="msg">Hồ sơ của bạn chưa hoàn thiện. Vui lòng cập nhật để AI có thể ghép nối chính xác hơn.</div>
-            <button className="btn btn-sm btn-secondary" onClick={() => setShowSetup(true)}>
-              Cập nhật ngay
-            </button>
-          </div>
-        )}
 
         {/* Stats */}
         <div className="stat-row">
@@ -136,21 +118,21 @@ export default function DashboardPage() {
             <p>Đăng tải ý tưởng hoặc bài tập lớn để tìm kiếm thành viên cùng tham gia.</p>
             <div className="feat-cta">Bắt đầu <ArrowRight size={14} /></div>
           </div>
-          
+
           <div className="feat-card">
             <div className="feat-icon"><Users size={18} /></div>
             <h4>Tìm kiếm đồng đội</h4>
             <p>Duyệt qua danh sách các lập trình viên, designer, và chuyên gia đang rảnh.</p>
             <div className="feat-cta">Khám phá <ArrowRight size={14} /></div>
           </div>
-          
+
           <div className="feat-card">
             <div className="feat-icon"><MessageSquare size={18} /></div>
             <h4>Tin nhắn & Lời mời</h4>
             <p>Kiểm tra các yêu cầu kết nối và thảo luận với nhóm của bạn.</p>
             <div className="feat-cta">Mở hộp thư <ArrowRight size={14} /></div>
           </div>
-          
+
           <div className="feat-card">
             <div className="feat-icon"><Zap size={18} /></div>
             <h4>Gợi ý từ AI (Mới)</h4>
@@ -177,7 +159,7 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-          
+
           <div>
             <div className="sec-head">
               <h3>Kỹ năng của bạn</h3>
@@ -202,8 +184,6 @@ export default function DashboardPage() {
         </div>
       </main>
 
-      {/* Modal */}
-      {showSetup && <ProfileSetupModal onClose={() => setShowSetup(false)} onComplete={handleSetupComplete} />}
     </div>
   );
 }

@@ -27,12 +27,12 @@ const registerSchema = Joi.object({
     'string.empty': 'Mật khẩu không được để trống.',
     'any.required': 'Vui lòng nhập mật khẩu.'
   }),
-  confirmPassword: Joi.any().valid(Joi.ref('password')).required().messages({
-    'any.only': 'Xác nhận mật khẩu không khớp.',
-    'any.required': 'Vui lòng xác nhận mật khẩu.'
+  confirmPassword: Joi.any().valid(Joi.ref('password')).optional().messages({
+    'any.only': 'Xác nhận mật khẩu không khớp.'
   })
 });
 
+// Schema validate cho Xác thực OTP và hoàn tất đăng ký
 const verifyOtpSchema = Joi.object({
   email: Joi.string().email().required().messages({
     'string.email': 'Email không hợp lệ.',
@@ -44,7 +44,11 @@ const verifyOtpSchema = Joi.object({
     'string.empty': 'Mã OTP không được để trống.',
     'any.required': 'Vui lòng nhập mã OTP.'
   }),
-  name: Joi.string().allow('', null)
+  password: Joi.string().min(6).required().messages({
+    'string.min': 'Mật khẩu phải có ít nhất 6 ký tự.',
+    'string.empty': 'Mật khẩu không được để trống.',
+    'any.required': 'Vui lòng cung cấp mật khẩu để hoàn tất đăng ký.'
+  })
 });
 
 const loginGoogleSchema = Joi.object({
