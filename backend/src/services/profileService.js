@@ -3,8 +3,7 @@ const ProjectHistory = require('../models/ProjectHistory');
 const Skill = require('../models/Skill');
 const Fuse = require('fuse.js');
 
-// Cập nhật toàn bộ hồ sơ Onboarding của User (thông tin cá nhân, học tập, dự án)
-// Kèm theo tự động duyệt và lưu danh sách kỹ năng (Fuzzy Matching)
+// Hàm cập nhật hồ sơ user
 const updateOnboardingProfile = async (userId, bodyData, avatarUrl) => {
   const {
     name,
@@ -22,7 +21,7 @@ const updateOnboardingProfile = async (userId, bodyData, avatarUrl) => {
 
   // 1. Lưu Lịch sử dự án
   await ProjectHistory.deleteMany({ userId });
-  
+
   let projectHistoryIds = [];
   if (projectHistory && projectHistory.length > 0) {
     const projectsToInsert = projectHistory.map(p => {
@@ -53,7 +52,7 @@ const updateOnboardingProfile = async (userId, bodyData, avatarUrl) => {
       if (!trimmedSkill) continue;
 
       const searchResult = fuse.search(trimmedSkill);
-      
+
       if (searchResult.length > 0) {
         const matchedSkill = searchResult[0].item;
         matchedSkill.usageCount += 1;
@@ -68,7 +67,7 @@ const updateOnboardingProfile = async (userId, bodyData, avatarUrl) => {
           .split(' ')
           .map(word => word.charAt(0).toUpperCase() + word.slice(1))
           .join(' ');
-          
+
         const newSkill = await Skill.create({
           name: normalizedName,
           isApproved: false,
