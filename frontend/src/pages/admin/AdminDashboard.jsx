@@ -6,7 +6,7 @@ import {
   Users, FolderGit2, MessageSquare, Zap, Plus, ArrowRight
 } from 'lucide-react';
 
-export default function DashboardPage() {
+export default function AdminDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -78,11 +78,11 @@ export default function DashboardPage() {
         {/* Banner */}
         <div className="dash-banner">
           <div className="dash-banner-left">
-            <h2>Chào mừng trở lại! 👋</h2>
-            <p>Hệ thống AI đã tìm thấy 5 dự án phù hợp với kỹ năng của bạn hôm nay.</p>
+            <h2>Chào mừng Admin trở lại! 👋</h2>
+            <p>Trang quản trị hệ thống đang được xây dựng.</p>
           </div>
           <button className="dash-banner-btn">
-            Xem gợi ý <ArrowRight size={16} />
+            Xem chi tiết <ArrowRight size={16} />
           </button>
         </div>
 

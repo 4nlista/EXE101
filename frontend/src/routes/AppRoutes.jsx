@@ -13,9 +13,25 @@ import PublicProfile from '../pages/profile/PublicProfile';
 import ProjectHistoryDetail from '../pages/profile/ProjectHistoryDetail';
 import Messages from '../pages/messages/Messages';
 import AIHub from '../pages/ai/AIHub';
-import Dashboard from '../pages/dashboard/Dashboard';
+import AdminDashboard from '../pages/admin/AdminDashboard';
 import Settings from '../pages/settings/Settings';
 import ProfileOnboarding from '../pages/profile/ProfileOnboarding';
+
+// Route cho Admin
+function AdminRoute({ children }) {
+  const { isAuthenticated, currentUser } = useAuth();
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
+  
+  // Nếu không phải admin (roleCode !== 0) thì đẩy về trang chủ của user
+  if (currentUser && currentUser.roleCode !== 0) {
+    return <Navigate to="/feed" replace />;
+  }
+  
+  return children;
+}
 
 // Bảo vệ route: chưa login → redirect về trang chủ
 // Nếu requireOnboarding = true và user chưa hoàn thiện hồ sơ → bắt buộc redirect sang /onboarding
@@ -24,6 +40,11 @@ function ProtectedRoute({ children, requireOnboarding = true }) {
   
   if (!isAuthenticated) {
     return <Navigate to="/" replace />;
+  }
+
+  // Admin không vào các trang của User, đẩy về /admin
+  if (currentUser && currentUser.roleCode === 0) {
+    return <Navigate to="/admin" replace />;
   }
   
   if (requireOnboarding && currentUser && !currentUser.onboardingCompleted) {
@@ -37,8 +58,11 @@ function ProtectedRoute({ children, requireOnboarding = true }) {
 function PublicRoute({ children }) {
   const { isAuthenticated, currentUser } = useAuth();
   
-  if (isAuthenticated) {
-    if (currentUser && !currentUser.onboardingCompleted) {
+  if (isAuthenticated && currentUser) {
+    if (currentUser.roleCode === 0) {
+      return <Navigate to="/admin" replace />;
+    }
+    if (!currentUser.onboardingCompleted) {
       return <Navigate to="/onboarding" replace />;
     }
     return <Navigate to="/feed" replace />;
@@ -58,9 +82,11 @@ export default function AppRoutes() {
       {/* Route riêng cho Onboarding (không requireOnboarding để tránh lặp vô hạn) */}
       <Route path="/onboarding" element={<ProtectedRoute requireOnboarding={false}><ProfileOnboarding /></ProtectedRoute>} />
       
-      {/* App Layout cho các trang sau đăng nhập */}
+      {/* Route riêng cho Admin */}
+      <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+
+      {/* App Layout cho các trang sau đăng nhập (User) */}
       <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/feed" element={<Feed />} />
         <Route path="/manage" element={<ManageProjects />} />
         <Route path="/profile" element={<PublicProfile />} />

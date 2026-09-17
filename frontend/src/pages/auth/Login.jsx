@@ -52,8 +52,12 @@ export default function Login() {
       return;
     }
 
-    // Đăng nhập thành công -> chuyển vào Feed
-    navigate('/feed');
+    // Đăng nhập thành công -> chuyển hướng dựa theo role
+    if (res.user && res.user.roleCode === 0) {
+      navigate('/admin');
+    } else {
+      navigate('/feed');
+    }
   };
 
   // Xóa hàm handleGoogle cũ vì đã chuyển sang dùng GoogleLogin component
@@ -165,7 +169,11 @@ export default function Login() {
                   setGlobalErr(res.error === 'Network Error' ? 'Không thể kết nối đến máy chủ.' : res.error);
                   return;
                 }
-                navigate('/feed');
+                if (res.user && res.user.roleCode === 0) {
+                  navigate('/admin');
+                } else {
+                  navigate('/feed');
+                }
               }}
               onError={() => {
                 setGlobalErr('Đăng nhập Google thất bại hoặc bị hủy.');

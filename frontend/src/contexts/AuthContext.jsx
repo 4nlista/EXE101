@@ -34,7 +34,7 @@ export function AuthProvider({ children }) {
         store.setItem('token', token);
         store.setItem('universe_user', JSON.stringify(user));
 
-        return { success: true };
+        return { success: true, user };
       }
       return { success: false, error: response.message || 'Đăng nhập thất bại' };
     } catch (error) {
@@ -58,7 +58,7 @@ export function AuthProvider({ children }) {
 
         localStorage.setItem('token', token);
         localStorage.setItem('universe_user', JSON.stringify(user));
-        return { success: true };
+        return { success: true, user };
       }
       return { success: false, error: response.message || 'Google Login Failed' };
     } catch (error) {
