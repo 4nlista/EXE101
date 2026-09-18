@@ -1,7 +1,7 @@
 import React from 'react';
 import { Form } from 'react-bootstrap';
 import { useQuery } from '@tanstack/react-query';
-import { masterDataService } from '../../services/masterDataService';
+import { masterDataService } from '../services/masterDataService';
 
 export default function ProjectFilter({ filters, setFilters }) {
   // Lấy danh sách ngành (Department)
