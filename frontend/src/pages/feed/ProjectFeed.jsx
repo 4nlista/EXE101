@@ -1,18 +1,23 @@
 import React, { useState } from 'react';
-import { Container, Row, Col, Spinner, Alert } from 'react-bootstrap';
+import { Container, Row, Col, Spinner, Modal, Button } from 'react-bootstrap';
 import { useQuery } from '@tanstack/react-query';
 import { getProjects } from '../../services/projectService';
 import ProjectCard from '../../components/ProjectCard';
 import ProjectFilter from '../../components/ProjectFilter';
+import Input from '../../components/Input';
+import { Search } from 'lucide-react';
 
 export default function ProjectFeed() {
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [filters, setFilters] = useState({
     page: 1,
-    limit: 10,
+    limit: 9,
     search: '',
     departmentId: '',
-    status: '',
-    gradeTarget: ''
+    role: '',
+    minGrade: '',
+    maxGrade: '',
+    deadline: ''
   });
 
   // Gọi API thông qua React Query
@@ -22,28 +27,56 @@ export default function ProjectFeed() {
     keepPreviousData: true // Giúp UI mượt hơn khi chuyển trang
   });
 
-  const projects = response?.data?.data?.projects || [];
-  const pagination = response?.data?.data?.pagination || null;
+  const projects = response?.data?.projects || [];
+  const pagination = response?.data?.pagination || null;
 
   return (
-    <div className="bg-light min-vh-100 d-flex flex-column">
+    <div className="min-vh-100 d-flex flex-column" style={{ backgroundColor: '#f0f2f5' }}>
 
-      <Container className="py-5 flex-grow-1">
-        <Row className="mb-4">
-          <Col>
-            <h2 className="fw-bold">Bảng tin Dự án</h2>
-            <p className="text-muted">Khám phá và tham gia các dự án thú vị từ sinh viên toàn trường.</p>
-          </Col>
-        </Row>
-
+      <Container fluid className="py-4 px-4 flex-grow-1">
         <Row>
           {/* Cột trái: Bộ lọc (3 phần) */}
-          <Col md={3}>
+          <Col xl={3} lg={3} md={4} className="mb-4">
             <ProjectFilter filters={filters} setFilters={setFilters} />
           </Col>
 
-          {/* Cột phải: Danh sách dự án (9 phần) */}
-          <Col md={9}>
+          {/* Cột phải: Main Content (9 phần) */}
+          <Col xl={9} lg={9} md={8}>
+
+            {/* Top Bar */}
+            <div className="bg-white p-3 rounded shadow-sm border border-primary border-opacity-25 mb-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+              <div className="mb-2 mb-md-0">
+                <h4 className="fw-bold mb-1">Bảng tin dự án</h4>
+                <p className="text-muted small mb-0">Tìm kiếm các nhóm đang cần kỹ năng của bạn.</p>
+              </div>
+              <div className="d-flex align-items-center gap-3">
+                <div style={{ width: '250px' }}>
+                  <Input 
+                    type="text" 
+                    placeholder="Tìm kiếm tên dự án..." 
+                    value={filters.search}
+                    onChange={(e) => setFilters({...filters, search: e.target.value, page: 1})}
+                    icon={Search}
+                    className="mb-0"
+                  />
+                </div>
+                
+                <select className="form-select text-secondary" style={{ width: 'auto', height: '42px' }}>
+                  <option>Sắp xếp: Mới nhất</option>
+                  <option>Sắp xếp: Cũ nhất</option>
+                </select>
+
+                <button
+                  className="btn btn-sm text-white fw-bold px-3"
+                  style={{ backgroundColor: '#ea580c' }}
+                  onClick={() => setShowCreateModal(true)}
+                >
+                  + Tạo bài đăng
+                </button>
+              </div>
+            </div>
+
+            {/* Trạng thái Loading / Lỗi */}
             {isLoading && (
               <div className="text-center py-5">
                 <Spinner animation="border" variant="primary" />
@@ -52,27 +85,32 @@ export default function ProjectFeed() {
             )}
 
             {isError && (
-              <Alert variant="danger">
-                Có lỗi xảy ra khi tải dữ liệu: {error?.message}
-              </Alert>
-            )}
-
-            {!isLoading && !isError && projects.length === 0 && (
-              <div className="text-center py-5 bg-white rounded border shadow-sm">
-                <h5 className="text-muted mb-0">Không tìm thấy dự án nào phù hợp với bộ lọc.</h5>
+              <div className="alert alert-danger text-center">
+                Có lỗi xảy ra khi tải dữ liệu: {error?.message || 'Lỗi không xác định'}
               </div>
             )}
 
+            {!isLoading && !isError && projects.length === 0 && (
+              <div className="text-center py-5 bg-white rounded shadow-sm">
+                <p className="text-muted mb-0">Không tìm thấy dự án nào phù hợp với bộ lọc.</p>
+              </div>
+            )}
+
+            {/* Grid danh sách dự án */}
             {!isLoading && !isError && projects.length > 0 && (
               <>
-                {projects.map(project => (
-                  <ProjectCard key={project._id} project={project} />
-                ))}
+                <Row className="g-4">
+                  {projects.map(project => (
+                    <Col xl={4} lg={4} md={6} sm={12} key={project._id}>
+                      <ProjectCard project={project} />
+                    </Col>
+                  ))}
+                </Row>
 
                 {/* Phân trang cơ bản */}
                 {pagination && pagination.totalPages > 1 && (
                   <div className="d-flex justify-content-center mt-4">
-                    <button 
+                    <button
                       className="btn btn-outline-primary me-2"
                       disabled={filters.page <= 1}
                       onClick={() => setFilters(p => ({ ...p, page: p.page - 1 }))}
@@ -82,7 +120,7 @@ export default function ProjectFeed() {
                     <span className="d-flex align-items-center mx-2 text-muted">
                       Trang {pagination.page} / {pagination.totalPages}
                     </span>
-                    <button 
+                    <button
                       className="btn btn-outline-primary ms-2"
                       disabled={filters.page >= pagination.totalPages}
                       onClick={() => setFilters(p => ({ ...p, page: p.page + 1 }))}
@@ -96,6 +134,20 @@ export default function ProjectFeed() {
           </Col>
         </Row>
       </Container>
+
+      {/* Modal Tạo bài đăng */}
+      <Modal show={showCreateModal} onHide={() => setShowCreateModal(false)} size="lg" centered>
+        <Modal.Header closeButton>
+          <Modal.Title className="fw-bold">Tạo bài đăng dự án mới</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p className="text-muted">Form tạo bài đăng dự án sẽ được thiết kế ở đây...</p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowCreateModal(false)}>Hủy</Button>
+          <Button variant="primary" style={{ backgroundColor: '#ea580c', borderColor: '#ea580c' }}>Đăng bài</Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }

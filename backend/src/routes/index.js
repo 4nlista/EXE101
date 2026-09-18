@@ -10,5 +10,6 @@ router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 // Các API chung (ngành học, chuyên ngành, kỹ năng)
 router.use('/', masterDataRoutes);
+router.use('/projects', require('./projectRoutes'));
 
 module.exports = router;

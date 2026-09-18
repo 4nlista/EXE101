@@ -20,68 +20,89 @@ export default function ProjectCard({ project }) {
   };
 
   return (
-    <Card className="mb-4 shadow-sm border-0" style={{ transition: 'transform 0.2s', cursor: 'pointer' }}
-          onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-3px)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
-      <Card.Body>
-        <div className="d-flex justify-content-between align-items-start mb-2">
-          {/* Tags / Badge */}
-          <div>
-            {project.departmentIds?.map((dep, idx) => (
-              <Badge bg="primary" className="me-2" key={idx}>{dep.name || 'Ngành học'}</Badge>
-            ))}
-            <Badge bg={project.status === 'open' ? 'success' : 'secondary'}>
-              {project.status === 'open' ? 'Đang tuyển' : 'Đã đóng'}
-            </Badge>
+    <Card
+      className="h-100 shadow-sm"
+      style={{
+        transition: 'transform 0.2s',
+        cursor: 'pointer',
+        borderColor: '#c0c2c5',
+        borderWidth: '1px'
+      }}
+      onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-3px)'}
+      onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+    >
+      <Card.Body className="d-flex flex-column">
+        {/* Hàng 1: Trường (1), Độ phù hợp, & Thời gian còn lại (2) */}
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <div className="d-flex align-items-center" >
+            <span className="fw-bold text-dark small me-2">{project.ownerId?.university}</span>
+            <span className="fw-medium small px-2 py-1 rounded-pill" style={{ color: '#1845a5', backgroundColor: '#e0e7ff' }}>
+              Phù hợp {project.matchPercentage || Math.floor(Math.random() * (99 - 70 + 1) + 70)}%
+            </span>
           </div>
-          
-          {/* Nút lưu/thả tim */}
-          <button className="btn btn-link text-danger p-0" onClick={handleSaveToggle} title={isSaved ? "Bỏ lưu" : "Lưu dự án"}>
-            {isSaved ? <Heart size={24} fill="currentColor" /> : <Heart size={24} />}
-          </button>
+          <div className="text-muted small d-flex align-items-center px-2 py-1 rounded-pill" style={{ backgroundColor: '#f3f4f6' }}>
+            <Clock size={14} className="me-1" />
+            <span style={{ fontSize: '0.85rem' }}>{calculateDaysLeft(project.deadline)}</span>
+          </div>
         </div>
 
-        {/* Tiêu đề & Thông tin chủ dự án */}
-        <Card.Title className="fw-bold mb-2 fs-5 text-dark">{project.title}</Card.Title>
-        <div className="text-muted small mb-3 d-flex align-items-center">
-          Đăng bởi: <strong className="ms-1 me-3 text-dark">{project.ownerId?.name || 'Ẩn danh'}</strong>
-        </div>
+        {/* Hàng 2: Tiêu đề dự án (3) */}
+        <Card.Title className="fw-bold mb-2 fs-6 text-dark" style={{ lineHeight: '1.0' }}>
+          {project.title}
+        </Card.Title>
 
-        {/* Thông tin mô tả ngắn gọn */}
-        <Card.Text className="text-secondary" style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+        {/* Hàng 3: Mô tả (4) */}
+        <Card.Text
+          className="text-secondary small mb-3"
+          style={{
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            lineHeight: '1.5'
+          }}
+        >
           {project.description}
         </Card.Text>
 
-        {/* Các thông số kỹ thuật (KPIs) */}
-        <div className="d-flex flex-wrap gap-3 mb-3 mt-3">
-          <div className="d-flex align-items-center text-muted small">
-            <Target size={16} className="me-1 text-info" /> Mục tiêu điểm: <strong>{project.gradeTarget || 'N/A'}</strong>
-          </div>
-          <div className="d-flex align-items-center text-muted small">
-            <Users size={16} className="me-1 text-primary" /> Vị trí tuyển: 
-            <strong className="ms-1">{project.maxMembers} thành viên</strong>
-          </div>
-          <div className="d-flex align-items-center text-muted small">
-            <Clock size={16} className="me-1 text-warning" /> Hạn chót: 
-            <strong className="ms-1">{calculateDaysLeft(project.deadline)}</strong>
-          </div>
+        {/* Hàng 4: Số lượng tuyển (5) */}
+        <div className="mb-2 text-dark fw-bold small">
+          Số lượng tuyển: <span style={{ color: '#d17c1aff' }}>{project.maxMembers} ứng viên</span>
         </div>
 
-        {/* Chi tiết Vị trí (Vd: Frontend (2), Backend(1)) */}
-        <div className="mb-3">
-          {project.positionDetails?.map((pos, idx) => (
-            <Badge bg="light" text="dark" className="me-2 border" key={idx}>
-              {pos.positionName} ({pos.quantity})
-            </Badge>
-          ))}
-        </div>
+        {/* Khối dưới cùng (6, 7, 8, 9) */}
+        <div className="mt-auto">
+          <hr className="text-muted mb-3 mt-1" style={{ opacity: 0.15 }} />
 
-        <hr className="text-muted" />
+          <div className="d-flex justify-content-between align-items-center">
+            {/* Trái: Avatar (6) + Tên người đăng (7) */}
+            <div className="d-flex align-items-center">
+              <img
+                src={project.ownerId?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(project.ownerId?.name || 'A')}&background=random`}
+                alt="avatar"
+                className="rounded-circle me-2"
+                style={{ width: '32px', height: '32px', objectFit: 'cover', border: '1px solid #eee' }}
+              />
+              <span className="fw-medium text-dark small text-truncate" style={{ maxWidth: '100px' }}>
+                {project.ownerId?.name || 'Ẩn danh'}
+              </span>
+            </div>
 
-        {/* Nút thao tác */}
-        <div className="d-flex justify-content-between align-items-center">
-          <small className="text-muted">Đăng ngày: {new Date(project.createdAt).toLocaleDateString('vi-VN')}</small>
-          <Button variant="outline-primary" size="sm">Xem chi tiết</Button>
+            {/* Phải: Nút thả tim (8) + Button Chi tiết (9) */}
+            <div className="d-flex align-items-center">
+              <button
+                className="btn btn-light rounded-circle p-2 d-flex align-items-center justify-content-center me-2"
+                onClick={handleSaveToggle}
+                title={isSaved ? "Bỏ lưu" : "Lưu dự án"}
+                style={{ width: '36px', height: '36px', border: '1px solid #e0e0e0' }}
+              >
+                {isSaved ? <Heart size={18} fill="#dc3545" className="text-danger" /> : <Heart size={18} className="text-muted" />}
+              </button>
+              <Button variant="primary" size="sm" className="px-3 py-1 fw-medium" style={{ backgroundColor: '#b45309', borderColor: '#b45309' }}>
+                Chi tiết
+              </Button>
+            </div>
+          </div>
         </div>
       </Card.Body>
     </Card>

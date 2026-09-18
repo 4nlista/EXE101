@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Bell, Settings, LogOut, ChevronDown, User } from 'lucide-react';
+import LogoImg from '../assets/images/Logo.png';
 
 export default function Navbar() {
   const { currentUser, logout } = useAuth();
@@ -23,13 +24,9 @@ export default function Navbar() {
 
   return (
     <nav className="layout-nav">
-      <Link to="/feed" className="layout-logo">
-        <div className="layout-logo-mark">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-          </svg>
-        </div>
-        <div className="layout-logo-text">Nex<span className="brand">Link</span></div>
+      <Link to="/feed" className="layout-logo text-decoration-none d-flex align-items-center">
+        <img src={LogoImg} alt="UniVerse AI Logo" style={{ height: '32px', marginRight: '10px' }} />
+        <div className="layout-logo-text fw-bold text-dark fs-5">UniVerse AI</div>
       </Link>
 
       <div className="layout-nav-links" style={{ marginLeft: 40 }}>
