@@ -16,7 +16,7 @@ export default function Input({
   const currentType = isPassword ? (showPassword ? 'text' : 'password') : type;
 
   return (
-    <Form.Group className={clsx('mb-3', className)}>
+    <Form.Group className={className !== undefined ? className : 'mb-3'}>
       {label && (
         <Form.Label className="fw-medium w-100 mb-1">
           {label}

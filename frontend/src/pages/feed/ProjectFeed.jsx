@@ -49,25 +49,25 @@ export default function ProjectFeed() {
                 <h4 className="fw-bold mb-1">Bảng tin dự án</h4>
                 <p className="text-muted small mb-0">Tìm kiếm các nhóm đang cần kỹ năng của bạn.</p>
               </div>
-              <div className="d-flex align-items-center gap-3">
+              <div className="d-flex align-items-center gap-2">
                 <div style={{ width: '250px' }}>
-                  <Input 
-                    type="text" 
-                    placeholder="Tìm kiếm tên dự án..." 
+                  <Input
+                    type="text"
+                    placeholder="Tìm kiếm tên dự án..."
                     value={filters.search}
-                    onChange={(e) => setFilters({...filters, search: e.target.value, page: 1})}
+                    onChange={(e) => setFilters({ ...filters, search: e.target.value, page: 1 })}
                     icon={Search}
                     className="mb-0"
                   />
                 </div>
-                
-                <select className="form-select text-secondary" style={{ width: 'auto', height: '42px' }}>
+
+                <select className="form-select text-secondary" style={{ width: 'auto' }}>
                   <option>Sắp xếp: Mới nhất</option>
                   <option>Sắp xếp: Cũ nhất</option>
                 </select>
 
                 <button
-                  className="btn btn-sm text-white fw-bold px-3"
+                  className="btn text-white fw-bold px-3 mb-0"
                   style={{ backgroundColor: '#ea580c' }}
                   onClick={() => setShowCreateModal(true)}
                 >
