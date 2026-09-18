@@ -19,6 +19,16 @@ export default function ProjectCard({ project }) {
     return days > 0 ? `Còn ${days} ngày` : 'Hết hạn';
   };
 
+  // Tạo % độ phù hợp cố định dựa trên ID dự án (nếu backend chưa trả về)
+  const getMatchPercentage = () => {
+    if (project.matchPercentage) return project.matchPercentage;
+    if (!project._id) return 85; // Mặc định nếu không có ID
+    
+    // Tổng mã ASCII của ID để tạo ra một số pseudo-random cố định (70-99%)
+    const charSum = project._id.toString().split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
+    return (charSum % 30) + 70;
+  };
+
   return (
     <Card
       className="h-100 shadow-sm"
@@ -37,7 +47,7 @@ export default function ProjectCard({ project }) {
           <div className="d-flex align-items-center" >
             <span className="fw-bold text-dark small me-2">{project.ownerId?.university}</span>
             <span className="fw-medium small px-2 py-1 rounded-pill" style={{ color: '#1845a5', backgroundColor: '#e0e7ff' }}>
-              Phù hợp {project.matchPercentage || Math.floor(Math.random() * (99 - 70 + 1) + 70)}%
+              Phù hợp {getMatchPercentage()}%
             </span>
           </div>
           <div className="text-muted small d-flex align-items-center px-2 py-1 rounded-pill" style={{ backgroundColor: '#f3f4f6' }}>

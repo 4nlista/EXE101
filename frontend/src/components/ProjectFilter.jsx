@@ -42,18 +42,18 @@ export default function ProjectFilter({ filters, setFilters }) {
   return (
     <div className="bg-white p-4 rounded shadow-sm border border-secondary-subtle">
       <h6 className="mb-4 fw-bold text-secondary text-uppercase">Bộ lọc</h6>
-      
+
       <Form>
         <Form.Group className="mb-4">
-          <Form.Label className="fw-bold">Lĩnh vực</Form.Label>
-          <Form.Select 
+          <Form.Label className="fw-bold">Ngành học</Form.Label>
+          <Form.Select
             name="departmentId"
             value={localFilters.departmentId}
             onChange={handleFilterChange}
             disabled={isDeptLoading}
             className="text-secondary"
           >
-            <option value="">Tất cả lĩnh vực</option>
+            <option value="">Tất cả ngành học</option>
             {departments.map(dep => (
               <option key={dep._id} value={dep._id}>{dep.name}</option>
             ))}
@@ -61,27 +61,11 @@ export default function ProjectFilter({ filters, setFilters }) {
         </Form.Group>
 
         <Form.Group className="mb-4">
-          <Form.Label className="fw-bold">Vai trò</Form.Label>
-          <Form.Select 
-            name="role"
-            value={localFilters.role || ''}
-            onChange={handleFilterChange}
-            className="text-secondary"
-          >
-            <option value="">Tất cả vai trò</option>
-            <option value="frontend">Frontend Developer</option>
-            <option value="backend">Backend Developer</option>
-            <option value="designer">UI/UX Designer</option>
-            <option value="ba">Business Analyst</option>
-          </Form.Select>
-        </Form.Group>
-
-        <Form.Group className="mb-4">
           <Form.Label className="fw-bold">Mục tiêu điểm</Form.Label>
           <div className="d-flex align-items-center">
-            <Form.Control 
-              type="number" 
-              placeholder="Min" 
+            <Form.Control
+              type="number"
+              placeholder="Min"
               name="minGrade"
               value={localFilters.minGrade || ''}
               onChange={handleFilterChange}
@@ -90,9 +74,9 @@ export default function ProjectFilter({ filters, setFilters }) {
               max="10"
             />
             <span className="mx-2 text-muted">-</span>
-            <Form.Control 
-              type="number" 
-              placeholder="Max" 
+            <Form.Control
+              type="number"
+              placeholder="Max"
               name="maxGrade"
               value={localFilters.maxGrade || ''}
               onChange={handleFilterChange}
@@ -105,7 +89,7 @@ export default function ProjectFilter({ filters, setFilters }) {
 
         <Form.Group className="mb-4">
           <Form.Label className="fw-bold">Hạn chót</Form.Label>
-          <Form.Select 
+          <Form.Select
             name="deadline"
             value={localFilters.deadline || ''}
             onChange={handleFilterChange}
@@ -118,7 +102,7 @@ export default function ProjectFilter({ filters, setFilters }) {
         </Form.Group>
 
         <div className="d-flex gap-2 mt-4">
-          <Button variant="outline-secondary" onClick={handleReset} className="flex-fill bg-white">Xóa</Button>
+          <Button variant="secondary" onClick={handleReset} className="flex-fill text-white border-0" style={{ backgroundColor: '#9ca3af' }}>Xóa</Button>
           <Button variant="primary" onClick={handleApply} className="flex-fill" style={{ backgroundColor: '#d97706', borderColor: '#d97706' }}>Lọc</Button>
         </div>
       </Form>

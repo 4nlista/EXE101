@@ -17,7 +17,8 @@ export default function ProjectFeed() {
     role: '',
     minGrade: '',
     maxGrade: '',
-    deadline: ''
+    deadline: '',
+    sort: 'newest'
   });
 
   // Gọi API thông qua React Query
@@ -61,9 +62,14 @@ export default function ProjectFeed() {
                   />
                 </div>
 
-                <select className="form-select text-secondary" style={{ width: 'auto' }}>
-                  <option>Sắp xếp: Mới nhất</option>
-                  <option>Sắp xếp: Cũ nhất</option>
+                <select
+                  className="form-select text-secondary"
+                  style={{ width: 'auto' }}
+                  value={filters.sort || 'newest'}
+                  onChange={(e) => setFilters({ ...filters, sort: e.target.value, page: 1 })}
+                >
+                  <option value="newest">Sắp xếp: Mới nhất</option>
+                  <option value="oldest">Sắp xếp: Cũ nhất</option>
                 </select>
 
                 <button

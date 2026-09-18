@@ -65,7 +65,7 @@
   --t-md:  200ms ease;
   --t-lg:  300ms ease;
 
-  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 /* ── Reset ── */
@@ -1219,3 +1219,10 @@ textarea.input {
   .ag-modal-header, .ag-modal-body, .ag-modal-footer { padding-left: 18px; padding-right: 18px; }
   .auth-card { padding: 28px 20px; }
 }
+
+/* Button Hover Effects */
+.btn:hover {
+  opacity: 0.85;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease-in-out;
+}
