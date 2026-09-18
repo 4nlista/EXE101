@@ -5,7 +5,7 @@ export default function Footer() {
   return (
     <footer className="layout-footer">
       <div className="layout-footer-left">
-        <strong>UniVerse</strong> © 2026 UniVerse - Dự án công nghệ
+        <strong>UniVerse</strong> © 2026 UniVerse AI - Dự án công nghệ
       </div>
       <div className="layout-footer-right">
         <a href="#">Chính sách bảo mật</a>
