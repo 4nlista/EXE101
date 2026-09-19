@@ -7,7 +7,6 @@ import ForgotPassword from '../pages/auth/ForgotPassword';
 import ResetPassword from '../pages/auth/ResetPassword';
 import AppLayout from '../layouts/AppLayout';
 import Feed from '../pages/feed/ProjectFeed';
-import ProjectDetail from '../pages/feed/ProjectDetail';
 import ManageProjects from '../pages/manage/ManageProjects';
 import PublicProfile from '../pages/profile/PublicProfile';
 import ProjectHistoryDetail from '../pages/profile/ProjectHistoryDetail';

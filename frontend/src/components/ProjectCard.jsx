@@ -3,7 +3,7 @@ import { Card, Badge } from 'react-bootstrap';
 import { Heart, Clock, Users, Target } from 'lucide-react';
 import Button from './Button';
 
-export default function ProjectCard({ project }) {
+export default function ProjectCard({ project, onViewDetail }) {
   const [isSaved, setIsSaved] = useState(false); // Toggle tạm thời cho UI
 
   const handleSaveToggle = (e) => {
@@ -97,7 +97,13 @@ export default function ProjectCard({ project }) {
               >
                 {isSaved ? <Heart size={18} fill="#dc3545" className="text-danger" /> : <Heart size={18} className="text-muted" />}
               </button>
-              <Button variant="primary" size="sm" className="px-3 py-1 fw-medium" style={{ backgroundColor: '#ea580c', borderColor: '#c7e0ecff' }}>
+              <Button 
+                variant="primary" 
+                size="sm" 
+                className="px-3 py-1 fw-medium" 
+                style={{ backgroundColor: '#ea580c', borderColor: '#c7e0ecff' }}
+                onClick={(e) => { e.stopPropagation(); onViewDetail && onViewDetail(); }}
+              >
                 Chi tiết
               </Button>
             </div>

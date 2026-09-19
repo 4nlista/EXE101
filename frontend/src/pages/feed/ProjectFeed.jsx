@@ -4,11 +4,13 @@ import { useQuery } from '@tanstack/react-query';
 import { getProjects } from '../../services/projectService';
 import ProjectCard from '../../components/ProjectCard';
 import ProjectFilter from '../../components/ProjectFilter';
+import ProjectDetailModal from './ProjectDetailModal';
 import Input from '../../components/Input';
 import { Search } from 'lucide-react';
 
 export default function ProjectFeed() {
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
   const [filters, setFilters] = useState({
     page: 1,
     limit: 9,
@@ -108,7 +110,10 @@ export default function ProjectFeed() {
                 <Row className="g-4">
                   {projects.map(project => (
                     <Col xl={4} lg={4} md={6} sm={12} key={project._id}>
-                      <ProjectCard project={project} />
+                      <ProjectCard 
+                        project={project} 
+                        onViewDetail={() => setSelectedProject(project)} 
+                      />
                     </Col>
                   ))}
                 </Row>
@@ -140,6 +145,13 @@ export default function ProjectFeed() {
           </Col>
         </Row>
       </Container>
+
+      {/* Modal Xem chi tiết & Ứng tuyển */}
+      <ProjectDetailModal 
+        project={selectedProject} 
+        show={!!selectedProject} 
+        onHide={() => setSelectedProject(null)} 
+      />
 
       {/* Modal Tạo bài đăng */}
       <Modal show={showCreateModal} onHide={() => setShowCreateModal(false)} size="lg" centered>
