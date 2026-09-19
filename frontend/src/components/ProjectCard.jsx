@@ -39,9 +39,9 @@ export default function ProjectCard({ project, onViewDetail }) {
           <div className="d-flex align-items-center" >
             <span className="fw-bold text-dark small me-2">{project.ownerId?.university}</span>
           </div>
-          <div className="text-muted small d-flex align-items-center px-2 py-1 rounded-pill" style={{ backgroundColor: '#f3f4f6' }}>
-            <Clock size={14} className="me-1" />
-            <span style={{ fontSize: '0.85rem' }}>{calculateDaysLeft(project.deadline)}</span>
+          <div className="text-muted small d-flex align-items-center px-2 py-1 rounded-pill" style={{ backgroundColor: '#dde7fbff' }}>
+            <Clock size={12} className="me-1" />
+            <span style={{ fontSize: '0.65rem' }}>{calculateDaysLeft(project.deadline)}</span>
           </div>
         </div>
 
@@ -97,10 +97,10 @@ export default function ProjectCard({ project, onViewDetail }) {
               >
                 {isSaved ? <Heart size={18} fill="#dc3545" className="text-danger" /> : <Heart size={18} className="text-muted" />}
               </button>
-              <Button 
-                variant="primary" 
-                size="sm" 
-                className="px-3 py-1 fw-medium" 
+              <Button
+                variant="primary"
+                size="sm"
+                className="px-3 py-1 fw-medium"
                 style={{ backgroundColor: '#ea580c', borderColor: '#c7e0ecff' }}
                 onClick={(e) => { e.stopPropagation(); onViewDetail && onViewDetail(); }}
               >

@@ -75,34 +75,58 @@ export default function ProjectDetailModal({ project, show, onHide }) {
               <div className="text-muted small">Chủ dự án</div>
             </div>
           </div>
-
-          <div className="d-flex flex-wrap gap-3 mt-2">
-            <div className="text-center px-3 border-start">
-              <div className="fw-bold text-dark fs-5">{project.maxMembers}</div>
-              <div className="text-muted small">Tuyển (Thành viên)</div>
-            </div>
-            <div className="text-center px-3 border-start">
-              <div className="fw-bold text-primary fs-5">{remainingSlots}</div>
-              <div className="text-muted small">Còn lại</div>
-            </div>
-            {project.gradeTarget && (
-              <div className="text-center px-3 border-start">
-                <div className="fw-bold text-success fs-5">{project.gradeTarget}</div>
-                <div className="text-muted small">Mục tiêu (Điểm)</div>
-              </div>
-            )}
-          </div>
         </div>
 
         {/* ── Box 1: Chi tiết Dự án ── */}
-        <div className="mb-4 bg-white p-4 rounded-3 border" style={{ borderColor: '#e5e7eb' }}>
+        <div
+          className="mb-4 bg-white p-4 rounded-3 border"
+          style={{
+            borderColor: '#e5e7eb',
+            transition: 'box-shadow 0.2s ease-in-out'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'}
+          onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'none'}
+        >
 
-          {/* Tổng quan */}
+          {/* Tổng quan & Thông số */}
           <div className="mb-4">
-            <h5 className="fw-bold d-flex align-items-center gap-2 mb-3" style={{ color: '#b45309' }}>
-              <FileText size={20} /> Tổng quan Dự án
-            </h5>
-            <div className="text-secondary" style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
+            <div className="d-flex flex-wrap align-items-center justify-content-between mb-3">
+              <h5 className="fw-bold d-flex align-items-center gap-2 mb-0" style={{ color: '#b45309' }}>
+                <FileText size={20} /> Tổng quan Dự án
+              </h5>
+            </div>
+
+            {/* Các thông số dự án */}
+            <div
+              className="d-flex flex-wrap gap-4 p-3 rounded-3 mb-3 shadow-hover"
+              style={{
+                backgroundColor: '#f3f4f6',
+                transition: 'box-shadow 0.2s ease-in-out'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'}
+              onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'none'}
+            >
+              <div className="text-center flex-grow-1">
+                <div className="fw-bold text-dark fs-5">{project.maxMembers}</div>
+                <div className="text-muted small">Tuyển (Thành viên)</div>
+              </div>
+              <div className="border-end border-secondary border-opacity-25 d-none d-md-block"></div>
+              <div className="text-center flex-grow-1">
+                <div className="fw-bold text-primary fs-5">{remainingSlots}</div>
+                <div className="text-muted small">Còn lại</div>
+              </div>
+              {project.gradeTarget && (
+                <>
+                  <div className="border-end border-secondary border-opacity-25 d-none d-md-block"></div>
+                  <div className="text-center flex-grow-1">
+                    <div className="fw-bold text-success fs-5">{project.gradeTarget}</div>
+                    <div className="text-muted small">Mục tiêu (Điểm)</div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="text-secondary mt-2" style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
               {project.description}
             </div>
           </div>
@@ -120,7 +144,15 @@ export default function ProjectDetailModal({ project, show, onHide }) {
         </div>
 
         {/* ── Box 2: Form Nộp Hồ Sơ ── */}
-        <div className="bg-white p-4 rounded-3 border" style={{ borderColor: '#e5e7eb' }}>
+        <div
+          className="bg-white p-4 rounded-3 border"
+          style={{
+            borderColor: '#e5e7eb',
+            transition: 'box-shadow 0.2s ease-in-out'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'}
+          onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'none'}
+        >
           <h5 className="fw-bold mb-4">Nộp Hồ Sơ Ứng Tuyển</h5>
 
           <Form onSubmit={handleApplySubmit}>
@@ -177,7 +209,7 @@ export default function ProjectDetailModal({ project, show, onHide }) {
 
       {/* ── Footer ── */}
       <Modal.Footer className="bg-light border-top shadow-sm px-4 py-3">
-        <Button variant="outline-secondary" onClick={onHide} className="fw-medium px-4 bg-white">
+        <Button variant="inline-secondary" onClick={onHide} className="fw-medium px-4">
           Hủy
         </Button>
         <Button
