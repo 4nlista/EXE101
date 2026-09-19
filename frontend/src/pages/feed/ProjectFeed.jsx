@@ -45,10 +45,10 @@ export default function ProjectFeed() {
           <Col xl={9} lg={9} md={8}>
 
             {/* Top Bar */}
-            <div className="bg-white p-3 rounded shadow-sm border border-primary border-opacity-25 mb-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+            <div className="bg-white p-3 rounded shadow-sm border border-primary border-opacity-25 mb-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center">
               <div className="mb-2 mb-md-0">
                 <h4 className="fw-bold mb-1">Bảng tin dự án</h4>
-                <p className="text-muted small mb-0">Tìm kiếm các nhóm đang cần kỹ năng của bạn.</p>
+                <p className="text-muted small mb-0">Tìm kiếm các nhóm phù hợp với kỹ năng của bạn.</p>
               </div>
               <div className="d-flex align-items-center gap-2">
                 <div style={{ width: '250px' }}>

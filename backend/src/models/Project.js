@@ -1,23 +1,6 @@
 const mongoose = require('mongoose');
 const { PROJECT_STATUS } = require('../constants/projectEnum');
 
-// Schema chi tiết vị trí tuyển
-const positionDetailSchema = new mongoose.Schema(
-  {
-    // Số lượng (Integer >= 1)
-    quantity: {
-      type: Number,
-      required: true,
-      min: 1
-    },
-    // Tên vị trí (ví dụ: "Designer", "Frontend", "Tester")
-    positionName: {
-      type: String,
-      required: true
-    }
-  },
-  { _id: true }
-);
 
 // Schema thành viên đã duyệt vào dự án
 const memberSchema = new mongoose.Schema(
@@ -89,8 +72,6 @@ const projectSchema = new mongoose.Schema(
       required: true,
       min: 1
     },
-    // Chi tiết số lượng theo từng vị trí
-    positionDetails: [positionDetailSchema],
     // Hạn ứng tuyển (ngày hết hạn đóng tuyển)
     deadline: {
       type: Date

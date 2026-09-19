@@ -93,11 +93,11 @@ export default function ProjectCard({ project }) {
                 className="btn btn-light rounded-circle p-2 d-flex align-items-center justify-content-center me-2"
                 onClick={handleSaveToggle}
                 title={isSaved ? "Bỏ lưu" : "Lưu dự án"}
-                style={{ width: '36px', height: '36px', border: '1px solid #e0e0e0' }}
+                style={{ width: '36px', height: '36px', border: '1px solid #b4b1b1ff' }}
               >
                 {isSaved ? <Heart size={18} fill="#dc3545" className="text-danger" /> : <Heart size={18} className="text-muted" />}
               </button>
-              <Button variant="primary" size="sm" className="px-3 py-1 fw-medium" style={{ backgroundColor: '#b45309', borderColor: '#b45309' }}>
+              <Button variant="primary" size="sm" className="px-3 py-1 fw-medium" style={{ backgroundColor: '#ea580c', borderColor: '#c7e0ecff' }}>
                 Chi tiết
               </Button>
             </div>
