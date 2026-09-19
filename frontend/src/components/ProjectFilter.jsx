@@ -34,7 +34,16 @@ export default function ProjectFilter({ filters, setFilters }) {
   };
 
   const handleReset = () => {
-    const resetState = { ...filters, search: '', departmentId: '', status: '', gradeTarget: '', page: 1 };
+    const resetState = {
+      ...filters,
+      search: '',
+      departmentId: '',
+      status: '',
+      minGrade: '',
+      maxGrade: '',
+      deadline: '',
+      page: 1
+    };
     setLocalFilters(resetState);
     setFilters(resetState);
   };
@@ -45,7 +54,7 @@ export default function ProjectFilter({ filters, setFilters }) {
 
       <Form>
         <Form.Group className="mb-4">
-          <Form.Label className="fw-bold">Ngành học</Form.Label>
+          <Form.Label className="fw-bold">Ngành học<span className="text-danger ms-1">*</span></Form.Label>
           <Form.Select
             name="departmentId"
             value={localFilters.departmentId}
@@ -61,7 +70,7 @@ export default function ProjectFilter({ filters, setFilters }) {
         </Form.Group>
 
         <Form.Group className="mb-4">
-          <Form.Label className="fw-bold">Mục tiêu điểm</Form.Label>
+          <Form.Label className="fw-bold">Mục tiêu điểm<span className="text-danger ms-1">*</span></Form.Label>
           <div className="d-flex align-items-center">
             <Form.Control
               type="number"
@@ -69,7 +78,7 @@ export default function ProjectFilter({ filters, setFilters }) {
               name="minGrade"
               value={localFilters.minGrade || ''}
               onChange={handleFilterChange}
-              step="0.1"
+              step="0.5"
               min="0"
               max="10"
             />
@@ -80,7 +89,7 @@ export default function ProjectFilter({ filters, setFilters }) {
               name="maxGrade"
               value={localFilters.maxGrade || ''}
               onChange={handleFilterChange}
-              step="0.1"
+              step="0.5"
               min="0"
               max="10"
             />
@@ -88,7 +97,7 @@ export default function ProjectFilter({ filters, setFilters }) {
         </Form.Group>
 
         <Form.Group className="mb-4">
-          <Form.Label className="fw-bold">Hạn chót</Form.Label>
+          <Form.Label className="fw-bold">Hạn chót<span className="text-danger ms-1">*</span></Form.Label>
           <Form.Select
             name="deadline"
             value={localFilters.deadline || ''}
@@ -96,14 +105,15 @@ export default function ProjectFilter({ filters, setFilters }) {
             className="text-secondary"
           >
             <option value="">Bất cứ lúc nào</option>
-            <option value="7">Trong vòng 7 ngày tới</option>
-            <option value="30">Trong vòng 30 ngày tới</option>
+            <option value="3">Trong 3 ngày tới</option>
+            <option value="7">Trong 7 ngày tới</option>
+            <option value="14">Trong 14 ngày tới</option>
           </Form.Select>
         </Form.Group>
 
         <div className="d-flex gap-2 mt-4">
-          <Button variant="secondary" onClick={handleReset} className="flex-fill text-white border-0" style={{ backgroundColor: '#9ca3af' }}>Xóa</Button>
-          <Button variant="primary" onClick={handleApply} className="flex-fill" style={{ backgroundColor: '#d97706', borderColor: '#d97706' }}>Lọc</Button>
+          <Button variant="secondary" onClick={handleReset} className="flex-fill text-white border-0" style={{ backgroundColor: '#484a4dff' }}>Xóa</Button>
+          <Button variant="primary" onClick={handleApply} className="flex-fill" style={{ backgroundColor: '#cb3b14ff', borderColor: '#e0e0e0ff' }}>Lọc</Button>
         </div>
       </Form>
     </div>

@@ -28,6 +28,24 @@ const getProjects = async (query) => {
     if (maxGrade) filter.gradeTarget.$lte = parseFloat(maxGrade);
   }
 
+  // Xử lý lọc theo Hạn chót (Deadline)
+  if (query.deadline) {
+    const futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + parseInt(query.deadline));
+    filter.deadline = {
+      $gte: new Date(),
+      $lte: futureDate
+    };
+  } else {
+    // Mặc định luôn ẩn các dự án đã quá hạn nếu không truyền deadline cụ thể
+    // Giả định: Các dự án không set deadline hoặc có deadline ở tương lai mới hiện
+    filter.$or = [
+      { deadline: { $gte: new Date() } },
+      { deadline: { $exists: false } },
+      { deadline: null }
+    ];
+  }
+
   // Xác định thứ tự sắp xếp
   const sortOrder = sort === 'oldest' ? { createdAt: 1 } : { createdAt: -1 };
 
