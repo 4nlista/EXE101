@@ -3,6 +3,8 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Otp = require('../models/Otp');
 const sendEmail = require('../utils/emailSender');
+const { IS_ACTIVE } = require('../constants/userEnum');
+const { ROLE_CODE } = require('../constants/roleEnum');
 
 /**
  * Tạo mã OTP ngẫu nhiên 6 số (dùng cho đăng ký)
@@ -34,7 +36,7 @@ const loginUser = async (email, password) => {
   }
 
   // 2. Kiểm tra tài khoản có bị khóa không
-  if (user.isActive === 2) { // 2 = LOCKED
+  if (user.isActive === IS_ACTIVE.LOCKED) {
     const error = new Error('Tài khoản của bạn đã bị khóa.');
     error.statusCode = 403;
     throw error;
@@ -55,7 +57,7 @@ const loginUser = async (email, password) => {
   }
 
   // Cập nhật trạng thái thành ONLINE
-  user.isActive = 1;
+  user.isActive = IS_ACTIVE.ONLINE;
   await user.save();
 
   // 4. Tạo JWT Token
@@ -174,7 +176,7 @@ const verifyOtp = async (email, otp, password) => {
     name: defaultName,
     email,
     password: hashedPassword,
-    roleCode: 1, // User mặc định
+    roleCode: ROLE_CODE.USER, // User mặc định
     onboardingCompleted: false // Bắt buộc hoàn tất hồ sơ sau này
   });
 
@@ -234,9 +236,9 @@ const loginGoogle = async (googleToken) => {
       name,
       avatar: picture,
       googleId,
-      roleCode: 1, // User mặc định
+      roleCode: ROLE_CODE.USER, // User mặc định
       onboardingCompleted: false, // Yêu cầu nhập hồ sơ
-      isActive: 1
+      isActive: IS_ACTIVE.ONLINE
     });
   } else {
     // Nếu user đã tồn tại (đăng ký bằng email thường) nhưng giờ login google, ta link googleId lại
@@ -244,7 +246,7 @@ const loginGoogle = async (googleToken) => {
       user.googleId = googleId;
       if (!user.avatar) user.avatar = picture;
     }
-    user.isActive = 1;
+    user.isActive = IS_ACTIVE.ONLINE;
     await user.save();
   }
 

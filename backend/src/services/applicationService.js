@@ -1,6 +1,7 @@
 const Application = require('../models/Application');
 const Project = require('../models/Project');
 const { APPLICATION_STATUS } = require('../constants/applicationEnum');
+const { PROJECT_STATUS } = require('../constants/projectEnum');
 
 /**
  * Xử lý logic nộp hồ sơ ứng tuyển
@@ -17,7 +18,7 @@ const createApplication = async (projectId, applicantId, cvFileUrl, note) => {
   }
 
   // 2. Kiểm tra dự án có đang mở tuyển không
-  if (project.status !== 'open') {
+  if (project.status !== PROJECT_STATUS.OPEN) {
     throw new Error('Dự án này đã đóng tuyển thành viên.');
   }
 
@@ -36,18 +37,19 @@ const createApplication = async (projectId, applicantId, cvFileUrl, note) => {
   if (application) {
     if (application.status === APPLICATION_STATUS.PENDING) {
       const error = new Error('Hồ sơ của bạn đang được duyệt.');
-      error.reason = 'PENDING';
+      error.appStatus = application.status;
       throw error;
     }
     if (application.status === APPLICATION_STATUS.APPROVED) {
       const error = new Error('Bạn đã là thành viên của dự án này.');
-      error.reason = 'APPROVED';
+      error.appStatus = application.status;
       throw error;
     }
     if (application.status === APPLICATION_STATUS.REJECTED) {
       if (application.rejectionCount >= 3) {
         const error = new Error('Bạn đã bị từ chối tối đa 3 lần.');
-        error.reason = 'MAX_REJECTED';
+        error.appStatus = application.status;
+        error.rejectionCount = application.rejectionCount;
         throw error;
       }
       
@@ -80,26 +82,22 @@ const checkApplicationStatus = async (projectId, applicantId) => {
   const application = await Application.findOne({ projectId, applicantId });
   
   if (!application) {
-    return { canApply: true, reason: null };
+    return { canApply: true, status: null, rejectionCount: 0 };
   }
 
-  if (application.status === APPLICATION_STATUS.PENDING) {
-    return { canApply: false, reason: 'PENDING' };
-  }
-  
-  if (application.status === APPLICATION_STATUS.APPROVED) {
-    return { canApply: false, reason: 'APPROVED' };
+  if (application.status === APPLICATION_STATUS.PENDING || application.status === APPLICATION_STATUS.APPROVED) {
+    return { canApply: false, status: application.status, rejectionCount: application.rejectionCount };
   }
   
   if (application.status === APPLICATION_STATUS.REJECTED) {
     if (application.rejectionCount >= 3) {
-      return { canApply: false, reason: 'MAX_REJECTED' };
+      return { canApply: false, status: application.status, rejectionCount: application.rejectionCount };
     } else {
-      return { canApply: true, reason: null };
+      return { canApply: true, status: application.status, rejectionCount: application.rejectionCount };
     }
   }
 
-  return { canApply: false, reason: 'ALREADY_APPLIED' };
+  return { canApply: false, status: application.status, rejectionCount: application.rejectionCount };
 };
 
 module.exports = {

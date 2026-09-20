@@ -48,7 +48,8 @@ const createApplication = async (req, res) => {
     return res.status(400).json({
       success: false,
       message: error.message || 'Lỗi khi gửi hồ sơ ứng tuyển.',
-      reason: error.reason || null
+      status: error.appStatus || null,
+      rejectionCount: error.rejectionCount || 0
     });
   }
 };
@@ -62,12 +63,13 @@ const checkApplicationStatus = async (req, res) => {
     const { projectId } = req.params;
     const applicantId = req.user.id;
     
-    const status = await applicationService.checkApplicationStatus(projectId, applicantId);
+    const result = await applicationService.checkApplicationStatus(projectId, applicantId);
     
     return res.status(200).json({
       success: true,
-      canApply: status.canApply,
-      reason: status.reason
+      canApply: result.canApply,
+      status: result.status,
+      rejectionCount: result.rejectionCount
     });
   } catch (error) {
     return res.status(500).json({

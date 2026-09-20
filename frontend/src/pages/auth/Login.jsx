@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../../contexts/AuthContext';
+import { ROLE_CODE } from '../../constants/roleEnum';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import LogoImg from '../../../src/assets/images/Logo.png';
 import IconLoginImg from '../../../src/assets/images/Icon_login.png';
@@ -53,7 +54,7 @@ export default function Login() {
     }
 
     // Đăng nhập thành công -> chuyển hướng dựa theo role
-    if (res.user && res.user.roleCode === 0) {
+    if (res.user && res.user.roleCode === ROLE_CODE.ADMIN) {
       navigate('/admin');
     } else {
       navigate('/feed');
@@ -169,7 +170,7 @@ export default function Login() {
                   setGlobalErr(res.error === 'Network Error' ? 'Không thể kết nối đến máy chủ.' : res.error);
                   return;
                 }
-                if (res.user && res.user.roleCode === 0) {
+                if (res.user && res.user.roleCode === ROLE_CODE.ADMIN) {
                   navigate('/admin');
                 } else {
                   navigate('/feed');

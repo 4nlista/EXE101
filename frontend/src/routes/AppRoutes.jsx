@@ -15,6 +15,7 @@ import AIHub from '../pages/ai/AIHub';
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import Settings from '../pages/settings/Settings';
 import ProfileOnboarding from '../pages/profile/ProfileOnboarding';
+import { ROLE_CODE } from '../constants/roleEnum';
 
 // Route cho Admin
 function AdminRoute({ children }) {
@@ -24,8 +25,8 @@ function AdminRoute({ children }) {
     return <Navigate to="/" replace />;
   }
   
-  // Nếu không phải admin (roleCode !== 0) thì đẩy về trang chủ của user
-  if (currentUser && currentUser.roleCode !== 0) {
+  // Nếu không phải admin (roleCode !== ROLE_CODE.ADMIN) thì đẩy về trang chủ của user
+  if (currentUser && currentUser.roleCode !== ROLE_CODE.ADMIN) {
     return <Navigate to="/feed" replace />;
   }
   
@@ -42,7 +43,7 @@ function ProtectedRoute({ children, requireOnboarding = true }) {
   }
 
   // Admin không vào các trang của User, đẩy về /admin
-  if (currentUser && currentUser.roleCode === 0) {
+  if (currentUser && currentUser.roleCode === ROLE_CODE.ADMIN) {
     return <Navigate to="/admin" replace />;
   }
   
@@ -58,7 +59,7 @@ function PublicRoute({ children }) {
   const { isAuthenticated, currentUser } = useAuth();
   
   if (isAuthenticated && currentUser) {
-    if (currentUser.roleCode === 0) {
+    if (currentUser.roleCode === ROLE_CODE.ADMIN) {
       return <Navigate to="/admin" replace />;
     }
     if (!currentUser.onboardingCompleted) {

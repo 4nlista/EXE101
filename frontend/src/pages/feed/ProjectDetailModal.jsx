@@ -27,21 +27,19 @@ export default function ProjectDetailModal({ project, show, onHide }) {
   const [applyNote, setApplyNote] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const [appStatus, setAppStatus] = useState({ canApply: true, reason: null });
+  const [appStatus, setAppStatus] = useState({ canApply: true, status: null, rejectionCount: 0 });
 
-  const getStatusMessage = (reason) => {
-    switch (reason) {
-      case 'PENDING':
-        return 'Hồ sơ của bạn đang được duyệt';
-      case 'APPROVED':
-        return 'Bạn đã là thành viên của dự án này';
-      case 'MAX_REJECTED':
-        return 'Bạn đã bị từ chối 3 lần';
-      case 'ALREADY_APPLIED':
-        return 'Bạn đã ứng tuyển bài đăng dự án này rồi';
-      default:
-        return 'Không thể ứng tuyển lúc này';
+  const getStatusMessage = (status, rejectionCount) => {
+    if (status === 'pending') {
+      return 'Hồ sơ của bạn đang được duyệt';
     }
+    if (status === 'approved') {
+      return 'Bạn đã là thành viên của dự án này';
+    }
+    if (status === 'rejected' && rejectionCount >= 3) {
+      return 'Bạn đã bị từ chối 3 lần (Vượt quá giới hạn)';
+    }
+    return 'Bạn đã ứng tuyển bài đăng dự án này rồi';
   };
 
   useEffect(() => {
@@ -51,7 +49,7 @@ export default function ProjectDetailModal({ project, show, onHide }) {
         try {
           const res = await checkApplicationStatus(project._id);
           if (isMounted && res.success) {
-            setAppStatus({ canApply: res.canApply, reason: res.reason });
+            setAppStatus({ canApply: res.canApply, status: res.status, rejectionCount: res.rejectionCount });
           }
         } catch (err) {
           console.error('Lỗi kiểm tra trạng thái:', err);
@@ -129,12 +127,14 @@ export default function ProjectDetailModal({ project, show, onHide }) {
       setApplyNote('');
       setErrorMsg('');
       // Reset form
-      setAppStatus({ canApply: true, reason: null }); // Temporarily true before we reload or refetch, though typically hiding is enough
+      setAppStatus({ canApply: true, status: null, rejectionCount: 0 }); // Temporarily true before we reload or refetch, though typically hiding is enough
       onHide();
     } catch (error) {
-      const reason = error.response?.data?.reason;
-      if (reason) {
-        setAppStatus({ canApply: false, reason });
+      const status = error.response?.data?.status;
+      const rejectionCount = error.response?.data?.rejectionCount;
+      
+      if (status) {
+        setAppStatus({ canApply: false, status, rejectionCount });
         setErrorMsg('');
       } else {
         const message = error.response?.data?.message || error.message || 'Có lỗi xảy ra khi nộp hồ sơ. Vui lòng thử lại.';
@@ -262,7 +262,7 @@ export default function ProjectDetailModal({ project, show, onHide }) {
 
             {!appStatus.canApply ? (
               <div className="w-100 p-3 rounded text-danger text-center fw-bold d-flex align-items-center justify-content-center gap-2 mt-2" style={{ backgroundColor: '#fef2f2', border: '1px solid #f87171' }}>
-                <AlertCircle size={20} /> ! {getStatusMessage(appStatus.reason)}
+                <AlertCircle size={20} /> ! {getStatusMessage(appStatus.status, appStatus.rejectionCount)}
               </div>
             ) : (
               <Form onSubmit={handleApplySubmit}>

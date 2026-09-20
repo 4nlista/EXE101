@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const { ROLE_CODE } = require('../constants/roleEnum');
 
 /**
  * Middleware kiểm tra JWT token hợp lệ
@@ -33,7 +34,7 @@ const verifyToken = (req, res, next) => {
  * Bắt buộc phải đứng sau verifyToken
  */
 const isAdmin = (req, res, next) => {
-  if (req.user && req.user.roleCode === 0) {
+  if (req.user && req.user.roleCode === ROLE_CODE.ADMIN) {
     next();
   } else {
     return res.status(403).json({ success: false, message: 'Access denied. Require Admin role.' });
@@ -45,7 +46,7 @@ const isAdmin = (req, res, next) => {
  * Bắt buộc phải đứng sau verifyToken
  */
 const isUser = (req, res, next) => {
-  if (req.user && req.user.roleCode === 1) {
+  if (req.user && req.user.roleCode === ROLE_CODE.USER) {
     next();
   } else {
     return res.status(403).json({ success: false, message: 'Access denied. Require User role.' });
