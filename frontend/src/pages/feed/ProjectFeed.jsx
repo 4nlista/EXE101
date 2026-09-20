@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { Container, Row, Col, Spinner, Modal, Button, Form } from 'react-bootstrap';
+import { Container, Row, Col, Spinner, Form } from 'react-bootstrap';
+import Button from '../../components/Button';
+import Modal from '../../components/Modal';
+import Alert from '../../components/Alert';
 import { useQuery } from '@tanstack/react-query';
 import { getProjects } from '../../services/projectService';
 import ProjectCard from '../../components/ProjectCard';
@@ -94,9 +97,9 @@ export default function ProjectFeed() {
             )}
 
             {isError && (
-              <div className="alert alert-danger text-center">
+              <Alert type="danger" className="text-center">
                 Có lỗi xảy ra khi tải dữ liệu: {error?.message || 'Lỗi không xác định'}
-              </div>
+              </Alert>
             )}
 
             {!isLoading && !isError && projects.length === 0 && (

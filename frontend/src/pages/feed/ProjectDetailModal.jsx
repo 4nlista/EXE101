@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
-import { Modal, Button, Form, Badge, Row, Col, Card, Alert } from 'react-bootstrap';
+import { Form, Badge, Row, Col, Card } from 'react-bootstrap';
+import Modal from '../../components/Modal';
+import Button from '../../components/Button';
+import Alert from '../../components/Alert';
+import Input from '../../components/Input';
 import { Clock, FileText, CheckCircle, Upload, Send, AlertCircle } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { applyProject } from '../../services/applicationService';
@@ -262,22 +266,22 @@ export default function ProjectDetailModal({ project, show, onHide }) {
               </Form.Group>
 
               {/* Lời nhắn */}
-              <Form.Group className="mb-2">
-                <div className="d-flex justify-content-between align-items-center mb-1">
-                  <Form.Label className="fw-bold mb-0">Ghi chú <span className="text-danger">*</span></Form.Label>
-                  <small className={`text-muted ${applyNote.length > 500 ? 'text-danger' : ''}`}>
-                    {applyNote.length}/500
-                  </small>
-                </div>
-                <Form.Control
-                  as="textarea"
-                  rows={4}
-                  placeholder="Giải thích lý do bạn phù hợp với dự án này và các kỹ năng của bạn đáp ứng yêu cầu ra sao...."
-                  value={applyNote}
-                  onChange={(e) => setApplyNote(e.target.value)}
-                  maxLength={500}
-                />
-              </Form.Group>
+              <Input
+                label={
+                  <div className="d-flex justify-content-between align-items-center w-100">
+                    <span>Ghi chú <span className="text-danger">*</span></span>
+                    <small className={`text-muted fw-normal ${applyNote.length > 500 ? 'text-danger' : ''}`}>
+                      {applyNote.length}/500
+                    </small>
+                  </div>
+                }
+                as="textarea"
+                rows={4}
+                placeholder="Giải thích lý do bạn phù hợp với dự án này và các kỹ năng của bạn đáp ứng yêu cầu ra sao...."
+                value={applyNote}
+                onChange={(e) => setApplyNote(e.target.value)}
+                maxLength={500}
+              />
             </Form>
           </Card.Body>
         </Card>
@@ -294,18 +298,8 @@ export default function ProjectDetailModal({ project, show, onHide }) {
             <Button variant="outline-secondary" onClick={onHide} className="fw-medium px-4 bg-white">
               Hủy
             </Button>
-            <Button
-              variant="primary"
-              onClick={handleApplySubmit}
-              disabled={isSubmitting || !applyFile}
-              className="fw-medium px-4 d-flex align-items-center gap-2"
-              style={{ backgroundColor: '#ea580c', borderColor: '#ea580c' }}
-            >
-              {isSubmitting ? 'Đang gửi...' : (
-                <>
-                  Gửi Hồ Sơ
-                </>
-              )}
+            <Button variant="primary" onClick={handleApplySubmit} disabled={!applyFile} loading={isSubmitting} className="fw-medium px-4 d-flex align-items-center gap-2" style={{ backgroundColor: '#ea580c', borderColor: '#ea580c' }}>
+              Gửi Hồ Sơ { !isSubmitting && <Send size={16} /> }
             </Button>
           </div>
         )}
