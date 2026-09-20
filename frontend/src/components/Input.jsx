@@ -18,7 +18,7 @@ export default function Input({
   return (
     <Form.Group className={className !== undefined ? className : 'mb-3'}>
       {label && (
-        <Form.Label className="fw-medium w-100 mb-1">
+        <Form.Label className="fw-bold w-100 mb-1">
           {label}
         </Form.Label>
       )}

@@ -8,6 +8,7 @@ import { getProjects } from '../../services/projectService';
 import ProjectCard from '../../components/ProjectCard';
 import ProjectFilter from '../../components/ProjectFilter';
 import ProjectDetailModal from './ProjectDetailModal';
+import CreateProjectModal from './CreateProjectModal';
 import Input from '../../components/Input';
 import { Search } from 'lucide-react';
 
@@ -160,18 +161,10 @@ export default function ProjectFeed() {
       />
 
       {/* Modal Tạo bài đăng */}
-      <Modal show={showCreateModal} onHide={() => setShowCreateModal(false)} size="lg" centered>
-        <Modal.Header closeButton>
-          <Modal.Title className="fw-bold">Tạo bài đăng dự án mới</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <p className="text-muted">Form tạo bài đăng dự án sẽ được thiết kế ở đây...</p>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowCreateModal(false)}>Hủy</Button>
-          <Button variant="primary" style={{ backgroundColor: '#ea580c', borderColor: '#ea580c' }}>Đăng bài</Button>
-        </Modal.Footer>
-      </Modal>
+      <CreateProjectModal
+        show={showCreateModal}
+        onHide={() => setShowCreateModal(false)}
+      />
     </div>
   );
 }

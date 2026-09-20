@@ -37,7 +37,7 @@ Modal.Body = ({ children, className, ...props }) => {
 
 Modal.Footer = ({ children, className, ...props }) => {
   return (
-    <BootstrapModal.Footer className={clsx('bg-light border-top shadow-sm px-4 py-3', className)} {...props}>
+    <BootstrapModal.Footer className={clsx('bg-light border-top shadow-sm px-4 py-2 m-0', className)} {...props}>
       {children}
     </BootstrapModal.Footer>
   );
