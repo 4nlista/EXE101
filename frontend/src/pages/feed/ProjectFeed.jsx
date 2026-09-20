@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Container, Row, Col, Spinner, Modal, Button } from 'react-bootstrap';
+import { Container, Row, Col, Spinner, Modal, Button, Form } from 'react-bootstrap';
 import { useQuery } from '@tanstack/react-query';
 import { getProjects } from '../../services/projectService';
 import ProjectCard from '../../components/ProjectCard';
@@ -64,23 +64,24 @@ export default function ProjectFeed() {
                   />
                 </div>
 
-                <select
-                  className="form-select text-secondary"
+                <Form.Select
+                  className="text-secondary"
                   style={{ width: 'auto' }}
                   value={filters.sort || 'newest'}
                   onChange={(e) => setFilters({ ...filters, sort: e.target.value, page: 1 })}
                 >
                   <option value="newest">Sắp xếp: Mới nhất</option>
                   <option value="oldest">Sắp xếp: Cũ nhất</option>
-                </select>
+                </Form.Select>
 
-                <button
-                  className="btn text-white px-3"
-                  style={{ backgroundColor: '#ea580c' }}
+                <Button
+                  variant="primary"
+                  className="text-white px-3 fw-medium"
+                  style={{ backgroundColor: '#ea580c', borderColor: '#ea580c' }}
                   onClick={() => setShowCreateModal(true)}
                 >
                   +Tạo bài đăng
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -121,23 +122,25 @@ export default function ProjectFeed() {
                 {/* Phân trang cơ bản */}
                 {pagination && pagination.totalPages > 1 && (
                   <div className="d-flex justify-content-center mt-4">
-                    <button
-                      className="btn btn-outline-primary me-2"
+                    <Button
+                      variant="outline-primary"
+                      className="me-2"
                       disabled={filters.page <= 1}
                       onClick={() => setFilters(p => ({ ...p, page: p.page - 1 }))}
                     >
                       Trang trước
-                    </button>
+                    </Button>
                     <span className="d-flex align-items-center mx-2 text-muted">
                       Trang {pagination.page} / {pagination.totalPages}
                     </span>
-                    <button
-                      className="btn btn-outline-primary ms-2"
+                    <Button
+                      variant="outline-primary"
+                      className="ms-2"
                       disabled={filters.page >= pagination.totalPages}
                       onClick={() => setFilters(p => ({ ...p, page: p.page + 1 }))}
                     >
                       Trang sau
-                    </button>
+                    </Button>
                   </div>
                 )}
               </>
