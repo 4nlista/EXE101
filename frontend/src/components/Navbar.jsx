@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Bell, Settings, LogOut, ChevronDown, User } from 'lucide-react';
+import { Badge } from 'react-bootstrap';
+import { Bell, Settings, LogOut, ChevronDown, User, Home, Briefcase, MessageSquareMore, Sparkles } from 'lucide-react';
 import LogoImg from '../assets/images/Logo.png';
 
 export default function Navbar() {
@@ -16,28 +17,45 @@ export default function Navbar() {
   };
 
   const navs = [
-    { name: 'Bảng tin', path: '/feed' },
-    { name: 'Dự án', path: '/manage' },
-    { name: 'Tin nhắn', path: '/messages' },
-    { name: 'AI Hub', path: '/ai-hub' }
+    { name: 'Bảng tin', path: '/feed', icon: Home },
+    { name: 'Dự án', path: '/manage', icon: Briefcase },
+    { name: 'Tin nhắn', path: '/messages', icon: MessageSquareMore, badge: 2 },
+    { name: 'AI Hub', path: '/ai-hub', icon: Sparkles }
   ];
 
   return (
-    <nav className="layout-nav">
-      <Link to="/feed" className="layout-logo text-decoration-none d-flex align-items-center">
+    <nav className="layout-nav position-relative">
+      <Link to="/feed" className="layout-logo text-decoration-none d-flex align-items-center" style={{ marginLeft: '60px' }}>
         <img src={LogoImg} alt="UniVerse AI Logo" style={{ height: '32px', marginRight: '10px' }} />
         <div className="layout-logo-text fw-bold text-dark fs-5">UniVerse AI</div>
       </Link>
 
-      <div className="layout-nav-links" style={{ marginLeft: 40 }}>
-        {navs.map(n => (
-          <Link
-            key={n.path} to={n.path}
-            className={`layout-nav-link ${location.pathname.startsWith(n.path) ? 'active' : ''}`}
-          >
-            {n.name}
-          </Link>
-        ))}
+      <div className="layout-nav-links" style={{ position: 'absolute', left: '40%', transform: 'translateX(-50%)' }}>
+        {navs.map(n => {
+          const isActive = location.pathname.startsWith(n.path);
+          const Icon = n.icon;
+          return (
+            <Link
+              key={n.path} to={n.path}
+              className={`layout-nav-link ${isActive ? 'active' : ''}`}
+            >
+              <div className="position-relative">
+                <Icon width={28} height={22} strokeWidth={isActive ? 2.5 : 2} fill={isActive ? "currentColor" : "none"} />
+                {n.badge && (
+                  <Badge
+                    pill
+                    bg="danger"
+                    className="position-absolute"
+                    style={{ top: '-4px', right: '-8px', fontSize: '0.65rem', padding: '0.25em 0.4em' }}
+                  >
+                    {n.badge}
+                  </Badge>
+                )}
+              </div>
+              <span className="mt-1">{n.name}</span>
+            </Link>
+          );
+        })}
       </div>
 
       <div className="layout-nav-right">
