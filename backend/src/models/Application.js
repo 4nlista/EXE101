@@ -35,6 +35,11 @@ const applicationSchema = new mongoose.Schema(
       type: String,
       enum: Object.values(APPLICATION_STATUS),
       default: APPLICATION_STATUS.PENDING
+    },
+    // Đếm số lần bị từ chối (tối đa 3 lần)
+    rejectionCount: {
+      type: Number,
+      default: 0
     }
   },
   { timestamps: true }

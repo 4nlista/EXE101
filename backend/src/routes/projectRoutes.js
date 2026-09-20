@@ -16,4 +16,11 @@ router.post(
   applicationController.createApplication
 );
 
+// Route GET /api/projects/:projectId/application-status - Kiểm tra trạng thái ứng tuyển
+router.get(
+  '/:projectId/application-status',
+  verifyToken,
+  applicationController.checkApplicationStatus
+);
+
 module.exports = router;

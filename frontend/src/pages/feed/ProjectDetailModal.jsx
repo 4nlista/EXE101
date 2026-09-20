@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, Badge, Row, Col, Card } from 'react-bootstrap';
 import Modal from '../../components/Modal';
 import Button from '../../components/Button';
@@ -6,7 +6,7 @@ import Alert from '../../components/Alert';
 import Input from '../../components/Input';
 import { Clock, FileText, CheckCircle, Upload, Send, AlertCircle } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { applyProject } from '../../services/applicationService';
+import { applyProject, checkApplicationStatus } from '../../services/applicationService';
 
 const getTimeAgo = (dateString) => {
   if (!dateString) return '';
@@ -27,7 +27,51 @@ export default function ProjectDetailModal({ project, show, onHide }) {
   const [applyNote, setApplyNote] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const [isApplied, setIsApplied] = useState(false);
+  const [appStatus, setAppStatus] = useState({ canApply: true, reason: null });
+
+  const getStatusMessage = (reason) => {
+    switch (reason) {
+      case 'PENDING':
+        return 'Hồ sơ của bạn đang được duyệt';
+      case 'APPROVED':
+        return 'Bạn đã là thành viên của dự án này';
+      case 'MAX_REJECTED':
+        return 'Bạn đã bị từ chối 3 lần';
+      case 'ALREADY_APPLIED':
+        return 'Bạn đã ứng tuyển bài đăng dự án này rồi';
+      default:
+        return 'Không thể ứng tuyển lúc này';
+    }
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchStatus = async () => {
+      if (show && project?._id) {
+        try {
+          const res = await checkApplicationStatus(project._id);
+          if (isMounted && res.success) {
+            setAppStatus({ canApply: res.canApply, reason: res.reason });
+          }
+        } catch (err) {
+          console.error('Lỗi kiểm tra trạng thái:', err);
+        }
+      }
+    };
+
+    fetchStatus();
+
+    // Reset các state khi đóng/mở
+    if (show) {
+      setApplyFile(null);
+      setApplyNote('');
+      setErrorMsg('');
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [show, project]);
 
   if (!project) return null;
 
@@ -84,14 +128,16 @@ export default function ProjectDetailModal({ project, show, onHide }) {
       setApplyFile(null);
       setApplyNote('');
       setErrorMsg('');
-      setIsApplied(false);
+      // Reset form
+      setAppStatus({ canApply: true, reason: null }); // Temporarily true before we reload or refetch, though typically hiding is enough
       onHide();
     } catch (error) {
-      const message = error.message || error.response?.data?.message || 'Có lỗi xảy ra khi nộp hồ sơ. Vui lòng thử lại.';
-      if (typeof message === 'string' && message.includes('đã nộp hồ sơ')) {
-        setIsApplied(true);
-        setErrorMsg(''); // Xóa lỗi ở trên form nếu có, vì ta sẽ hiện ở footer
+      const reason = error.response?.data?.reason;
+      if (reason) {
+        setAppStatus({ canApply: false, reason });
+        setErrorMsg('');
       } else {
+        const message = error.response?.data?.message || error.message || 'Có lỗi xảy ra khi nộp hồ sơ. Vui lòng thử lại.';
         setErrorMsg(message);
       }
     } finally {
@@ -214,82 +260,82 @@ export default function ProjectDetailModal({ project, show, onHide }) {
               </Alert>
             )}
 
-            <Form onSubmit={handleApplySubmit}>
-              {/* Upload CV */}
-              <Form.Group className="mb-4">
-                <Form.Label className="fw-bold">Chọn CV/Hồ sơ <span className="text-danger">*</span></Form.Label>
-                <label
-                  className="d-block border rounded p-4 text-center cursor-pointer"
-                  style={{
-                    cursor: 'pointer',
-                    backgroundColor: applyFile ? '#fff7ed' : '#f9fafb',
-                    borderColor: applyFile ? '#fdba74' : '#e5e7eb',
-                    borderStyle: applyFile ? 'solid' : 'dashed'
-                  }}
-                >
-                  <input
-                    type="file"
-                    className="d-none"
-                    accept=".pdf"
-                    onChange={(e) => {
-                      const file = e.target.files[0];
-                      if (file) {
-                        if (file.size > 5 * 1024 * 1024) {
-                          setErrorMsg('File CV không được vượt quá 5MB.');
-                          setApplyFile(null);
-                        } else if (file.type !== 'application/pdf') {
-                          setErrorMsg('Chỉ hỗ trợ định dạng file PDF.');
-                          setApplyFile(null);
-                        } else {
-                          setErrorMsg('');
-                          setApplyFile(file);
-                        }
-                      }
+            {!appStatus.canApply ? (
+              <div className="w-100 p-3 rounded text-danger text-center fw-bold d-flex align-items-center justify-content-center gap-2 mt-2" style={{ backgroundColor: '#fef2f2', border: '1px solid #f87171' }}>
+                <AlertCircle size={20} /> ! {getStatusMessage(appStatus.reason)}
+              </div>
+            ) : (
+              <Form onSubmit={handleApplySubmit}>
+                {/* Upload CV */}
+                <Form.Group className="mb-4">
+                  <Form.Label className="fw-bold">Chọn CV/Hồ sơ <span className="text-danger">*</span></Form.Label>
+                  <label
+                    className="d-block border rounded p-4 text-center cursor-pointer"
+                    style={{
+                      cursor: 'pointer',
+                      backgroundColor: applyFile ? '#fff7ed' : '#f9fafb',
+                      borderColor: applyFile ? '#fdba74' : '#e5e7eb',
+                      borderStyle: applyFile ? 'solid' : 'dashed'
                     }}
-                    required
-                  />
-                  <div className="d-flex flex-column align-items-center justify-content-center">
-                    <Upload size={32} style={{ color: applyFile ? '#ea580c' : '#9ca3af', marginBottom: 12 }} />
-                    {applyFile ? (
-                      <>
-                        <div className="fw-bold" style={{ color: '#ea580c' }}>{applyFile.name}</div>
-                        <div className="text-muted small mt-1">Đã chọn file thành công</div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="fw-medium text-dark">Tải lên CV mới</div>
-                        <div className="text-muted small mt-1">Định dạng PDF, tối đa 5MB</div>
-                      </>
-                    )}
-                  </div>
-                </label>
-              </Form.Group>
+                  >
+                    <input
+                      type="file"
+                      className="d-none"
+                      accept=".pdf"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          if (file.size > 5 * 1024 * 1024) {
+                            setErrorMsg('File CV không được vượt quá 5MB.');
+                            setApplyFile(null);
+                          } else if (file.type !== 'application/pdf') {
+                            setErrorMsg('Chỉ hỗ trợ định dạng file PDF.');
+                            setApplyFile(null);
+                          } else {
+                            setErrorMsg('');
+                            setApplyFile(file);
+                          }
+                        }
+                      }}
+                      required
+                    />
+                    <div className="d-flex flex-column align-items-center justify-content-center">
+                      <Upload size={32} style={{ color: applyFile ? '#ea580c' : '#9ca3af', marginBottom: 12 }} />
+                      {applyFile ? (
+                        <>
+                          <div className="fw-bold" style={{ color: '#ea580c' }}>{applyFile.name}</div>
+                          <div className="text-muted small mt-1">Đã chọn file thành công</div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="fw-medium text-dark">Tải lên CV mới</div>
+                          <div className="text-muted small mt-1">Định dạng PDF, tối đa 5MB</div>
+                        </>
+                      )}
+                    </div>
+                  </label>
+                </Form.Group>
 
-              {/* Lời nhắn */}
-              <Input
-                label={
-                  <div className="d-flex justify-content-between align-items-center w-100">
-                    <span>Ghi chú <span className="text-danger">*</span></span>
-                    <small className={`text-muted fw-normal ${applyNote.length > 500 ? 'text-danger' : ''}`}>
-                      {applyNote.length}/500
-                    </small>
-                  </div>
-                }
-                as="textarea"
-                rows={4}
-                placeholder="Giải thích lý do bạn phù hợp với dự án này và các kỹ năng của bạn đáp ứng yêu cầu ra sao...."
-                value={applyNote}
-                onChange={(e) => setApplyNote(e.target.value)}
-                maxLength={500}
-              />
+                {/* Lời nhắn */}
+                <Input
+                  label={
+                    <div className="d-flex justify-content-between align-items-center w-100">
+                      <span>Ghi chú <span className="text-danger">*</span></span>
+                      <small className={`text-muted fw-normal ${applyNote.length > 500 ? 'text-danger' : ''}`}>
+                        {applyNote.length}/500
+                      </small>
+                    </div>
+                  }
+                  as="textarea"
+                  rows={4}
+                  placeholder="Giải thích lý do bạn phù hợp với dự án này và các kỹ năng của bạn đáp ứng yêu cầu ra sao...."
+                  value={applyNote}
+                  onChange={(e) => setApplyNote(e.target.value)}
+                  maxLength={500}
+                />
 
-              {/* ── Footer Buttons (Moved inside form for proper submission) ── */}
-              <div className="mt-4 pt-3 border-top d-flex justify-content-center">
-                {isApplied ? (
-                  <div className="w-100 p-2 rounded text-danger text-center fw-bold d-flex align-items-center justify-content-center gap-2" style={{ backgroundColor: '#fef2f2', border: '1px solid #f87171' }}>
-                    <AlertCircle size={20} /> ! Bạn đã ứng tuyển bài đăng dự án này rồi
-                  </div>
-                ) : (
+                {/* ── Footer Buttons ── */}
+                <div className="mt-4 pt-3 border-top d-flex justify-content-center">
                   <div className="w-100 d-flex justify-content-end gap-2">
                     <Button variant="outline-secondary" type="button" onClick={onHide} className="fw-medium px-4 bg-white">
                       Hủy
@@ -298,9 +344,9 @@ export default function ProjectDetailModal({ project, show, onHide }) {
                       Gửi Hồ Sơ {!isSubmitting && <Send size={16} />}
                     </Button>
                   </div>
-                )}
-              </div>
-            </Form>
+                </div>
+              </Form>
+            )}
           </Card.Body>
         </Card>
       </Modal.Body>

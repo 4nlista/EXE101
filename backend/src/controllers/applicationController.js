@@ -47,11 +47,37 @@ const createApplication = async (req, res) => {
     // Các lỗi bắt được từ Service (ví dụ: đã nộp rồi, dự án full, v.v)
     return res.status(400).json({
       success: false,
-      message: error.message || 'Lỗi khi gửi hồ sơ ứng tuyển.'
+      message: error.message || 'Lỗi khi gửi hồ sơ ứng tuyển.',
+      reason: error.reason || null
+    });
+  }
+};
+
+/**
+ * [GET] /api/projects/:projectId/application-status
+ * Kiểm tra xem user hiện tại đã ứng tuyển dự án này chưa
+ */
+const checkApplicationStatus = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const applicantId = req.user.id;
+    
+    const status = await applicationService.checkApplicationStatus(projectId, applicantId);
+    
+    return res.status(200).json({
+      success: true,
+      canApply: status.canApply,
+      reason: status.reason
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Lỗi khi kiểm tra trạng thái ứng tuyển.'
     });
   }
 };
 
 module.exports = {
-  createApplication
+  createApplication,
+  checkApplicationStatus
 };

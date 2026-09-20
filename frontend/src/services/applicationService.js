@@ -8,3 +8,7 @@ import axiosClient from '../utils/axiosClient';
 export const applyProject = async (projectId, formData) => {
   return await axiosClient.post(`/projects/${projectId}/apply`, formData);
 };
+
+export const checkApplicationStatus = async (projectId) => {
+  return await axiosClient.get(`/projects/${projectId}/application-status`);
+};

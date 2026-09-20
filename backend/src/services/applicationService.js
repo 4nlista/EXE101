@@ -32,18 +32,43 @@ const createApplication = async (projectId, applicantId, cvFileUrl, note) => {
   }
 
   // 5. Kiểm tra người dùng đã ứng tuyển chưa
-  const existingApplication = await Application.findOne({ projectId, applicantId });
-  if (existingApplication) {
-    throw new Error('Bạn đã nộp hồ sơ cho dự án này rồi.');
+  let application = await Application.findOne({ projectId, applicantId });
+  if (application) {
+    if (application.status === APPLICATION_STATUS.PENDING) {
+      const error = new Error('Hồ sơ của bạn đang được duyệt.');
+      error.reason = 'PENDING';
+      throw error;
+    }
+    if (application.status === APPLICATION_STATUS.APPROVED) {
+      const error = new Error('Bạn đã là thành viên của dự án này.');
+      error.reason = 'APPROVED';
+      throw error;
+    }
+    if (application.status === APPLICATION_STATUS.REJECTED) {
+      if (application.rejectionCount >= 3) {
+        const error = new Error('Bạn đã bị từ chối tối đa 3 lần.');
+        error.reason = 'MAX_REJECTED';
+        throw error;
+      }
+      
+      // Cho phép nộp lại: cập nhật thông tin và chuyển trạng thái về PENDING
+      application.cvFileUrl = cvFileUrl;
+      application.note = note;
+      application.status = APPLICATION_STATUS.PENDING;
+      await application.save();
+      
+      return application;
+    }
   }
 
-  // 6. Tạo hồ sơ
+  // 6. Tạo hồ sơ mới nếu chưa từng nộp
   const newApplication = new Application({
     projectId,
     applicantId,
     cvFileUrl,
     note,
-    status: APPLICATION_STATUS.PENDING
+    status: APPLICATION_STATUS.PENDING,
+    rejectionCount: 0
   });
 
   await newApplication.save();
@@ -51,6 +76,33 @@ const createApplication = async (projectId, applicantId, cvFileUrl, note) => {
   return newApplication;
 };
 
+const checkApplicationStatus = async (projectId, applicantId) => {
+  const application = await Application.findOne({ projectId, applicantId });
+  
+  if (!application) {
+    return { canApply: true, reason: null };
+  }
+
+  if (application.status === APPLICATION_STATUS.PENDING) {
+    return { canApply: false, reason: 'PENDING' };
+  }
+  
+  if (application.status === APPLICATION_STATUS.APPROVED) {
+    return { canApply: false, reason: 'APPROVED' };
+  }
+  
+  if (application.status === APPLICATION_STATUS.REJECTED) {
+    if (application.rejectionCount >= 3) {
+      return { canApply: false, reason: 'MAX_REJECTED' };
+    } else {
+      return { canApply: true, reason: null };
+    }
+  }
+
+  return { canApply: false, reason: 'ALREADY_APPLIED' };
+};
+
 module.exports = {
-  createApplication
+  createApplication,
+  checkApplicationStatus
 };
