@@ -11,7 +11,7 @@ const axiosClient = axios.create({
 // Interceptor cho Request: Gắn token vào header
 axiosClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (token) {
       if (config.headers && typeof config.headers.set === 'function') {
         config.headers.set('Authorization', `Bearer ${token}`);
@@ -41,6 +41,8 @@ axiosClient.interceptors.response.use(
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('universe_user');
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('universe_user');
       // Tránh redirect liên tục nếu đang ở login
       if (window.location.pathname !== '/auth/login' && window.location.pathname !== '/') {
         window.location.href = '/'; 

@@ -6,9 +6,5 @@ import axiosClient from '../utils/axiosClient';
  * @param {FormData} formData - Chứa file CV (cvFile) và note (ghi chú)
  */
 export const applyProject = async (projectId, formData) => {
-  return await axiosClient.post(`/projects/${projectId}/apply`, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    }
-  });
+  return await axiosClient.post(`/projects/${projectId}/apply`, formData);
 };

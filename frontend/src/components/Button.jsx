@@ -16,6 +16,7 @@ export default function Button({
       className={clsx(fullWidth && 'w-100', className)}
       // Khóa nút nếu đang loading hoặc bị disabled từ ngoài truyền vào
       disabled={loading || props.disabled}
+      type={props.type || 'button'}
       {...props}
     >
       {/* Hiện vòng xoay mượt mà của Bootstrap khi đang xử lý (loading) */}

@@ -87,8 +87,8 @@ export default function ProjectDetailModal({ project, show, onHide }) {
       setIsApplied(false);
       onHide();
     } catch (error) {
-      const message = error.response?.data?.message || 'Có lỗi xảy ra khi nộp hồ sơ. Vui lòng thử lại.';
-      if (message.includes('đã nộp hồ sơ')) {
+      const message = error.message || error.response?.data?.message || 'Có lỗi xảy ra khi nộp hồ sơ. Vui lòng thử lại.';
+      if (typeof message === 'string' && message.includes('đã nộp hồ sơ')) {
         setIsApplied(true);
         setErrorMsg(''); // Xóa lỗi ở trên form nếu có, vì ta sẽ hiện ở footer
       } else {
@@ -282,28 +282,28 @@ export default function ProjectDetailModal({ project, show, onHide }) {
                 onChange={(e) => setApplyNote(e.target.value)}
                 maxLength={500}
               />
+
+              {/* ── Footer Buttons (Moved inside form for proper submission) ── */}
+              <div className="mt-4 pt-3 border-top d-flex justify-content-center">
+                {isApplied ? (
+                  <div className="w-100 p-2 rounded text-danger text-center fw-bold d-flex align-items-center justify-content-center gap-2" style={{ backgroundColor: '#fef2f2', border: '1px solid #f87171' }}>
+                    <AlertCircle size={20} /> ! Bạn đã ứng tuyển bài đăng dự án này rồi
+                  </div>
+                ) : (
+                  <div className="w-100 d-flex justify-content-end gap-2">
+                    <Button variant="outline-secondary" type="button" onClick={onHide} className="fw-medium px-4 bg-white">
+                      Hủy
+                    </Button>
+                    <Button type="submit" variant="primary" disabled={!applyFile} loading={isSubmitting} className="fw-medium px-4 d-flex align-items-center gap-2" style={{ backgroundColor: '#ea580c', borderColor: '#ea580c' }}>
+                      Gửi Hồ Sơ {!isSubmitting && <Send size={16} />}
+                    </Button>
+                  </div>
+                )}
+              </div>
             </Form>
           </Card.Body>
         </Card>
       </Modal.Body>
-
-      {/* ── Footer ── */}
-      <Modal.Footer className="bg-light border-top shadow-sm px-4 py-3 d-flex justify-content-center">
-        {isApplied ? (
-          <div className="w-100 p-2 rounded text-danger text-center fw-bold d-flex align-items-center justify-content-center gap-2" style={{ backgroundColor: '#fef2f2', border: '1px solid #f87171' }}>
-            <AlertCircle size={20} /> ! Bạn đã ứng tuyển bài đăng dự án này rồi
-          </div>
-        ) : (
-          <div className="w-100 d-flex justify-content-end gap-2">
-            <Button variant="outline-secondary" onClick={onHide} className="fw-medium px-4 bg-white">
-              Hủy
-            </Button>
-            <Button variant="primary" onClick={handleApplySubmit} disabled={!applyFile} loading={isSubmitting} className="fw-medium px-4 d-flex align-items-center gap-2" style={{ backgroundColor: '#ea580c', borderColor: '#ea580c' }}>
-              Gửi Hồ Sơ { !isSubmitting && <Send size={16} /> }
-            </Button>
-          </div>
-        )}
-      </Modal.Footer>
     </Modal>
   );
 }
