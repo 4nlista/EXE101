@@ -8,6 +8,13 @@ const uploadCloudCV = require('../utils/uploadCloudCV');
 // Route GET /api/projects
 router.get('/', projectController.getProjects);
 
+// Route POST /api/projects - Tạo dự án mới
+router.post(
+  '/',
+  verifyToken,
+  projectController.createProject
+);
+
 // Route POST /api/projects/:projectId/apply - Ứng tuyển vào dự án
 router.post(
   '/:projectId/apply',

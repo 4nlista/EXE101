@@ -70,6 +70,36 @@ const getProjects = async (query) => {
   };
 };
 
+/**
+ * Tạo bài đăng dự án mới
+ */
+const createProject = async (projectData, ownerId) => {
+  const {
+    title,
+    description,
+    candidateRequirements,
+    departmentIds,
+    gradeTarget,
+    maxMembers,
+    deadline
+  } = projectData;
+
+  const newProject = new Project({
+    ownerId,
+    title,
+    description,
+    candidateRequirements,
+    departmentIds,
+    gradeTarget,
+    maxMembers,
+    deadline
+  });
+
+  await newProject.save();
+  return newProject;
+};
+
 module.exports = {
-  getProjects
+  getProjects,
+  createProject
 };
