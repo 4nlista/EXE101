@@ -61,7 +61,7 @@ export default function ProjectDetailModal({ project, show, onHide }) {
       </Modal.Header>
 
       <Modal.Body className="pt-2 px-4 pb-4">
-        {/* ── Thông tin Chủ dự án & Meta ── */}
+        {/* ── Thông tin Chủ bài đăng & Meta ── */}
         <div className="d-flex flex-wrap align-items-center justify-content-between mb-4 border-bottom pb-3">
           <div className="d-flex align-items-center gap-2 mt-2">
             <img
@@ -72,7 +72,7 @@ export default function ProjectDetailModal({ project, show, onHide }) {
             />
             <div>
               <div className="fw-bold">{project.ownerId?.name || 'Người dùng ẩn danh'}</div>
-              <div className="text-muted small">Chủ dự án</div>
+              <div className="text-muted small">Người đăng bài</div>
             </div>
           </div>
         </div>
