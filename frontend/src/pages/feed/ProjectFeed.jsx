@@ -75,11 +75,11 @@ export default function ProjectFeed() {
                 </select>
 
                 <button
-                  className="btn text-white fw-bold px-3 mb-0"
+                  className="btn text-white px-3"
                   style={{ backgroundColor: '#ea580c' }}
                   onClick={() => setShowCreateModal(true)}
                 >
-                  + Tạo bài đăng
+                  +Tạo bài đăng
                 </button>
               </div>
             </div>
@@ -110,9 +110,9 @@ export default function ProjectFeed() {
                 <Row className="g-4">
                   {projects.map(project => (
                     <Col xl={4} lg={4} md={6} sm={12} key={project._id}>
-                      <ProjectCard 
-                        project={project} 
-                        onViewDetail={() => setSelectedProject(project)} 
+                      <ProjectCard
+                        project={project}
+                        onViewDetail={() => setSelectedProject(project)}
                       />
                     </Col>
                   ))}
@@ -147,10 +147,10 @@ export default function ProjectFeed() {
       </Container>
 
       {/* Modal Xem chi tiết & Ứng tuyển */}
-      <ProjectDetailModal 
-        project={selectedProject} 
-        show={!!selectedProject} 
-        onHide={() => setSelectedProject(null)} 
+      <ProjectDetailModal
+        project={selectedProject}
+        show={!!selectedProject}
+        onHide={() => setSelectedProject(null)}
       />
 
       {/* Modal Tạo bài đăng */}
