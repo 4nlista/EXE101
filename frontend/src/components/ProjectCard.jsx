@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card, Badge } from 'react-bootstrap';
 import { Heart, Clock, Users, Target } from 'lucide-react';
 import Button from './Button';
+import { formatCreatedDate, calculateDaysLeft } from '../utils/formatDate';
 
 export default function ProjectCard({ project, onViewDetail }) {
   const [isSaved, setIsSaved] = useState(false); // Toggle tạm thời cho UI
@@ -9,28 +10,6 @@ export default function ProjectCard({ project, onViewDetail }) {
   const handleSaveToggle = (e) => {
     e.stopPropagation(); // Tránh bị click vào card
     setIsSaved(!isSaved);
-  };
-
-  // Tính số ngày còn lại đến deadline
-  const calculateDaysLeft = (deadlineStr) => {
-    if (!deadlineStr) return 'Không xác định';
-    const diff = new Date(deadlineStr) - new Date();
-    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-    return days > 0 ? `Còn ${days} ngày` : 'Hết hạn';
-  };
-
-
-
-  // Format ngày tạo: DD/MM/YYYY HH:mm
-  const formatCreatedDate = (dateStr) => {
-    if (!dateStr) return '';
-    const d = new Date(dateStr);
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
-    const hours = String(d.getHours()).padStart(2, '0');
-    const minutes = String(d.getMinutes()).padStart(2, '0');
-    return `${day}/${month}/${year} ${hours}:${minutes}`;
   };
 
   return (
@@ -45,25 +24,27 @@ export default function ProjectCard({ project, onViewDetail }) {
       onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-3px)'}
       onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
     >
-      <Card.Body className="d-flex flex-column">
-        {/* Hàng 1: Trường (1) & Ngày đăng + Thời gian còn lại (2) */}
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <div className="d-flex align-items-center">
-            <span className="fw-bold text-dark small me-2">{project.ownerId?.university}</span>
-          </div>
-          <div className="d-flex align-items-center gap-2">
-            {project.createdAt && (
-              <div className="text-muted d-flex align-items-center">
-                <Clock size={12} className="me-1" />
-                <span style={{ fontSize: '0.65rem' }}>{formatCreatedDate(project.createdAt)}</span>
-              </div>
-            )}
-            <div className="text-muted small d-flex align-items-center px-2 py-1 rounded-pill" style={{ backgroundColor: '#dde7fbff' }}>
+      <Card.Body className="d-flex flex-column pt-3">
+        {/* Hàng 1: Thời gian (Ngày đăng + Thời gian còn lại) đặt sát mép 2 bên */}
+        <div className="d-flex justify-content-between align-items-center mb-2">
+          {project.createdAt && (
+            <Badge pill bg="light" text="secondary" className="d-flex align-items-center px-2 py-1 border fw-normal">
               <Clock size={12} className="me-1" />
-              <span style={{ fontSize: '0.65rem' }}>{calculateDaysLeft(project.deadline)}</span>
-            </div>
-          </div>
+              <span style={{ fontSize: '0.65rem' }}>{formatCreatedDate(project.createdAt)}</span>
+            </Badge>
+          )}
+          <Badge pill className="d-flex align-items-center px-2 py-1 fw-normal text-white">
+            <Clock size={12} className="me-1" />
+            <span style={{ fontSize: '0.65rem' }}>{calculateDaysLeft(project.deadline)}</span>
+          </Badge>
         </div>
+
+        {/* Ngôi trường (University) */}
+        {project.ownerId?.university && (
+          <div className="mb-2">
+            <span className="fw-bold text-dark small">{project.ownerId?.university}</span>
+          </div>
+        )}
 
         {/* Hàng 2: Tiêu đề dự án (3) */}
         <Card.Title className="fw-bold mb-2 fs-6 text-dark" style={{ lineHeight: '1.0' }}>
