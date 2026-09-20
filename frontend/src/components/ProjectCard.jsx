@@ -21,6 +21,18 @@ export default function ProjectCard({ project, onViewDetail }) {
 
 
 
+  // Format ngày tạo: DD/MM/YYYY HH:mm
+  const formatCreatedDate = (dateStr) => {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
+  };
+
   return (
     <Card
       className="h-100 shadow-sm"
@@ -34,14 +46,22 @@ export default function ProjectCard({ project, onViewDetail }) {
       onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
     >
       <Card.Body className="d-flex flex-column">
-        {/* Hàng 1: Trường (1) & Thời gian còn lại (2) */}
+        {/* Hàng 1: Trường (1) & Ngày đăng + Thời gian còn lại (2) */}
         <div className="d-flex justify-content-between align-items-center mb-3">
-          <div className="d-flex align-items-center" >
+          <div className="d-flex align-items-center">
             <span className="fw-bold text-dark small me-2">{project.ownerId?.university}</span>
           </div>
-          <div className="text-muted small d-flex align-items-center px-2 py-1 rounded-pill" style={{ backgroundColor: '#dde7fbff' }}>
-            <Clock size={12} className="me-1" />
-            <span style={{ fontSize: '0.65rem' }}>{calculateDaysLeft(project.deadline)}</span>
+          <div className="d-flex align-items-center gap-2">
+            {project.createdAt && (
+              <div className="text-muted d-flex align-items-center">
+                <Clock size={12} className="me-1" />
+                <span style={{ fontSize: '0.65rem' }}>{formatCreatedDate(project.createdAt)}</span>
+              </div>
+            )}
+            <div className="text-muted small d-flex align-items-center px-2 py-1 rounded-pill" style={{ backgroundColor: '#dde7fbff' }}>
+              <Clock size={12} className="me-1" />
+              <span style={{ fontSize: '0.65rem' }}>{calculateDaysLeft(project.deadline)}</span>
+            </div>
           </div>
         </div>
 
