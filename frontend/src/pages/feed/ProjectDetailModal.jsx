@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { Modal, Button, Form, Badge, Row, Col, Card } from 'react-bootstrap';
+import { Modal, Button, Form, Badge, Row, Col, Card, Alert } from 'react-bootstrap';
 import { Clock, FileText, CheckCircle, Upload, Send } from 'lucide-react';
+import { toast } from 'react-toastify';
+import { applyProject } from '../../services/applicationService';
 
 const getTimeAgo = (dateString) => {
   if (!dateString) return '';
@@ -20,6 +22,7 @@ export default function ProjectDetailModal({ project, show, onHide }) {
   const [applyFile, setApplyFile] = useState(null);
   const [applyNote, setApplyNote] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
   if (!project) return null;
 
@@ -32,15 +35,56 @@ export default function ProjectDetailModal({ project, show, onHide }) {
   // Calculate remaining slots
   const remainingSlots = Math.max(0, project.maxMembers - (project.members?.length || 0));
 
-  const handleApplySubmit = (e) => {
+  const handleApplySubmit = async (e) => {
     e.preventDefault();
+    setErrorMsg('');
+
+    if (!applyFile) {
+      setErrorMsg('Vui lòng chọn file CV.');
+      return;
+    }
+
+    if (applyFile.size > 5 * 1024 * 1024) {
+      setErrorMsg('File CV không được vượt quá 5MB.');
+      return;
+    }
+
+    if (applyFile.type !== 'application/pdf') {
+      setErrorMsg('Chỉ hỗ trợ định dạng file PDF.');
+      return;
+    }
+
+    if (!applyNote || applyNote.trim() === '') {
+      setErrorMsg('Vui lòng nhập ghi chú.');
+      return;
+    }
+
+    if (applyNote.length > 500) {
+      setErrorMsg('Ghi chú không được vượt quá 500 ký tự.');
+      return;
+    }
+
     setIsSubmitting(true);
-    // TODO: Implement actual API call to submit application
-    setTimeout(() => {
-      setIsSubmitting(false);
+
+    try {
+      const formData = new FormData();
+      formData.append('cvFile', applyFile);
+      formData.append('note', applyNote);
+
+      await applyProject(project._id, formData);
+
+      toast.success('Gửi hồ sơ ứng tuyển thành công!');
+
+      // Reset form
+      setApplyFile(null);
+      setApplyNote('');
+      setErrorMsg('');
       onHide();
-      // TODO: Show success toast
-    }, 1000);
+    } catch (error) {
+      setErrorMsg(error.response?.data?.message || 'Có lỗi xảy ra khi nộp hồ sơ. Vui lòng thử lại.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -152,6 +196,12 @@ export default function ProjectDetailModal({ project, show, onHide }) {
           <Card.Body className="p-4">
             <h5 className="fw-bold mb-4">Nộp Hồ Sơ Ứng Tuyển</h5>
 
+            {errorMsg && (
+              <Alert variant="danger" className="mb-4">
+                {errorMsg}
+              </Alert>
+            )}
+
             <Form onSubmit={handleApplySubmit}>
               {/* Upload CV */}
               <Form.Group className="mb-4">
@@ -191,13 +241,19 @@ export default function ProjectDetailModal({ project, show, onHide }) {
 
               {/* Lời nhắn */}
               <Form.Group className="mb-2">
-                <Form.Label className="fw-bold">Ghi chú <span className="text-danger">*</span></Form.Label>
+                <div className="d-flex justify-content-between align-items-center mb-1">
+                  <Form.Label className="fw-bold mb-0">Ghi chú <span className="text-danger">*</span></Form.Label>
+                  <small className={`text-muted ${applyNote.length > 500 ? 'text-danger' : ''}`}>
+                    {applyNote.length}/500
+                  </small>
+                </div>
                 <Form.Control
                   as="textarea"
                   rows={4}
                   placeholder="Giải thích lý do bạn phù hợp với dự án này và các kỹ năng của bạn đáp ứng yêu cầu ra sao...."
                   value={applyNote}
                   onChange={(e) => setApplyNote(e.target.value)}
+                  maxLength={500}
                 />
               </Form.Group>
             </Form>
@@ -215,11 +271,11 @@ export default function ProjectDetailModal({ project, show, onHide }) {
           onClick={handleApplySubmit}
           disabled={isSubmitting || !applyFile}
           className="fw-medium px-4 d-flex align-items-center gap-2"
-          style={{ backgroundColor: '#ea580c', borderColor: '#ea580c' }}
+        // style={{ backgroundColor: '#ea580c', borderColor: '#ea580c' }}
         >
           {isSubmitting ? 'Đang gửi...' : (
             <>
-              Gửi Hồ Sơ <Send size={16} />
+              Gửi Hồ Sơ
             </>
           )}
         </Button>

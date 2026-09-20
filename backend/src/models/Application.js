@@ -16,7 +16,7 @@ const applicationSchema = new mongoose.Schema(
       ref: 'User',
       required: true
     },
-    // Đường link file CV đã upload (max 2MB)
+    // Đường link file CV đã upload (max 5MB)
     cvFileUrl: {
       type: String
     },
