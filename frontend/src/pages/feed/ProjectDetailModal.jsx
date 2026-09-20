@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, Button, Form, Badge, Row, Col, Card, Alert } from 'react-bootstrap';
-import { Clock, FileText, CheckCircle, Upload, Send } from 'lucide-react';
+import { Clock, FileText, CheckCircle, Upload, Send, AlertCircle } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { applyProject } from '../../services/applicationService';
 
@@ -23,6 +23,7 @@ export default function ProjectDetailModal({ project, show, onHide }) {
   const [applyNote, setApplyNote] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [isApplied, setIsApplied] = useState(false);
 
   if (!project) return null;
 
@@ -79,9 +80,16 @@ export default function ProjectDetailModal({ project, show, onHide }) {
       setApplyFile(null);
       setApplyNote('');
       setErrorMsg('');
+      setIsApplied(false);
       onHide();
     } catch (error) {
-      setErrorMsg(error.response?.data?.message || 'Có lỗi xảy ra khi nộp hồ sơ. Vui lòng thử lại.');
+      const message = error.response?.data?.message || 'Có lỗi xảy ra khi nộp hồ sơ. Vui lòng thử lại.';
+      if (message.includes('đã nộp hồ sơ')) {
+        setIsApplied(true);
+        setErrorMsg(''); // Xóa lỗi ở trên form nếu có, vì ta sẽ hiện ở footer
+      } else {
+        setErrorMsg(message);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -219,7 +227,21 @@ export default function ProjectDetailModal({ project, show, onHide }) {
                     type="file"
                     className="d-none"
                     accept=".pdf"
-                    onChange={(e) => setApplyFile(e.target.files[0])}
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        if (file.size > 5 * 1024 * 1024) {
+                          setErrorMsg('File CV không được vượt quá 5MB.');
+                          setApplyFile(null);
+                        } else if (file.type !== 'application/pdf') {
+                          setErrorMsg('Chỉ hỗ trợ định dạng file PDF.');
+                          setApplyFile(null);
+                        } else {
+                          setErrorMsg('');
+                          setApplyFile(file);
+                        }
+                      }
+                    }}
                     required
                   />
                   <div className="d-flex flex-column align-items-center justify-content-center">
@@ -262,23 +284,31 @@ export default function ProjectDetailModal({ project, show, onHide }) {
       </Modal.Body>
 
       {/* ── Footer ── */}
-      <Modal.Footer className="bg-light border-top shadow-sm px-4 py-3">
-        <Button variant="outline-secondary" onClick={onHide} className="fw-medium px-4 bg-white">
-          Hủy
-        </Button>
-        <Button
-          variant="primary"
-          onClick={handleApplySubmit}
-          disabled={isSubmitting || !applyFile}
-          className="fw-medium px-4 d-flex align-items-center gap-2"
-        // style={{ backgroundColor: '#ea580c', borderColor: '#ea580c' }}
-        >
-          {isSubmitting ? 'Đang gửi...' : (
-            <>
-              Gửi Hồ Sơ
-            </>
-          )}
-        </Button>
+      <Modal.Footer className="bg-light border-top shadow-sm px-4 py-3 d-flex justify-content-center">
+        {isApplied ? (
+          <div className="w-100 p-2 rounded text-danger text-center fw-bold d-flex align-items-center justify-content-center gap-2" style={{ backgroundColor: '#fef2f2', border: '1px solid #f87171' }}>
+            <AlertCircle size={20} /> ! Bạn đã ứng tuyển bài đăng dự án này rồi
+          </div>
+        ) : (
+          <div className="w-100 d-flex justify-content-end gap-2">
+            <Button variant="outline-secondary" onClick={onHide} className="fw-medium px-4 bg-white">
+              Hủy
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleApplySubmit}
+              disabled={isSubmitting || !applyFile}
+              className="fw-medium px-4 d-flex align-items-center gap-2"
+              style={{ backgroundColor: '#ea580c', borderColor: '#ea580c' }}
+            >
+              {isSubmitting ? 'Đang gửi...' : (
+                <>
+                  Gửi Hồ Sơ
+                </>
+              )}
+            </Button>
+          </div>
+        )}
       </Modal.Footer>
     </Modal>
   );
