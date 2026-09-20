@@ -7,6 +7,7 @@ import Input from '../../components/Input';
 import { Clock, FileText, CheckCircle, Upload, Send, AlertCircle } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { applyProject, checkApplicationStatus } from '../../services/applicationService';
+import { APPLICATION_STATUS } from '../../constants';
 
 const getTimeAgo = (dateString) => {
   if (!dateString) return '';
@@ -30,13 +31,13 @@ export default function ProjectDetailModal({ project, show, onHide }) {
   const [appStatus, setAppStatus] = useState({ canApply: true, status: null, rejectionCount: 0 });
 
   const getStatusMessage = (status, rejectionCount) => {
-    if (status === 'pending') {
+    if (status === APPLICATION_STATUS.PENDING) {
       return 'Hồ sơ của bạn đang được duyệt';
     }
-    if (status === 'approved') {
+    if (status === APPLICATION_STATUS.APPROVED) {
       return 'Bạn đã là thành viên của dự án này';
     }
-    if (status === 'rejected' && rejectionCount >= 3) {
+    if (status === APPLICATION_STATUS.REJECTED && rejectionCount >= 3) {
       return 'Bạn đã bị từ chối 3 lần (Vượt quá giới hạn)';
     }
     return 'Bạn đã ứng tuyển bài đăng dự án này rồi';
