@@ -157,7 +157,7 @@ export default function ProfileInfo({
             <div className="d-flex align-items-center justify-content-between">
               <div className="d-flex align-items-center gap-1 flex-wrap" style={{ flex: 1 }}>
                 <Award size={15} className="text-secondary flex-shrink-0 me-1" />
-                <span className="fw-bold text-dark me-1">GPA (Hệ 4.0):</span>
+                <span className="fw-bold text-dark me-1">GPA<span className="text-danger">*</span>:</span>
                 {isEditMode ? (
                   <Form.Control
                     size="sm"
@@ -172,7 +172,7 @@ export default function ProfileInfo({
                     style={{ width: '85px', height: '28px', fontSize: '0.85rem' }}
                   />
                 ) : (
-                  <span className="text-secondary">{profileData.gradeGoal !== undefined && profileData.gradeGoal !== null ? Number(profileData.gradeGoal).toFixed(2) : 'Đã ẩn'}</span>
+                  <span className="text-secondary">{profileData.gradeGoal !== undefined && profileData.gradeGoal !== null ? Number(profileData.gradeGoal).toFixed(1) : 'Đã ẩn'}</span>
                 )}
               </div>
               {isEditMode && (

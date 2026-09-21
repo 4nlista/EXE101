@@ -101,7 +101,7 @@
 
 .profile-card {
   background: white;
-  border: 1px solid #cbd5e1 !important;
+  border: 2px solid #000 !important;
   border-radius: 12px !important;
   padding: 0;
   margin-bottom: 20px;
@@ -207,40 +207,7 @@
   overflow-y: auto;
 }
 
-/* Table Styles for Master View */
-.proj-history-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-}
-
-.proj-history-table th {
-  text-align: left;
-  padding: 10px 14px;
-  border-bottom: 2px solid #cbd5e1;
-  font-size: 0.85rem;
-  color: #ffffff;
-  font-weight: 700;
-  background: #0f766e;
-}
-
-.proj-history-table td {
-  padding: 10px 14px;
-  border-bottom: 1px solid #e2e8f0;
-  vertical-align: middle;
-}
-
-.proj-history-table tr:hover td {
-  background: #f1f5f9;
-}
-
-.proj-history-table tr.selected td {
-  background: #ccfbf1;
-}
-
-.proj-history-table tr:last-child td {
-  border-bottom: none;
-}
+/* Removed custom table styles in favor of standard React Bootstrap Table props */
 
 .inline-edit-input {
   border: 1px dashed #cbd5e1;

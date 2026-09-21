@@ -3,9 +3,11 @@ import { masterDataService } from '../services/masterDataService';
 
 // Helper function để lấy chính xác data bất chấp cấu trúc trả về
 const extractData = (res) => {
-  // Tránh trường hợp axiosClient trả về { success, data } hoặc bọc thêm lớp nữa
-  const data = res?.data?.data || res?.data || res;
-  return Array.isArray(data) ? data : [];
+  if (!res) return [];
+  if (Array.isArray(res)) return res;
+  if (Array.isArray(res.data)) return res.data;
+  if (Array.isArray(res.data?.data)) return res.data.data;
+  return [];
 };
 
 export const useDepartments = () => {

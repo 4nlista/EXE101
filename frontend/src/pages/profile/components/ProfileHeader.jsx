@@ -1,6 +1,7 @@
 import React from 'react';
 import { Camera, SquarePen, Check, X, MessageSquare, UserPlus, Building, GraduationCap, Calendar } from 'lucide-react';
-import { Button, Form } from 'react-bootstrap';
+import { Form } from 'react-bootstrap';
+import Button from '../../../components/Button';
 import { useDepartments, useMajors } from '../../../hooks/useMasterData';
 
 export default function ProfileHeader({
@@ -19,8 +20,11 @@ export default function ProfileHeader({
   handleSaveProfile,
   isSaving
 }) {
-  const { data: departments = [] } = useDepartments();
-  const { data: majors = [] } = useMajors(editData.departmentId || profileData.departmentId?._id);
+  const { data: rawDepartments } = useDepartments();
+  const { data: rawMajors } = useMajors(editData.departmentId || profileData.departmentId?._id);
+
+  const departments = Array.isArray(rawDepartments) ? rawDepartments : [];
+  const majors = Array.isArray(rawMajors) ? rawMajors : [];
 
   const currentDeptName = profileData.departmentId?.name || 'Chưa cập nhật ngành';
   const currentMajorName = profileData.majorId?.name || 'Chưa cập nhật chuyên ngành';
@@ -162,18 +166,17 @@ export default function ProfileHeader({
           {isOwner ? (
             isEditMode ? (
               <>
-                <Button variant="secondary" className="fw-semibold d-flex align-items-center gap-1 px-3 py-2 rounded-3" onClick={handleCancelEdit}>
+                <Button variant="secondary" className="fw-semibold text-dark d-flex align-items-center gap-1 px-3 py-2 rounded-3" onClick={handleCancelEdit}>
                   <X size={16} /> Hủy
                 </Button>
-                <Button variant="success" className="fw-semibold d-flex align-items-center gap-1 px-3 py-2 rounded-3" onClick={handleSaveProfile} disabled={isSaving}>
+                <Button variant="primary" className="fw-semibold d-flex align-items-center gap-1 px-3 py-2 rounded-3" onClick={handleSaveProfile} disabled={isSaving}>
                   <Check size={16} /> {isSaving ? 'Đang lưu...' : 'Lưu thay đổi'}
                 </Button>
               </>
             ) : (
               <Button
-                variant="warning"
+                variant="primary"
                 className="text-white fw-bold d-flex align-items-center gap-2 px-3 py-2 shadow-sm rounded-3"
-                style={{ backgroundColor: '#d97706', borderColor: '#d97706' }}
                 onClick={handleEditClick}
               >
                 <SquarePen size={18} /> Chỉnh sửa hồ sơ
