@@ -9,7 +9,7 @@ import AppLayout from '../layouts/AppLayout';
 import Feed from '../pages/feed/ProjectFeed';
 import ManageProjects from '../pages/manage/ManageProjects';
 import PublicProfile from '../pages/profile/PublicProfile';
-import ProjectHistoryDetail from '../pages/profile/ProjectHistoryDetail';
+
 import Messages from '../pages/messages/Messages';
 import AIHub from '../pages/ai/AIHub';
 import AdminDashboard from '../pages/admin/AdminDashboard';
@@ -91,7 +91,7 @@ export default function AppRoutes() {
         <Route path="/manage" element={<ManageProjects />} />
         <Route path="/profile" element={<PublicProfile />} />
         <Route path="/profile/:id" element={<PublicProfile />} />
-        <Route path="/profile/project-detail" element={<ProjectHistoryDetail />} />
+
         <Route path="/messages" element={<Messages />} />
         <Route path="/ai-hub" element={<AIHub />} />
         <Route path="/settings" element={<Settings />} />

@@ -89,7 +89,6 @@ export default function ProjectHistoryTable({
                               size="sm"
                               variant="outline-primary"
                               className="me-1 rounded-2"
-
                               onClick={() => openProjectDetail(proj)}
                               title="Chỉnh sửa"
                             >
