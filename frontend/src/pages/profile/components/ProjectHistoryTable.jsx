@@ -3,7 +3,7 @@ import { Card, Badge, Form, Table, Row, Col } from 'react-bootstrap';
 import Button from '../../../components/Button';
 import { Plus, SquarePen, Trash2 } from 'lucide-react';
 
-export default function ProjectHistorySplitView({
+export default function ProjectHistoryTable({
   profileData,
   isOwner,
   isEditMode,
@@ -60,15 +60,15 @@ export default function ProjectHistorySplitView({
 
           {/* MASTER TABLE */}
           <div className="split-view-master">
-            <div className="table-responsive rounded-2 border overflow-hidden">
-              <Table hover striped bordered responsive className="mb-0 align-middle text-nowrap">
+            <div className="table-responsive border overflow-hidden">
+              <Table hover striped bordered responsive >
                 <thead>
                   <tr>
                     <th className="fw-semibold">Loại</th>
-                    <th className=" px-1 fw-semibold">Tên dự án</th>
-                    <th className=" px-1 fw-semibold">Ngày bắt đầu</th>
-                    <th className=" px-1 fw-semibold">Ngày kết thúc</th>
-                    {isEditMode && <th className=" px-1 fw-semibold text-end">Hành động</th>}
+                    <th className="fw-semibold">Tên dự án</th>
+                    <th className="fw-semibold" >Ngày bắt đầu</th>
+                    <th className="fw-semibold">Ngày kết thúc</th>
+                    {isEditMode && <th className="fw-semibold">Hành động</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -84,12 +84,12 @@ export default function ProjectHistorySplitView({
                         <td className="text-muted small px-3">{formatDate(proj.startDate)}</td>
                         <td className="text-muted small px-3">{formatDate(proj.endDate)}</td>
                         {isEditMode && (
-                          <td className="text-end px-3">
+                          <td className="px-3">
                             <Button
                               size="sm"
                               variant="outline-primary"
-                              className="me-1 border-0 rounded-2"
-                              style={{ padding: '4px 8px' }}
+                              className="me-1 rounded-2"
+
                               onClick={() => openProjectDetail(proj)}
                               title="Chỉnh sửa"
                             >
@@ -99,7 +99,6 @@ export default function ProjectHistorySplitView({
                               size="sm"
                               variant="outline-danger"
                               className="border-0 rounded-2"
-                              style={{ padding: '4px 8px' }}
                               onClick={() => handleDeleteProject(proj._id)}
                               title="Xóa"
                             >

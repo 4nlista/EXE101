@@ -13,7 +13,7 @@ import {
 import ProfileHeader from './components/ProfileHeader';
 import ProfileInfo from './components/ProfileInfo';
 import ProfileSkills from './components/ProfileSkills';
-import ProjectHistorySplitView from './components/ProjectHistorySplitView';
+import ProjectHistoryTable from './components/ProjectHistoryTable';
 import '../../styles/profile.css';
 import { toast } from 'react-toastify';
 
@@ -184,7 +184,7 @@ export default function PublicProfilePage() {
   };
 
   return (
-    <Container className="py-4" style={{ maxWidth: '1200px' }}>
+    <Container className="py-3" style={{ maxWidth: '100%' }}>
       <ProfileHeader
         profileData={profileData}
         isOwner={isOwner}
@@ -203,7 +203,7 @@ export default function PublicProfilePage() {
       />
 
       <Row>
-        <Col lg={4} className="mb-4">
+        <Col lg={3}>
           <ProfileInfo
             profileData={profileData}
             isOwner={isOwner}
@@ -225,8 +225,8 @@ export default function PublicProfilePage() {
           />
         </Col>
 
-        <Col lg={8}>
-          <ProjectHistorySplitView
+        <Col lg={9}>
+          <ProjectHistoryTable
             profileData={profileData}
             isOwner={isOwner}
             isEditMode={isEditMode}
