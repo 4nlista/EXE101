@@ -29,9 +29,9 @@ export default function ProfileHeader({
     <div className="profile-header">
       <div className="profile-cover"></div>
       <div className="profile-avatar-wrapper">
-        <img 
-          src={selectedImage ? URL.createObjectURL(selectedImage) : (profileData.avatar || 'https://via.placeholder.com/120')} 
-          alt="Avatar" 
+        <img
+          src={selectedImage ? URL.createObjectURL(selectedImage) : (profileData.avatar || 'https://via.placeholder.com/120')}
+          alt="Avatar"
         />
         {isOwner && isEditMode && (
           <label className="profile-avatar-edit-overlay">
@@ -40,20 +40,20 @@ export default function ProfileHeader({
           </label>
         )}
       </div>
-      
+
       <div className="profile-header-info">
         <div style={{ flex: 1, maxWidth: '600px' }}>
           {isEditMode ? (
             <Form.Control
-              className="mb-2 fw-bold fs-5" 
-              value={editData.name} 
-              onChange={e => setEditData({...editData, name: e.target.value})} 
+              className="mb-2 fw-bold fs-5"
+              value={editData.name}
+              onChange={e => setEditData({ ...editData, name: e.target.value })}
               placeholder="Họ và tên *"
             />
           ) : (
             <h1 className="profile-name">{profileData.name}</h1>
           )}
-          
+
           {/* Ngành, Chuyên ngành & Kỳ học với monochrome icons & Form.Switch */}
           <div className="d-flex flex-column gap-2 mt-2">
             {/* Ngành học */}
@@ -62,10 +62,10 @@ export default function ProfileHeader({
                 <Building size={16} className="text-secondary flex-shrink-0" />
                 <span className="fw-semibold">Ngành:</span>
                 {isEditMode ? (
-                  <Form.Select 
-                    size="sm" 
-                    value={editData.departmentId} 
-                    onChange={e => setEditData({...editData, departmentId: e.target.value, majorId: ''})}
+                  <Form.Select
+                    size="sm"
+                    value={editData.departmentId}
+                    onChange={e => setEditData({ ...editData, departmentId: e.target.value, majorId: '' })}
                     style={{ maxWidth: '240px' }}
                   >
                     <option value="">-- Chọn ngành học --</option>
@@ -77,7 +77,7 @@ export default function ProfileHeader({
                   <span className="text-secondary">{currentDeptName}</span>
                 )}
                 {isEditMode && (
-                  <Form.Check 
+                  <Form.Check
                     type="switch"
                     id="switch-dept"
                     checked={!!privacyData.departmentId}
@@ -96,10 +96,10 @@ export default function ProfileHeader({
                 <GraduationCap size={16} className="text-secondary flex-shrink-0" />
                 <span className="fw-semibold">Chuyên ngành:</span>
                 {isEditMode ? (
-                  <Form.Select 
-                    size="sm" 
-                    value={editData.majorId} 
-                    onChange={e => setEditData({...editData, majorId: e.target.value})}
+                  <Form.Select
+                    size="sm"
+                    value={editData.majorId}
+                    onChange={e => setEditData({ ...editData, majorId: e.target.value })}
                     style={{ maxWidth: '240px' }}
                   >
                     <option value="">-- Chọn chuyên ngành --</option>
@@ -111,7 +111,7 @@ export default function ProfileHeader({
                   <span className="text-secondary">{currentMajorName}</span>
                 )}
                 {isEditMode && (
-                  <Form.Check 
+                  <Form.Check
                     type="switch"
                     id="switch-major"
                     checked={!!privacyData.majorId}
@@ -130,20 +130,20 @@ export default function ProfileHeader({
                 <Calendar size={16} className="text-secondary flex-shrink-0" />
                 <span className="fw-semibold">Kỳ học:</span>
                 {isEditMode ? (
-                  <Form.Control 
-                    size="sm" 
-                    type="number" 
-                    min="1" 
-                    max="9" 
-                    value={editData.semester} 
-                    onChange={e => setEditData({...editData, semester: e.target.value})}
+                  <Form.Control
+                    size="sm"
+                    type="number"
+                    min="1"
+                    max="9"
+                    value={editData.semester}
+                    onChange={e => setEditData({ ...editData, semester: e.target.value })}
                     style={{ width: '80px' }}
                   />
                 ) : (
                   <span className="text-secondary">Kỳ {profileData.semester || '-'}</span>
                 )}
                 {isEditMode && (
-                  <Form.Check 
+                  <Form.Check
                     type="switch"
                     id="switch-semester"
                     checked={!!privacyData.semester}
@@ -157,7 +157,7 @@ export default function ProfileHeader({
             )}
           </div>
         </div>
-        
+
         <div className="profile-actions">
           {isOwner ? (
             isEditMode ? (
@@ -170,10 +170,10 @@ export default function ProfileHeader({
                 </Button>
               </>
             ) : (
-              <Button 
-                variant="warning" 
-                className="text-white fw-bold d-flex align-items-center gap-2 px-3 py-2 shadow-sm rounded-3" 
-                style={{ backgroundColor: '#d97706', borderColor: '#d97706' }} 
+              <Button
+                variant="warning"
+                className="text-white fw-bold d-flex align-items-center gap-2 px-3 py-2 shadow-sm rounded-3"
+                style={{ backgroundColor: '#d97706', borderColor: '#d97706' }}
                 onClick={handleEditClick}
               >
                 <SquarePen size={18} /> Chỉnh sửa hồ sơ
