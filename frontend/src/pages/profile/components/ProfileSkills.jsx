@@ -20,8 +20,8 @@ export default function ProfileSkills({
   const currentSelectValues = Array.isArray(editData.mainSkills)
     ? editData.mainSkills.map(s => (typeof s === 'string' ? { value: s, label: s } : s))
     : (typeof editData.mainSkills === 'string' && editData.mainSkills
-        ? editData.mainSkills.split(',').map(s => s.trim()).filter(Boolean).map(s => ({ value: s, label: s }))
-        : []);
+      ? editData.mainSkills.split(',').map(s => s.trim()).filter(Boolean).map(s => ({ value: s, label: s }))
+      : []);
 
   const handleSkillsChange = (newValues) => {
     setEditData({
@@ -36,7 +36,7 @@ export default function ProfileSkills({
         <div className="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
           <h5 className="fw-bold text-dark mb-0 fs-6">Kỹ năng chuyên môn</h5>
           {isEditMode && (
-            <Form.Check 
+            <Form.Check
               type="switch"
               id="privacy-mainSkills"
               checked={!!privacyData.mainSkills}
