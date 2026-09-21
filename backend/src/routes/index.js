@@ -12,5 +12,6 @@ router.use('/users', userRoutes);
 router.use('/', masterDataRoutes);
 router.use('/projects', require('./projectRoutes'));
 router.use('/project-history', require('./projectHistoryRoutes'));
+router.use('/applications', require('./applicationRoutes'));
 
 module.exports = router;

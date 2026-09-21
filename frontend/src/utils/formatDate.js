@@ -16,6 +16,8 @@ export const formatCreatedDate = (dateStr) => {
   return `${day}/${month}/${year} ${hours}:${minutes}`;
 };
 
+export const formatDate = formatCreatedDate;
+
 /**
  * Calculate remaining days to a deadline
  * @param {string|Date} deadlineStr 

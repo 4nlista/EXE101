@@ -79,7 +79,102 @@ const checkApplicationStatus = async (req, res) => {
   }
 };
 
+/**
+ * [GET] /api/applications/my-applications
+ * Lấy danh sách hồ sơ user đã nộp
+ */
+const getMyApplications = async (req, res) => {
+  try {
+    const applicantId = req.user.id;
+    const result = await applicationService.getMyApplications(applicantId, req.query);
+    
+    return res.status(200).json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Lỗi khi lấy danh sách hồ sơ.'
+    });
+  }
+};
+
+/**
+ * [PATCH] /api/applications/:id/cancel
+ * Hủy đơn đang PENDING
+ */
+const cancelApplication = async (req, res) => {
+  try {
+    const applicationId = req.params.id;
+    const applicantId = req.user.id;
+    
+    await applicationService.cancelApplication(applicationId, applicantId);
+    
+    return res.status(200).json({
+      success: true,
+      message: 'Hủy đơn đăng ký thành công.'
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message || 'Lỗi khi hủy đơn.'
+    });
+  }
+};
+
+/**
+ * [PATCH] /api/applications/:id/accept-invite
+ * Chấp nhận lời mời INVITED
+ */
+const acceptInvite = async (req, res) => {
+  try {
+    const applicationId = req.params.id;
+    const applicantId = req.user.id;
+    
+    const result = await applicationService.acceptInvite(applicationId, applicantId);
+    
+    return res.status(200).json({
+      success: true,
+      message: 'Đã chấp nhận lời mời tham gia dự án.',
+      data: result
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message || 'Lỗi khi chấp nhận lời mời.'
+    });
+  }
+};
+
+/**
+ * [PATCH] /api/applications/:id/decline-invite
+ * Từ chối lời mời INVITED
+ */
+const declineInvite = async (req, res) => {
+  try {
+    const applicationId = req.params.id;
+    const applicantId = req.user.id;
+    
+    await applicationService.declineInvite(applicationId, applicantId);
+    
+    return res.status(200).json({
+      success: true,
+      message: 'Đã từ chối lời mời tham gia dự án.'
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message || 'Lỗi khi từ chối lời mời.'
+    });
+  }
+};
+
 module.exports = {
   createApplication,
-  checkApplicationStatus
+  checkApplicationStatus,
+  getMyApplications,
+  cancelApplication,
+  acceptInvite,
+  declineInvite
 };

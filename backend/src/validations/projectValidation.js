@@ -44,6 +44,17 @@ const createProjectSchema = Joi.object({
   })
 });
 
+const updateProjectSchema = Joi.object({
+  title: Joi.string().trim().max(150),
+  description: Joi.string().trim().max(3000),
+  candidateRequirements: Joi.string().trim().max(2000),
+  departmentIds: Joi.array().items(Joi.string().regex(/^[0-9a-fA-F]{24}$/)).min(1),
+  gradeTarget: Joi.number().min(0).max(10),
+  maxMembers: Joi.number().integer().min(1),
+  deadline: Joi.date().iso().greater('now')
+});
+
 module.exports = { 
-  createProjectSchema 
+  createProjectSchema,
+  updateProjectSchema
 };

@@ -8,6 +8,7 @@ import ResetPassword from '../pages/auth/ResetPassword';
 import AppLayout from '../layouts/AppLayout';
 import Feed from '../pages/feed/ProjectFeed';
 import ManageProjects from '../pages/manage/ManageProjects';
+import ProjectManagementDetail from '../pages/manage/ProjectManagementDetail';
 import PublicProfile from '../pages/profile/PublicProfile';
 
 import Messages from '../pages/messages/Messages';
@@ -89,6 +90,7 @@ export default function AppRoutes() {
       <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
         <Route path="/feed" element={<Feed />} />
         <Route path="/manage" element={<ManageProjects />} />
+        <Route path="/manage/:projectId" element={<ProjectManagementDetail />} />
         <Route path="/profile" element={<PublicProfile />} />
         <Route path="/profile/:id" element={<PublicProfile />} />
 

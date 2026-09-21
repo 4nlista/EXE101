@@ -1,7 +1,9 @@
 const Application = require('../models/Application');
 const Project = require('../models/Project');
+const Notification = require('../models/Notification');
 const { APPLICATION_STATUS } = require('../constants/applicationEnum');
 const { PROJECT_STATUS } = require('../constants/projectEnum');
+const { NOTIFICATION_TYPE } = require('../constants/notificationEnum');
 
 /**
  * Xử lý logic nộp hồ sơ ứng tuyển
@@ -85,7 +87,7 @@ const checkApplicationStatus = async (projectId, applicantId) => {
     return { canApply: true, status: null, rejectionCount: 0 };
   }
 
-  if (application.status === APPLICATION_STATUS.PENDING || application.status === APPLICATION_STATUS.APPROVED) {
+  if (application.status === APPLICATION_STATUS.PENDING || application.status === APPLICATION_STATUS.APPROVED || application.status === APPLICATION_STATUS.INVITED) {
     return { canApply: false, status: application.status, rejectionCount: application.rejectionCount };
   }
   
@@ -100,7 +102,143 @@ const checkApplicationStatus = async (projectId, applicantId) => {
   return { canApply: false, status: application.status, rejectionCount: application.rejectionCount };
 };
 
+const getMyApplications = async (applicantId, query) => {
+  const { status, search, page = 1, limit = 10 } = query;
+  const skip = (page - 1) * limit;
+
+  let filter = { applicantId };
+  if (status) filter.status = status;
+
+  // Nếu có tìm kiếm theo tên dự án, ta cần populate và sau đó filter, 
+  // nhưng MongoDB khó search field của bảng populate, 
+  // do đó ưu tiên tìm dự án trước
+  if (search) {
+    const projects = await Project.find({ title: { $regex: search, $options: 'i' } }).select('_id');
+    const projectIds = projects.map(p => p._id);
+    filter.projectId = { $in: projectIds };
+  }
+
+  const [applications, total] = await Promise.all([
+    Application.find(filter)
+      .populate({
+        path: 'projectId',
+        select: 'title departmentIds deadline status maxMembers members ownerId gradeTarget',
+        populate: { path: 'departmentIds', select: 'name' }
+      })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit)),
+    Application.countDocuments(filter)
+  ]);
+
+  return {
+    applications,
+    total,
+    totalPages: Math.ceil(total / limit),
+    currentPage: parseInt(page)
+  };
+};
+
+const cancelApplication = async (applicationId, applicantId) => {
+  const application = await Application.findOne({ _id: applicationId, applicantId });
+  
+  if (!application) {
+    throw new Error('Không tìm thấy đơn đăng ký.');
+  }
+
+  if (application.status !== APPLICATION_STATUS.PENDING) {
+    throw new Error('Chỉ có thể hủy đơn đang chờ duyệt.');
+  }
+
+  await application.deleteOne();
+  return true;
+};
+
+const acceptInvite = async (applicationId, applicantId) => {
+  const application = await Application.findOne({ _id: applicationId, applicantId });
+  
+  if (!application) throw new Error('Không tìm thấy đơn.');
+  if (application.status !== APPLICATION_STATUS.INVITED) {
+    throw new Error('Đơn đăng ký không ở trạng thái được mời.');
+  }
+
+  const project = await Project.findById(application.projectId);
+  if (!project) throw new Error('Dự án không tồn tại.');
+  
+  if (project.status !== PROJECT_STATUS.OPEN) {
+    throw new Error('Dự án đã đóng tuyển.');
+  }
+  if (project.members.length >= project.maxMembers) {
+    throw new Error('Dự án đã đủ thành viên.');
+  }
+
+  // Thêm vào project.members
+  project.members.push({
+    userId: applicantId,
+    role: 'Member'
+  });
+
+  // Cập nhật trạng thái application
+  application.status = APPLICATION_STATUS.APPROVED;
+
+  // Auto-close project nếu đã đủ slot
+  if (project.members.length >= project.maxMembers) {
+    project.status = PROJECT_STATUS.CLOSED;
+    
+    // Tự động từ chối các đơn PENDING còn lại
+    const pendingApps = await Application.find({ projectId: project._id, status: APPLICATION_STATUS.PENDING });
+    for (const app of pendingApps) {
+      app.status = APPLICATION_STATUS.REJECTED;
+      app.rejectionCount += 1;
+      await app.save();
+
+      // Gửi thông báo từ chối
+      await Notification.create({
+        userId: app.applicantId,
+        type: NOTIFICATION_TYPE.REJECTED,
+        title: 'Hồ sơ bị từ chối',
+        content: `Dự án "${project.title}" đã tuyển đủ thành viên. Đơn của bạn đã bị từ chối.`,
+        referenceId: project._id,
+        referenceModel: 'Project'
+      });
+    }
+  }
+
+  await Promise.all([project.save(), application.save()]);
+
+  // Gửi thông báo cho chủ dự án
+  await Notification.create({
+    userId: project.ownerId,
+    type: NOTIFICATION_TYPE.INVITATION_ACCEPTED,
+    title: 'Lời mời được chấp nhận',
+    content: `Ứng viên đã chấp nhận lời mời tham gia dự án "${project.title}".`,
+    referenceId: project._id,
+    referenceModel: 'Project'
+  });
+
+  return application;
+};
+
+const declineInvite = async (applicationId, applicantId) => {
+  const application = await Application.findOne({ _id: applicationId, applicantId });
+  
+  if (!application) throw new Error('Không tìm thấy đơn.');
+  if (application.status !== APPLICATION_STATUS.INVITED) {
+    throw new Error('Đơn đăng ký không ở trạng thái được mời.');
+  }
+
+  application.status = APPLICATION_STATUS.REJECTED;
+  await application.save();
+
+  // Có thể gửi thông báo cho chủ dự án nếu cần, tạm thời ko cần thiết
+  return true;
+};
+
 module.exports = {
   createApplication,
-  checkApplicationStatus
+  checkApplicationStatus,
+  getMyApplications,
+  cancelApplication,
+  acceptInvite,
+  declineInvite
 };

@@ -1,0 +1,369 @@
+import React, { useState, useEffect } from 'react';
+import { Container, Badge, Nav, Table, Card, Row, Col } from 'react-bootstrap';
+import { FaArrowLeft, FaEdit, FaStar, FaRegFileAlt } from 'react-icons/fa';
+import { useParams, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import Button from '../../components/Button';
+import ConfirmActionModal from '../../components/ConfirmActionModal';
+import {
+  getProjectDetail,
+  getProjectApplicants,
+  approveApplicant,
+  rejectApplicant,
+  inviteApplicant,
+  kickMember
+} from '../../services/projectService';
+import { APPLICATION_STATUS } from '../../constants/applicationEnum';
+import { PROJECT_STATUS } from '../../constants/projectEnum';
+import { formatDate } from '../../utils/formatDate';
+import UpdateProjectModal from './UpdateProjectModal';
+
+export default function ProjectManagementDetail() {
+  const { projectId } = useParams();
+  const navigate = useNavigate();
+
+  const [project, setProject] = useState(null);
+  const [applications, setApplications] = useState([]);
+  const [members, setMembers] = useState([]);
+  const [activeTab, setActiveTab] = useState('applicants');
+  const [loading, setLoading] = useState(false);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [confirmAction, setConfirmAction] = useState({ type: null, appId: null, userId: null, name: '' });
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [projRes, appRes] = await Promise.all([
+        getProjectDetail(projectId),
+        getProjectApplicants(projectId)
+      ]);
+      if (projRes.success) setProject(projRes.data);
+      if (appRes.success) {
+        setApplications(appRes.data.applications);
+        setMembers(appRes.data.projectMembers);
+      }
+    } catch (error) {
+      toast.error('Lỗi khi tải dữ liệu dự án');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [projectId]);
+
+  const handleConfirmAction = async () => {
+    try {
+      if (confirmAction.type === 'approve') {
+        await approveApplicant(projectId, confirmAction.appId);
+        toast.success(`Đã duyệt ứng viên ${confirmAction.name}`);
+      } else if (confirmAction.type === 'reject') {
+        await rejectApplicant(projectId, confirmAction.appId);
+        toast.success(`Đã từ chối ứng viên ${confirmAction.name}`);
+      } else if (confirmAction.type === 'invite') {
+        await inviteApplicant(projectId, confirmAction.appId);
+        toast.success(`Đã gửi lời mời tham gia dự án đến ${confirmAction.name}`);
+      } else if (confirmAction.type === 'kick') {
+        await kickMember(projectId, confirmAction.userId);
+        toast.success(`Đã xóa thành viên ${confirmAction.name} khỏi dự án`);
+      }
+      setShowConfirm(false);
+      fetchData(); // Reload dữ liệu để cập nhật danh sách ứng viên và thành viên
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Có lỗi xảy ra');
+    }
+  };
+
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case APPLICATION_STATUS.PENDING:
+        return <Badge bg="warning" text="dark" className="rounded-pill px-3 py-2 bg-opacity-25 fw-normal">PENDING</Badge>;
+      case APPLICATION_STATUS.APPROVED:
+        return <Badge bg="success" className="rounded-pill px-3 py-2 fw-normal">APPROVED</Badge>;
+      case APPLICATION_STATUS.REJECTED:
+        return <Badge bg="danger" className="rounded-pill px-3 py-2 fw-normal">REJECTED</Badge>;
+      case APPLICATION_STATUS.INVITED:
+        return <Badge bg="info" className="rounded-pill px-3 py-2 fw-normal">INVITED</Badge>;
+      default:
+        return null;
+    }
+  };
+
+  if (loading || !project) return <Container className="py-5 text-center">Đang tải...</Container>;
+
+  return (
+    <Container className="py-4" style={{ maxWidth: '1200px' }}>
+      <Button variant="light" className="mb-4 d-flex align-items-center gap-2 rounded-pill px-3 py-2 shadow-sm border" onClick={() => navigate('/manage')}>
+        <FaArrowLeft /> Quay lại
+      </Button>
+
+      {/* Thông tin dự án */}
+      <div className="bg-white rounded-4 shadow-sm border p-4 mb-4">
+        <div className="d-flex justify-content-between align-items-start mb-4">
+          <div className="d-flex gap-3">
+            <div className="bg-light rounded-3 d-flex align-items-center justify-content-center" style={{ width: '64px', height: '64px' }}>
+              <FaRegFileAlt size={32} className="text-primary" />
+            </div>
+            <div>
+              <div className="d-flex align-items-center gap-2 mb-2">
+                <h4 className="fw-bold mb-0">{project.title}</h4>
+                <Badge bg={project.status === PROJECT_STATUS.OPEN ? 'success' : 'secondary'} className="rounded-pill px-3 py-1 bg-opacity-25 text-success">
+                  {project.status === PROJECT_STATUS.OPEN ? 'Đang tuyển' : 'Đã đóng'}
+                </Badge>
+              </div>
+              <div className="text-muted" style={{ fontSize: '14px' }}>
+                Đăng bởi: <span className="fw-semibold text-dark">{project.ownerId?.name || 'Bạn'}</span>
+                <span className="mx-2">•</span>
+                {formatDate(project.createdAt)}
+              </div>
+            </div>
+          </div>
+
+          <div className="text-end">
+            <div className="mb-2 text-muted fw-semibold" style={{ fontSize: '14px' }}>
+              <span className="text-primary">{members.length} / {project.maxMembers}</span> thành viên
+            </div>
+            <div className="progress mb-3" style={{ height: '6px', width: '200px' }}>
+              <div
+                className="progress-bar bg-warning"
+                style={{ width: `${Math.min(100, (members.length / project.maxMembers) * 100)}%` }}
+              />
+            </div>
+            <Button variant="outline-primary" className="rounded-pill px-4" onClick={() => setShowUpdateModal(true)}>
+              <FaEdit className="me-2" /> Chỉnh sửa
+            </Button>
+          </div>
+        </div>
+
+        <Row className="g-3 border-top border-bottom py-3 mb-3 text-center">
+          <Col md={3} className="border-end">
+            <div className="text-muted mb-1" style={{ fontSize: '13px' }}>Ngành</div>
+            <div className="fw-semibold text-dark">{project.departmentIds?.map(d => d.name).join(', ')}</div>
+          </Col>
+          <Col md={3} className="border-end">
+            <div className="text-muted mb-1" style={{ fontSize: '13px' }}>Mục tiêu điểm</div>
+            <div className="fw-semibold text-dark">{project.gradeTarget ? `${project.gradeTarget} / 10` : 'Không có'}</div>
+          </Col>
+          <Col md={3}>
+            <div className="text-muted mb-1" style={{ fontSize: '13px' }}>Hạn ứng tuyển</div>
+            <div className="fw-semibold text-dark">{project.deadline ? formatDate(project.deadline) : 'Không có'}</div>
+          </Col>
+        </Row>
+
+        <Row className="g-4">
+          <Col md={6}>
+            <h6 className="fw-bold mb-2">Tổng quan dự án</h6>
+            <p className="text-muted" style={{ fontSize: '14px', whiteSpace: 'pre-line' }}>{project.description}</p>
+          </Col>
+          <Col md={6}>
+            <h6 className="fw-bold mb-2">Yêu cầu ứng viên</h6>
+            <p className="text-muted" style={{ fontSize: '14px', whiteSpace: 'pre-line' }}>{project.candidateRequirements}</p>
+          </Col>
+        </Row>
+      </div>
+
+      {/* Tabs */}
+      <Nav variant="tabs" className="mb-4" activeKey={activeTab} onSelect={(k) => setActiveTab(k)}>
+        <Nav.Item>
+          <Nav.Link eventKey="applicants" className={activeTab === 'applicants' ? 'fw-bold text-dark border-bottom border-primary border-3' : 'text-muted'}>
+            Danh sách ứng viên
+          </Nav.Link>
+        </Nav.Item>
+        <Nav.Item>
+          <Nav.Link eventKey="members" className={activeTab === 'members' ? 'fw-bold text-dark border-bottom border-primary border-3' : 'text-muted'}>
+            Thành viên dự án
+          </Nav.Link>
+        </Nav.Item>
+      </Nav>
+
+      {/* Content */}
+      <div className="bg-white rounded-4 shadow-sm border p-4">
+        {activeTab === 'applicants' && (
+          <div className="table-responsive">
+            <Table hover className="align-middle border-top border-bottom mb-0">
+              <thead className="bg-light">
+                <tr>
+                  <th className="py-3 text-muted fw-semibold border-0 text-center" style={{ width: '60px' }}>STT</th>
+                  <th className="py-3 text-muted fw-semibold border-0">Ứng viên</th>
+                  <th className="py-3 text-muted fw-semibold border-0">Thời gian nộp</th>
+                  <th className="py-3 text-muted fw-semibold border-0">Nghiên cứu</th>
+                  <th className="py-3 text-muted fw-semibold border-0 text-center">Trạng thái</th>
+                  <th className="py-3 text-muted fw-semibold border-0 text-center">CV</th>
+                  <th className="py-3 text-muted fw-semibold border-0 text-center" style={{ width: '180px' }}>Hành động</th>
+                </tr>
+              </thead>
+              <tbody>
+                {applications.length === 0 ? (
+                  <tr>
+                    <td colSpan="7" className="text-center py-4 text-muted">Chưa có ứng viên nào</td>
+                  </tr>
+                ) : (
+                  applications.map((app, idx) => (
+                    <tr key={app._id}>
+                      <td className="text-center text-muted">{idx + 1}</td>
+                      <td>
+                        <div className="d-flex align-items-center gap-3">
+                          <img
+                            src={app.applicantId?.avatar || 'https://via.placeholder.com/40'}
+                            alt="Avatar"
+                            className="rounded-circle"
+                            style={{ width: '40px', height: '40px', objectFit: 'cover' }}
+                          />
+                          <div>
+                            <div className="fw-semibold text-dark">{app.applicantId?.name}</div>
+                            <div className="text-muted" style={{ fontSize: '12px' }}>{app.applicantId?.major || app.applicantId?.university || 'Chưa cập nhật'}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="text-muted">{formatDate(app.createdAt)}</td>
+                      <td>
+                        <Button variant="outline-secondary" size="sm" className="rounded-pill d-flex align-items-center gap-1" disabled title="Tính năng VIP/Premium">
+                          <FaStar className="text-warning" /> Match
+                        </Button>
+                      </td>
+                      <td className="text-center">{getStatusBadge(app.status)}</td>
+                      <td className="text-center">
+                        <a href={app.cvFileUrl} target="_blank" rel="noopener noreferrer" className="text-primary text-decoration-none">
+                          Xem CV
+                        </a>
+                      </td>
+                      <td className="text-center">
+                        {app.status === APPLICATION_STATUS.PENDING && (
+                          <div className="d-flex justify-content-center gap-2">
+                            <Button
+                              variant="outline-success"
+                              size="sm"
+                              className="rounded-pill px-3"
+                              onClick={() => {
+                                setConfirmAction({ type: 'approve', appId: app._id, name: app.applicantId?.name });
+                                setShowConfirm(true);
+                              }}
+                            >Duyệt</Button>
+                            <Button
+                              variant="outline-danger"
+                              size="sm"
+                              className="rounded-pill px-3"
+                              onClick={() => {
+                                setConfirmAction({ type: 'reject', appId: app._id, name: app.applicantId?.name });
+                                setShowConfirm(true);
+                              }}
+                            >Từ chối</Button>
+                          </div>
+                        )}
+                        {app.status === APPLICATION_STATUS.APPROVED && (
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            className="rounded-pill px-3 bg-opacity-10 text-primary border-0 fw-semibold"
+                            onClick={() => navigate('/messages')}
+                          >Nhắn tin</Button>
+                        )}
+                        {app.status === APPLICATION_STATUS.REJECTED && (
+                          <Button
+                            variant="outline-info"
+                            size="sm"
+                            className="rounded-pill px-3"
+                            onClick={() => {
+                              setConfirmAction({ type: 'invite', appId: app._id, name: app.applicantId?.name });
+                              setShowConfirm(true);
+                            }}
+                          >Mời tham gia</Button>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </Table>
+          </div>
+        )}
+
+        {activeTab === 'members' && (
+          <Row className="g-4">
+            {members.length === 0 ? (
+              <Col><div className="text-center py-4 text-muted">Chưa có thành viên nào được duyệt</div></Col>
+            ) : (
+              members.map((member) => (
+                <Col md={3} key={member.userId._id}>
+                  <Card className="border shadow-sm rounded-4 text-center h-100">
+                    <Card.Body className="d-flex flex-column align-items-center p-4">
+                      <img
+                        src={member.userId.avatar || 'https://via.placeholder.com/64'}
+                        alt="Avatar"
+                        className="rounded-circle mb-3 border"
+                        style={{ width: '64px', height: '64px', objectFit: 'cover' }}
+                      />
+                      <h6 className="fw-bold mb-1">{member.userId.name}</h6>
+                      <p className="text-muted mb-3" style={{ fontSize: '13px' }}>{member.userId.major || member.userId.university || 'Chưa cập nhật'}</p>
+
+                      <div className="d-flex flex-column gap-2 mt-auto w-100">
+                        <div className="d-flex gap-2 w-100">
+                          <Button
+                            variant="outline-primary"
+                            className="w-50 rounded-pill py-1"
+                            onClick={() => navigate(`/profile/${member.userId._id}`)}
+                            style={{ fontSize: '13px' }}
+                          >Profile</Button>
+                          <Button
+                            variant="primary"
+                            className="w-50 rounded-pill py-1 bg-opacity-10 text-primary border-0 fw-semibold"
+                            onClick={() => navigate('/messages')}
+                            style={{ fontSize: '13px' }}
+                          >Nhắn tin</Button>
+                        </div>
+                        <Button
+                          variant="outline-danger"
+                          className="w-100 rounded-pill py-1"
+                          onClick={() => {
+                            setConfirmAction({ type: 'kick', userId: member.userId._id, name: member.userId.name });
+                            setShowConfirm(true);
+                          }}
+                          style={{ fontSize: '13px' }}
+                        >Xóa khỏi dự án</Button>
+                      </div>
+                    </Card.Body>
+                  </Card>
+                </Col>
+              ))
+            )}
+          </Row>
+        )}
+      </div>
+
+      <ConfirmActionModal
+        show={showConfirm}
+        onHide={() => setShowConfirm(false)}
+        onConfirm={handleConfirmAction}
+        title={
+          confirmAction.type === 'approve' ? 'Duyệt ứng viên' :
+            confirmAction.type === 'reject' ? 'Từ chối ứng viên' :
+              confirmAction.type === 'invite' ? 'Mời tham gia' : 'Xóa thành viên'
+        }
+        message={
+          confirmAction.type === 'approve' ? `Bạn có chắc chắn muốn duyệt ứng viên ${confirmAction.name} vào dự án không?` :
+            confirmAction.type === 'reject' ? `Bạn có chắc chắn muốn từ chối ứng viên ${confirmAction.name} không?` :
+              confirmAction.type === 'invite' ? `Bạn có muốn gửi lời mời tham gia dự án đến ${confirmAction.name}?` :
+                `Bạn có chắc chắn muốn xóa thành viên ${confirmAction.name} khỏi dự án không?`
+        }
+        confirmText={
+          confirmAction.type === 'approve' ? 'Duyệt' :
+            confirmAction.type === 'reject' ? 'Từ chối' :
+              confirmAction.type === 'invite' ? 'Mời' : 'Xóa'
+        }
+        variant={
+          confirmAction.type === 'approve' || confirmAction.type === 'invite' ? 'success' : 'danger'
+        }
+      />
+
+      <UpdateProjectModal 
+        show={showUpdateModal}
+        onHide={() => setShowUpdateModal(false)}
+        project={project}
+        onSuccess={(updatedData) => setProject({ ...project, ...updatedData })}
+      />
+    </Container>
+  );
+}

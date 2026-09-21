@@ -30,4 +30,73 @@ router.get(
   applicationController.checkApplicationStatus
 );
 
+// Route GET /api/projects/my-projects - Lấy danh sách dự án của user
+router.get(
+  '/my-projects',
+  verifyToken,
+  projectController.getMyProjects
+);
+
+// Route GET /api/projects/my-projects/stats - Thống kê dự án
+router.get(
+  '/my-projects/stats',
+  verifyToken,
+  projectController.getMyProjectStats
+);
+
+// Route GET /api/projects/:projectId - Lấy chi tiết dự án
+router.get(
+  '/:projectId',
+  projectController.getProjectDetail
+);
+
+// Route PATCH /api/projects/:projectId - Sửa dự án
+router.patch(
+  '/:projectId',
+  verifyToken,
+  projectController.updateProject
+);
+
+// Route DELETE /api/projects/:projectId - Xóa dự án
+router.delete(
+  '/:projectId',
+  verifyToken,
+  projectController.deleteProject
+);
+
+// Route GET /api/projects/:projectId/applicants - Danh sách ứng viên & thành viên
+router.get(
+  '/:projectId/applicants',
+  verifyToken,
+  projectController.getProjectApplicants
+);
+
+// Route PATCH /api/projects/:projectId/applicants/:applicationId/approve
+router.patch(
+  '/:projectId/applicants/:applicationId/approve',
+  verifyToken,
+  projectController.approveApplicant
+);
+
+// Route PATCH /api/projects/:projectId/applicants/:applicationId/reject
+router.patch(
+  '/:projectId/applicants/:applicationId/reject',
+  verifyToken,
+  projectController.rejectApplicant
+);
+
+// Route POST /api/projects/:projectId/applicants/:applicationId/invite
+router.post(
+  '/:projectId/applicants/:applicationId/invite',
+  verifyToken,
+  projectController.inviteApplicant
+);
+
+// Route DELETE /api/projects/:projectId/members/:userId - Kick thành viên
+router.delete(
+  '/:projectId/members/:userId',
+  verifyToken,
+  projectController.kickMember
+);
+
 module.exports = router;
