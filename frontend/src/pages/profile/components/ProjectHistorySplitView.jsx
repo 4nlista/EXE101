@@ -26,7 +26,7 @@ export default function ProjectHistorySplitView({
           <h5 className="fw-bold text-dark mb-0 fs-6">Lịch sử dự án</h5>
           <div className="d-flex align-items-center gap-2">
             {isEditMode && (
-              <Form.Check 
+              <Form.Check
                 type="switch"
                 id="privacy-projectHistory"
                 checked={!!privacyData.projectHistory}
@@ -38,14 +38,14 @@ export default function ProjectHistorySplitView({
             )}
             {isEditMode && !selectedProject && !isAddingProject && (
               <Button size="sm" variant="success" className="d-flex align-items-center gap-1 px-3 py-1 fw-semibold" style={{ backgroundColor: '#0d9488', borderColor: '#0d9488' }} onClick={() => openProjectDetail()}>
-                <Plus size={15}/> Thêm dự án
+                <Plus size={15} /> Thêm dự án
               </Button>
             )}
           </div>
         </div>
 
         <div className={`split-view-container ${(selectedProject || isAddingProject) ? 'active' : ''}`}>
-          
+
           {/* MASTER TABLE */}
           <div className="split-view-master">
             <div className="table-responsive rounded-2 border overflow-hidden">
@@ -73,25 +73,25 @@ export default function ProjectHistorySplitView({
                         </td>
                         {isEditMode && (
                           <td className="text-end px-3">
-                            <Button 
-                              size="sm" 
-                              variant="light" 
-                              className="me-1 border-0 rounded-2" 
+                            <Button
+                              size="sm"
+                              variant="light"
+                              className="me-1 border-0 rounded-2"
                               style={{ backgroundColor: '#e0f2fe', color: '#0284c7', padding: '4px 8px' }}
                               onClick={() => openProjectDetail(proj)}
                               title="Chỉnh sửa"
                             >
-                              <SquarePen size={15}/>
+                              <SquarePen size={15} />
                             </Button>
-                            <Button 
-                              size="sm" 
-                              variant="light" 
-                              className="border-0 rounded-2" 
+                            <Button
+                              size="sm"
+                              variant="light"
+                              className="border-0 rounded-2"
                               style={{ backgroundColor: '#ffe4e6', color: '#e11d48', padding: '4px 8px' }}
                               onClick={() => handleDeleteProject(proj._id)}
                               title="Xóa"
                             >
-                              <Trash2 size={15}/>
+                              <Trash2 size={15} />
                             </Button>
                           </td>
                         )}
@@ -116,12 +116,12 @@ export default function ProjectHistorySplitView({
             <div className="detail-body p-3">
               <Form.Group className="mb-3">
                 <Form.Label className="small fw-bold text-dark">Tên dự án *</Form.Label>
-                <Form.Control size="sm" value={projectForm.projectName || ''} onChange={e => setProjectForm({...projectForm, projectName: e.target.value})} />
+                <Form.Control size="sm" value={projectForm.projectName || ''} onChange={e => setProjectForm({ ...projectForm, projectName: e.target.value })} />
               </Form.Group>
-              
+
               <Form.Group className="mb-3">
                 <Form.Label className="small fw-bold text-dark">Loại dự án *</Form.Label>
-                <Form.Select size="sm" value={projectForm.type || 'personal'} onChange={e => setProjectForm({...projectForm, type: e.target.value})}>
+                <Form.Select size="sm" value={projectForm.type || 'personal'} onChange={e => setProjectForm({ ...projectForm, type: e.target.value })}>
                   <option value="personal">Dự án cá nhân</option>
                   <option value="group">Dự án nhóm</option>
                 </Form.Select>
@@ -130,11 +130,11 @@ export default function ProjectHistorySplitView({
               <Row className="mb-3">
                 <Col xs={6}>
                   <Form.Label className="small fw-bold text-dark">Bắt đầu</Form.Label>
-                  <Form.Control size="sm" type="date" value={projectForm.startDate || ''} onChange={e => setProjectForm({...projectForm, startDate: e.target.value})} />
+                  <Form.Control size="sm" type="date" value={projectForm.startDate || ''} onChange={e => setProjectForm({ ...projectForm, startDate: e.target.value })} />
                 </Col>
                 <Col xs={6}>
                   <Form.Label className="small fw-bold text-dark">Kết thúc</Form.Label>
-                  <Form.Control size="sm" type="date" value={projectForm.endDate || ''} onChange={e => setProjectForm({...projectForm, endDate: e.target.value})} />
+                  <Form.Control size="sm" type="date" value={projectForm.endDate || ''} onChange={e => setProjectForm({ ...projectForm, endDate: e.target.value })} />
                 </Col>
               </Row>
 
@@ -142,21 +142,21 @@ export default function ProjectHistorySplitView({
                 <>
                   <Form.Group className="mb-3">
                     <Form.Label className="small fw-bold text-dark">Vai trò</Form.Label>
-                    <Form.Select size="sm" value={projectForm.role || 'member'} onChange={e => setProjectForm({...projectForm, role: e.target.value})}>
+                    <Form.Select size="sm" value={projectForm.role || 'member'} onChange={e => setProjectForm({ ...projectForm, role: e.target.value })}>
                       <option value="member">Thành viên</option>
                       <option value="leader">Trưởng nhóm</option>
                     </Form.Select>
                   </Form.Group>
                   <Form.Group className="mb-3">
                     <Form.Label className="small fw-bold text-dark">Nhiệm vụ</Form.Label>
-                    <Form.Control size="sm" value={projectForm.task || ''} onChange={e => setProjectForm({...projectForm, task: e.target.value})} />
+                    <Form.Control size="sm" value={projectForm.task || ''} onChange={e => setProjectForm({ ...projectForm, task: e.target.value })} />
                   </Form.Group>
                 </>
               )}
 
               <Form.Group className="mb-4">
                 <Form.Label className="small fw-bold text-dark">Mô tả dự án</Form.Label>
-                <Form.Control as="textarea" rows={4} size="sm" value={projectForm.description || ''} onChange={e => setProjectForm({...projectForm, description: e.target.value})} />
+                <Form.Control as="textarea" rows={4} size="sm" value={projectForm.description || ''} onChange={e => setProjectForm({ ...projectForm, description: e.target.value })} />
               </Form.Group>
 
               <div className="d-grid gap-2">

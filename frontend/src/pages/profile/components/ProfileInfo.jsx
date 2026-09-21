@@ -32,7 +32,7 @@ export default function ProfileInfo({
                 )}
               </div>
               {isEditMode && (
-                <Form.Check 
+                <Form.Check
                   type="switch"
                   id="privacy-email"
                   checked={!!privacyData.email}
@@ -54,10 +54,10 @@ export default function ProfileInfo({
                 <Phone size={15} className="text-secondary flex-shrink-0 me-1" />
                 <span className="fw-bold text-dark me-1">Số điện thoại<span className="text-danger">*</span>:</span>
                 {isEditMode ? (
-                  <Form.Control 
-                    size="sm" 
-                    value={editData.phone} 
-                    onChange={e => setEditData({...editData, phone: e.target.value})}
+                  <Form.Control
+                    size="sm"
+                    value={editData.phone}
+                    onChange={e => setEditData({ ...editData, phone: e.target.value })}
                     placeholder="[Nhập SĐT]"
                     className="d-inline-block py-0 px-2"
                     style={{ width: '150px', height: '28px', fontSize: '0.85rem' }}
@@ -67,7 +67,7 @@ export default function ProfileInfo({
                 )}
               </div>
               {isEditMode && (
-                <Form.Check 
+                <Form.Check
                   type="switch"
                   id="privacy-phone"
                   checked={!!privacyData.phone}
@@ -89,10 +89,10 @@ export default function ProfileInfo({
                 <MapPin size={15} className="text-secondary flex-shrink-0 me-1" />
                 <span className="fw-bold text-dark me-1">Địa chỉ:</span>
                 {isEditMode ? (
-                  <Form.Control 
-                    size="sm" 
-                    value={editData.address} 
-                    onChange={e => setEditData({...editData, address: e.target.value})}
+                  <Form.Control
+                    size="sm"
+                    value={editData.address}
+                    onChange={e => setEditData({ ...editData, address: e.target.value })}
                     placeholder="[Nhập địa chỉ]"
                     className="d-inline-block py-0 px-2"
                     style={{ width: '150px', height: '28px', fontSize: '0.85rem' }}
@@ -102,7 +102,7 @@ export default function ProfileInfo({
                 )}
               </div>
               {isEditMode && (
-                <Form.Check 
+                <Form.Check
                   type="switch"
                   id="privacy-address"
                   checked={!!privacyData.address}
@@ -124,11 +124,11 @@ export default function ProfileInfo({
                 <Calendar size={15} className="text-secondary flex-shrink-0 me-1" />
                 <span className="fw-bold text-dark me-1">Ngày sinh<span className="text-danger">*</span>:</span>
                 {isEditMode ? (
-                  <Form.Control 
-                    size="sm" 
-                    type="date" 
-                    value={editData.dob} 
-                    onChange={e => setEditData({...editData, dob: e.target.value})}
+                  <Form.Control
+                    size="sm"
+                    type="date"
+                    value={editData.dob}
+                    onChange={e => setEditData({ ...editData, dob: e.target.value })}
                     className="d-inline-block py-0 px-2"
                     style={{ width: '145px', height: '28px', fontSize: '0.85rem' }}
                   />
@@ -137,7 +137,7 @@ export default function ProfileInfo({
                 )}
               </div>
               {isEditMode && (
-                <Form.Check 
+                <Form.Check
                   type="switch"
                   id="privacy-dob"
                   checked={!!privacyData.dob}
@@ -150,7 +150,7 @@ export default function ProfileInfo({
             </div>
           </div>
         )}
-        
+
         {/* GPA */}
         {(isOwner || profileData.gradeGoal !== undefined) && (
           <div className="profile-info-item py-2">
@@ -159,14 +159,14 @@ export default function ProfileInfo({
                 <Award size={15} className="text-secondary flex-shrink-0 me-1" />
                 <span className="fw-bold text-dark me-1">GPA (Hệ 4.0):</span>
                 {isEditMode ? (
-                  <Form.Control 
-                    size="sm" 
-                    type="number" 
-                    step="0.1" 
-                    min="0" 
-                    max="4" 
-                    value={editData.gradeGoal} 
-                    onChange={e => setEditData({...editData, gradeGoal: e.target.value})}
+                  <Form.Control
+                    size="sm"
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="4"
+                    value={editData.gradeGoal}
+                    onChange={e => setEditData({ ...editData, gradeGoal: e.target.value })}
                     placeholder="[GPA]"
                     className="d-inline-block py-0 px-2"
                     style={{ width: '85px', height: '28px', fontSize: '0.85rem' }}
@@ -176,7 +176,7 @@ export default function ProfileInfo({
                 )}
               </div>
               {isEditMode && (
-                <Form.Check 
+                <Form.Check
                   type="switch"
                   id="privacy-gradeGoal"
                   checked={!!privacyData.gradeGoal}
