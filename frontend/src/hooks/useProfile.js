@@ -42,11 +42,12 @@ export const useOnboardingMutation = (setCurrentStep, setErrors) => {
   });
 };
 
+// hook lấy dữ liệu profile của user đang đăng nhập
 export const useMyProfile = () => {
   return useQuery({
-    queryKey: ['myProfile'],
+    queryKey: ['myProfile'],  // khóa lưu cache, lưu toàn bộ dư liệu của user X vào memory ram của browser
     queryFn: () => profileService.getMyProfile(),
-    staleTime: 5 * 60 * 1000, // 5 phút
+    staleTime: 5 * 60 * 1000, // Dữ liệu được coi là "tươi mới" trong vòng 5 phút
   });
 };
 
@@ -62,7 +63,7 @@ export const usePublicProfile = (id) => {
 export const useUpdateProfileMutation = () => {
   const queryClient = useQueryClient();
   const { completeProfile } = useAuth();
-  
+
   return useMutation({
     mutationFn: (payload) => profileService.updateMyProfile(payload),
     onSuccess: (res) => {

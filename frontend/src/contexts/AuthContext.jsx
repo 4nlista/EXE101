@@ -1,9 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import * as authService from '../services/authService';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
+  const queryClient = useQueryClient();
   const [currentUser, setCurrentUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showSetup, setShowSetup] = useState(false);
@@ -109,6 +111,9 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('universe_user');
     sessionStorage.removeItem('token');
     sessionStorage.removeItem('universe_user');
+    
+    // Xóa toàn bộ cache của React Query để tránh user sau nhìn thấy data của user trước
+    queryClient.clear();
   };
 
   // ---- Complete Profile (Local State Update) ----
