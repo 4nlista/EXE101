@@ -113,8 +113,8 @@ export default function PublicProfilePage() {
     const skillsArray = Array.isArray(editData.mainSkills)
       ? editData.mainSkills
       : (typeof editData.mainSkills === 'string'
-          ? editData.mainSkills.split(',').map(s => s.trim()).filter(Boolean)
-          : []);
+        ? editData.mainSkills.split(',').map(s => s.trim()).filter(Boolean)
+        : []);
 
     formData.append('mainSkills', JSON.stringify(skillsArray));
     formData.append('privacySettings', JSON.stringify(privacyData));
