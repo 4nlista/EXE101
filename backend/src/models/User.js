@@ -105,13 +105,26 @@ const userSchema = new mongoose.Schema(
       ref: 'ProjectHistory'
     }],
 
-    // ===== BƯỚC 4: MỤC TIÊU =====
-
-    // Mục tiêu điểm số (kéo range 0.0 - 4.0)
+    // Mục tiêu điểm số (GPA) (kéo range 0.0 - 4.0)
     gradeGoal: {
       type: Number,
       min: 0,
       max: 4.0
+    },
+
+    // ===== CÀI ĐẶT QUYỀN RIÊNG TƯ =====
+    // true = công khai (hiển thị cho người khác xem), false = ẩn
+    privacySettings: {
+      email: { type: Boolean, default: false }, // Mặc định ẩn email
+      phone: { type: Boolean, default: false }, // Mặc định ẩn SĐT
+      dob: { type: Boolean, default: true },
+      address: { type: Boolean, default: true },
+      semester: { type: Boolean, default: true },
+      departmentId: { type: Boolean, default: true },
+      majorId: { type: Boolean, default: true },
+      mainSkills: { type: Boolean, default: true },
+      projectHistory: { type: Boolean, default: true },
+      gradeGoal: { type: Boolean, default: true }
     },
 
     // ===== VÍ & QUYỀN LỢI =====

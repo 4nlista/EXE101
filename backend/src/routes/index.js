@@ -11,5 +11,6 @@ router.use('/users', userRoutes);
 // Các API chung (ngành học, chuyên ngành, kỹ năng)
 router.use('/', masterDataRoutes);
 router.use('/projects', require('./projectRoutes'));
+router.use('/project-history', require('./projectHistoryRoutes'));
 
 module.exports = router;

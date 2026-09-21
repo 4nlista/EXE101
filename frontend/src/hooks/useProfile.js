@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { profileService } from '../services/profileService';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
@@ -38,6 +38,84 @@ export const useOnboardingMutation = (setCurrentStep, setErrors) => {
       } else {
         toast.error(errorMsg);
       }
+    }
+  });
+};
+
+export const useMyProfile = () => {
+  return useQuery({
+    queryKey: ['myProfile'],
+    queryFn: () => profileService.getMyProfile(),
+    staleTime: 5 * 60 * 1000, // 5 phút
+  });
+};
+
+export const usePublicProfile = (id) => {
+  return useQuery({
+    queryKey: ['publicProfile', id],
+    queryFn: () => profileService.getPublicProfile(id),
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000, // 5 phút
+  });
+};
+
+export const useUpdateProfileMutation = () => {
+  const queryClient = useQueryClient();
+  const { completeProfile } = useAuth();
+  
+  return useMutation({
+    mutationFn: (payload) => profileService.updateMyProfile(payload),
+    onSuccess: (res) => {
+      toast.success('Cập nhật hồ sơ thành công!');
+      completeProfile({
+        avatar: res.data?.avatar
+      });
+      queryClient.invalidateQueries({ queryKey: ['myProfile'] });
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi cập nhật hồ sơ');
+    }
+  });
+};
+
+export const useCreateProjectHistoryMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => profileService.createProjectHistory(data),
+    onSuccess: () => {
+      toast.success('Thêm dự án thành công!');
+      queryClient.invalidateQueries({ queryKey: ['myProfile'] });
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi thêm dự án');
+    }
+  });
+};
+
+export const useUpdateProjectHistoryMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }) => profileService.updateProjectHistory(id, data),
+    onSuccess: () => {
+      toast.success('Cập nhật dự án thành công!');
+      queryClient.invalidateQueries({ queryKey: ['myProfile'] });
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi cập nhật dự án');
+    }
+  });
+};
+
+export const useDeleteProjectHistoryMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => profileService.deleteProjectHistory(id),
+    onSuccess: () => {
+      toast.success('Đã xóa dự án!');
+      queryClient.invalidateQueries({ queryKey: ['myProfile'] });
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi xóa dự án');
     }
   });
 };
