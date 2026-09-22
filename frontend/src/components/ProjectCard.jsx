@@ -67,10 +67,10 @@ export default function ProjectCard({ project, onViewDetail }) {
 
         {/* Hàng 4: Số lượng tuyển (5) */}
         <div className="mb-2 text-dark fw-bold small">
-          Số lượng tuyển: <span style={{ color: '#d17c1aff' }}>{project.maxMembers} ứng viên</span>
+          Số lượng tuyển: <span style={{ color: '#a05b0cff' }}>{project.maxMembers} ứng viên</span>
         </div>
 
-        {/* Khối dưới cùng (6, 7, 8, 9) */}
+        {/* Khối thông tin*/}
         <div className="mt-auto">
           <hr className="text-muted mb-3 mt-1" style={{ opacity: 0.15 }} />
 
