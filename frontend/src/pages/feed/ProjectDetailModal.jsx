@@ -8,6 +8,7 @@ import { Clock, FileText, CheckCircle, Upload, Send, AlertCircle } from 'lucide-
 import { toast } from 'react-toastify';
 import { applyProject, checkApplicationStatus } from '../../services/applicationService';
 import { APPLICATION_STATUS } from '../../constants';
+import { useNavigate } from 'react-router-dom';
 
 const getTimeAgo = (dateString) => {
   if (!dateString) return '';
@@ -29,6 +30,7 @@ export default function ProjectDetailModal({ project, show, onHide }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [appStatus, setAppStatus] = useState({ canApply: true, status: null, rejectionCount: 0 });
+  const navigate = useNavigate();
 
   const getStatusMessage = (status, rejectionCount) => {
     if (status === APPLICATION_STATUS.PENDING) {
@@ -166,7 +168,16 @@ export default function ProjectDetailModal({ project, show, onHide }) {
       <Modal.Body className="pt-2 px-4 pb-4">
         {/* ── Thông tin Chủ bài đăng & Meta ── */}
         <div className="d-flex flex-wrap align-items-center justify-content-between mb-4 border-bottom pb-3">
-          <div className="d-flex align-items-center gap-2 mt-2">
+          <div 
+            className="d-flex align-items-center gap-2 mt-2 hover-opacity"
+            style={{ cursor: 'pointer', transition: 'opacity 0.2s' }}
+            onClick={() => {
+              if (project.ownerId?._id) {
+                onHide();
+                navigate(`/profile/${project.ownerId._id}`);
+              }
+            }}
+          >
             <img
               src={project.ownerId?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(project.ownerId?.name || 'User')}&background=random`}
               alt="Avatar"
@@ -174,7 +185,7 @@ export default function ProjectDetailModal({ project, show, onHide }) {
               style={{ width: 40, height: 40, objectFit: 'cover' }}
             />
             <div>
-              <div className="fw-bold">{project.ownerId?.name || 'Người dùng ẩn danh'}</div>
+              <div className="fw-bold hover-primary text-primary-hover">{project.ownerId?.name || 'Người dùng ẩn danh'}</div>
               <div className="text-muted small">Người đăng bài</div>
             </div>
           </div>

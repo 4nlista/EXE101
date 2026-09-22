@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Card, Badge } from 'react-bootstrap';
 import { Heart, Clock, Users, BookOpen } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import Button from './Button';
 import { formatCreatedDate, calculateDaysLeft } from '../utils/formatDate';
 
 export default function ProjectCard({ project, onViewDetail }) {
   const [isSaved, setIsSaved] = useState(false); // Toggle tạm thời cho UI
+  const navigate = useNavigate();
 
   const handleSaveToggle = (e) => {
     e.stopPropagation(); // Tránh bị click vào card
@@ -86,14 +88,23 @@ export default function ProjectCard({ project, onViewDetail }) {
 
           <div className="d-flex justify-content-between align-items-center">
             {/* Trái: Avatar (6) + Tên người đăng (7) */}
-            <div className="d-flex align-items-center">
+            <div 
+              className="d-flex align-items-center"
+              style={{ cursor: 'pointer' }}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (project.ownerId?._id) {
+                  navigate(`/profile/${project.ownerId._id}`);
+                }
+              }}
+            >
               <img
                 src={project.ownerId?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(project.ownerId?.name || 'A')}&background=random`}
                 alt="avatar"
                 className="rounded-circle me-2"
                 style={{ width: '32px', height: '32px', objectFit: 'cover', border: '1px solid #9b9595ff' }}
               />
-              <span className="fw-medium text-dark small text-truncate" style={{ maxWidth: '100px' }}>
+              <span className="fw-medium text-dark small text-truncate hover-primary" style={{ maxWidth: '100px' }}>
                 {project.ownerId?.name || 'Ẩn danh'}
               </span>
             </div>

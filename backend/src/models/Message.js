@@ -17,23 +17,23 @@ const messageSchema = new mongoose.Schema(
       required: true
     },
     // 'text' | 'image' | 'file'
-    type: {
-      type: String,
-      enum: Object.values(MESSAGE_TYPE),
-      default: MESSAGE_TYPE.TEXT
-    },
+    // type: {
+    //   type: String,
+    //   enum: Object.values(MESSAGE_TYPE),
+    //   default: MESSAGE_TYPE.TEXT
+    // },
     // Nội dung tin nhắn (text hoặc URL ảnh/file)
     content: {
       type: String
     },
     // Tên file gốc (khi type = 'file')
-    fileName: {
-      type: String
-    },
+    // fileName: {
+    //   type: String
+    // },
     // Dung lượng file (bytes)
-    fileSize: {
-      type: Number
-    },
+    // fileSize: {
+    //   type: Number
+    // },
     // Đánh dấu đã xóa (soft delete)
     isDeleted: {
       type: Boolean,

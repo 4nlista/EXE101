@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Badge, Nav, Table, Card, Row, Col } from 'react-bootstrap';
-import { FaArrowLeft, FaEdit, FaStar, FaRegFileAlt } from 'react-icons/fa';
+import { Container, Badge, Nav, Table, Card, Row, Col, Form } from 'react-bootstrap';
+import { FaArrowLeft, FaEdit, FaStar, FaRegFileAlt, FaDownload } from 'react-icons/fa';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import Button from '../../components/Button';
@@ -13,6 +13,7 @@ import {
   inviteApplicant,
   kickMember
 } from '../../services/projectService';
+import { initConversation } from '../../services/messageService';
 import { APPLICATION_STATUS } from '../../constants/applicationEnum';
 import { PROJECT_STATUS } from '../../constants/projectEnum';
 import { formatDate } from '../../utils/formatDate';
@@ -28,6 +29,10 @@ export default function ProjectManagementDetail() {
   const [activeTab, setActiveTab] = useState('applicants');
   const [loading, setLoading] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
+
+  // States cho bộ lọc
+  const [sortTime, setSortTime] = useState('newest');
+  const [filterStatus, setFilterStatus] = useState('ALL');
 
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmAction, setConfirmAction] = useState({ type: null, appId: null, userId: null, name: '' });
@@ -77,6 +82,20 @@ export default function ProjectManagementDetail() {
     }
   };
 
+  const handleStartChat = async (targetUserId) => {
+    try {
+      setLoading(true);
+      const res = await initConversation(targetUserId);
+      if (res.success) {
+        navigate('/messages', { state: { conversationId: res.data._id } });
+      }
+    } catch (error) {
+      toast.error('Không thể bắt đầu cuộc trò chuyện');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getStatusBadge = (status) => {
     switch (status) {
       case APPLICATION_STATUS.PENDING:
@@ -90,6 +109,41 @@ export default function ProjectManagementDetail() {
       default:
         return null;
     }
+  };
+
+  // Logic lọc và sắp xếp ứng viên
+  const filteredApplications = [...applications]
+    .filter(app => filterStatus === 'ALL' || app.status === filterStatus)
+    .sort((a, b) => {
+      const timeA = new Date(a.createdAt).getTime();
+      const timeB = new Date(b.createdAt).getTime();
+      return sortTime === 'newest' ? timeB - timeA : timeA - timeB;
+    });
+
+  // Xuất CSV
+  const exportToCSV = () => {
+    const headers = ['STT', 'Ten Ung Vien', 'Nganh Hoc', 'Thoi Gian Nop', 'Trang Thai', 'Link CV'];
+    const rows = filteredApplications.map((app, idx) => [
+      idx + 1,
+      app.applicantId?.name || '',
+      app.applicantId?.majorId?.name || app.applicantId?.departmentId?.name || '',
+      formatDate(app.createdAt),
+      app.status,
+      app.cvFileUrl || ''
+    ]);
+
+    // Thêm BOM \uFEFF để Excel nhận diện UTF-8 tiếng Việt
+    let csvContent = "data:text/csv;charset=utf-8,\uFEFF"
+      + headers.join(',') + '\n'
+      + rows.map(e => e.map(item => `"${item}"`).join(',')).join('\n');
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `danh-sach-ung-vien.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   if (loading || !project) return <Container className="py-5 text-center">Đang tải...</Container>;
@@ -165,19 +219,39 @@ export default function ProjectManagementDetail() {
         </Row>
       </div>
 
-      {/* Tabs */}
-      <Nav variant="tabs" className="mb-4" activeKey={activeTab} onSelect={(k) => setActiveTab(k)}>
-        <Nav.Item>
-          <Nav.Link eventKey="applicants" className={activeTab === 'applicants' ? 'fw-bold text-dark border-bottom border-primary border-3' : 'text-muted'}>
-            Danh sách ứng viên
-          </Nav.Link>
-        </Nav.Item>
-        <Nav.Item>
-          <Nav.Link eventKey="members" className={activeTab === 'members' ? 'fw-bold text-dark border-bottom border-primary border-3' : 'text-muted'}>
-            Thành viên dự án
-          </Nav.Link>
-        </Nav.Item>
-      </Nav>
+      {/* Header section for Tabs and Filters */}
+      <div className="d-flex flex-wrap justify-content-between align-items-end mb-3 border-bottom">
+        <Nav variant="tabs" className="border-bottom-0" activeKey={activeTab} onSelect={(k) => setActiveTab(k)}>
+          <Nav.Item>
+            <Nav.Link eventKey="applicants" className={activeTab === 'applicants' ? 'fw-bold text-dark border-bottom border-primary border-3' : 'text-muted'}>
+              Danh sách ứng viên
+            </Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link eventKey="members" className={activeTab === 'members' ? 'fw-bold text-dark border-bottom border-primary border-3' : 'text-muted'}>
+              Thành viên dự án
+            </Nav.Link>
+          </Nav.Item>
+        </Nav>
+
+        {activeTab === 'applicants' && (
+          <div className="d-flex flex-wrap gap-2 mb-2">
+            <Form.Select size="sm" value={sortTime} onChange={(e) => setSortTime(e.target.value)} style={{ width: '150px' }}>
+              <option value="newest">Mới nhất</option>
+              <option value="oldest">Cũ nhất</option>
+            </Form.Select>
+            <Form.Select size="sm" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} style={{ width: '160px' }}>
+              <option value="ALL">Tất cả trạng thái</option>
+              <option value={APPLICATION_STATUS.PENDING}>Đang xử lý</option>
+              <option value={APPLICATION_STATUS.APPROVED}>Đã duyệt</option>
+              <option value={APPLICATION_STATUS.REJECTED}>Từ chối</option>
+            </Form.Select>
+            <Button variant="secondary text-dark" size="sm" className="d-flex align-items-center gap-1 rounded px-3" onClick={exportToCSV}>
+              <FaDownload /> Export CSV
+            </Button>
+          </div>
+        )}
+      </div>
 
       {/* Content */}
       <div className="rounded-4 shadow-sm border p-4">
@@ -196,16 +270,24 @@ export default function ProjectManagementDetail() {
                 </tr>
               </thead>
               <tbody>
-                {applications.length === 0 ? (
+                {filteredApplications.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="text-center py-4 text-muted">Chưa có ứng viên nào</td>
+                    <td colSpan="7" className="text-center py-4 text-muted">Không tìm thấy ứng viên nào phù hợp</td>
                   </tr>
                 ) : (
-                  applications.map((app, idx) => (
+                  filteredApplications.map((app, idx) => (
                     <tr key={app._id}>
                       <td className="text-center text-muted">{idx + 1}</td>
                       <td>
-                        <div className="d-flex align-items-center gap-3">
+                        <div 
+                          className="d-flex align-items-center gap-3 hover-opacity"
+                          style={{ cursor: 'pointer', transition: 'opacity 0.2s' }}
+                          onClick={() => {
+                            if (app.applicantId?._id) {
+                              navigate(`/profile/${app.applicantId._id}`);
+                            }
+                          }}
+                        >
                           <img
                             src={app.applicantId?.avatar || 'https://via.placeholder.com/40'}
                             alt="Avatar"
@@ -213,7 +295,7 @@ export default function ProjectManagementDetail() {
                             style={{ width: '40px', height: '40px', objectFit: 'cover' }}
                           />
                           <div>
-                            <div className="fw-semibold text-dark">{app.applicantId?.name}</div>
+                            <div className="fw-semibold text-dark hover-primary text-primary-hover">{app.applicantId?.name}</div>
                             <div className="text-muted" style={{ fontSize: '12px' }}>{app.applicantId?.majorId?.name || app.applicantId?.departmentId?.name || 'Chưa cập nhật'}</div>
                           </div>
                         </div>
@@ -261,12 +343,12 @@ export default function ProjectManagementDetail() {
                           <Button
                             variant="primary"
                             size="sm"
-                            onClick={() => navigate('/messages')}
+                            onClick={() => handleStartChat(app.applicantId._id)}
                           >Nhắn tin</Button>
                         )}
                         {app.status === APPLICATION_STATUS.REJECTED && (
                           <Button
-                            variant="outline-info"
+                            variant="info"
                             size="sm"
                             onClick={() => {
                               setConfirmAction({ type: 'invite', appId: app._id, name: app.applicantId?.name });
@@ -312,7 +394,7 @@ export default function ProjectManagementDetail() {
                           <Button
                             variant="primary"
                             className="w-50 rounded-pill text-white"
-                            onClick={() => navigate('/messages')}
+                            onClick={() => handleStartChat(member.userId._id)}
                             style={{ fontSize: '13px' }}
                           >Nhắn tin</Button>
                         </div>

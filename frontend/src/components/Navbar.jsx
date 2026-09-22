@@ -19,7 +19,7 @@ export default function Navbar() {
   const navs = [
     { name: 'Bảng tin', path: '/feed', icon: Home },
     { name: 'Dự án', path: '/manage', icon: Briefcase },
-    { name: 'Tin nhắn', path: '/messages', icon: MessageSquareMore, badge: 2 },
+    { name: 'Tin nhắn', path: '/messages', icon: MessageSquareMore },
     { name: 'AI Hub', path: '/ai-hub', icon: Sparkles }
   ];
 

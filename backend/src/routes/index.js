@@ -13,5 +13,6 @@ router.use('/', masterDataRoutes);
 router.use('/projects', require('./projectRoutes'));
 router.use('/project-history', require('./projectHistoryRoutes'));
 router.use('/applications', require('./applicationRoutes'));
+router.use('/messages', require('./messageRoutes'));
 
 module.exports = router;

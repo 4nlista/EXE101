@@ -18,7 +18,8 @@ export default function ProfileHeader({
   handleEditClick,
   handleCancelEdit,
   handleSaveProfile,
-  isSaving
+  isSaving,
+  handleStartChat
 }) {
   const { data: rawDepartments } = useDepartments();
   const { data: rawMajors } = useMajors(editData.departmentId || profileData.departmentId?._id);
@@ -184,7 +185,7 @@ export default function ProfileHeader({
             )
           ) : (
             <>
-              <Button variant="primary" className="fw-semibold d-flex align-items-center gap-1 px-3 py-2 rounded-3"><MessageSquare size={16} /> Gửi tin nhắn</Button>
+              <Button variant="primary" className="fw-semibold d-flex align-items-center gap-1 px-3 py-2 rounded-3" onClick={handleStartChat}><MessageSquare size={16} /> Gửi tin nhắn</Button>
               <Button variant="outline-primary" className="fw-semibold d-flex align-items-center gap-1 px-3 py-2 rounded-3"><UserPlus size={16} /> Kết nối</Button>
             </>
           )}

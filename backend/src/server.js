@@ -25,7 +25,15 @@ app.use('/api', require('./routes'));
 // Global Error Handler (phải nằm cuối cùng)
 app.use(errorHandler);
 
+const http = require('http');
+const { initSocket } = require('./socket');
+
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+const server = http.createServer(app);
+
+// Khởi tạo Socket.io
+initSocket(server);
+
+server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

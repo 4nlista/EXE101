@@ -1,0 +1,85 @@
+const messageService = require('../services/messageService');
+const { emitToUser } = require('../socket');
+
+const getUserConversations = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const conversations = await messageService.getUserConversations(userId);
+    res.json({ success: true, data: conversations });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getConversationMessages = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { conversationId } = req.params;
+    const { limit, skip } = req.query;
+    
+    const messages = await messageService.getConversationMessages(
+      conversationId, 
+      userId, 
+      limit ? parseInt(limit) : 50, 
+      skip ? parseInt(skip) : 0
+    );
+    res.json({ success: true, data: messages });
+  } catch (error) {
+    res.status(403).json({ success: false, message: error.message });
+  }
+};
+
+const initPersonalConversation = async (req, res, next) => {
+  try {
+    const currentUserId = req.user.id;
+    const { targetUserId } = req.body;
+    
+    if (currentUserId === targetUserId) {
+      return res.status(400).json({ success: false, message: 'Không thể tự chat với chính mình' });
+    }
+
+    const conversation = await messageService.findOrCreatePersonalConversation(currentUserId, targetUserId);
+    res.json({ success: true, data: conversation });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const sendMessage = async (req, res, next) => {
+  try {
+    const senderId = req.user.id;
+    const { conversationId } = req.params;
+    const { content, type } = req.body;
+
+    if (!content) {
+      return res.status(400).json({ success: false, message: 'Nội dung tin nhắn không được trống' });
+    }
+
+    const message = await messageService.sendMessage(conversationId, senderId, content, type);
+    
+    // Tìm các thành viên trong conversation để gửi notification qua socket (ngoại trừ người gửi)
+    const conversation = await messageService.getUserConversations(senderId); // Tạm dùng hàm này để lấy full
+    const currentConv = conversation.find(c => c._id.toString() === conversationId);
+    if (currentConv) {
+      currentConv.participants.forEach(p => {
+        if (p.userId._id.toString() !== senderId) {
+          emitToUser(p.userId._id, 'new_message', {
+            conversationId,
+            message
+          });
+        }
+      });
+    }
+
+    res.json({ success: true, data: message });
+  } catch (error) {
+    res.status(403).json({ success: false, message: error.message });
+  }
+};
+
+module.exports = {
+  getUserConversations,
+  getConversationMessages,
+  initPersonalConversation,
+  sendMessage
+};

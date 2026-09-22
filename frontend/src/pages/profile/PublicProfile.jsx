@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Spinner } from 'react-bootstrap';
 import { useAuth } from '../../contexts/AuthContext';
 import {
@@ -16,9 +16,11 @@ import ProfileSkills from './components/ProfileSkills';
 import ProjectHistoryTable from './components/ProjectHistoryTable';
 import '../../styles/profile.css';
 import { toast } from 'react-toastify';
+import { initConversation } from '../../services/messageService';
 
 export default function PublicProfilePage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { currentUser } = useAuth();
 
   // Kiểm tra xem đang xem profile của mình hay người khác
@@ -138,6 +140,18 @@ export default function PublicProfilePage() {
     }));
   };
 
+  const handleStartChat = async () => {
+    if (!profileData?._id) return;
+    try {
+      const res = await initConversation(profileData._id);
+      if (res.success) {
+        navigate('/messages', { state: { conversationId: res.data._id } });
+      }
+    } catch (error) {
+      toast.error('Không thể bắt đầu cuộc trò chuyện');
+    }
+  };
+
   // --- Handlers for Project History ---
   const openProjectDetail = (project = null) => {
     if (project) {
@@ -200,6 +214,7 @@ export default function PublicProfilePage() {
         handleCancelEdit={handleCancelEdit}
         handleSaveProfile={handleSaveProfile}
         isSaving={updateProfileMutation.isPending}
+        handleStartChat={handleStartChat}
       />
 
       <Row>
