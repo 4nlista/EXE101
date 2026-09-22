@@ -143,7 +143,18 @@ export default function PublicProfilePage() {
   const handleStartChat = async () => {
     if (!profileData?._id) return;
     try {
+      console.log('[CHAT DEBUG][FE PROFILE]', {
+        currentUserId: currentUser?._id,
+        profileUrlId: id,
+        isOwner,
+        profileDataId: profileData?._id,
+        profileDataName: profileData?.name
+      });
       const res = await initConversation(profileData._id);
+      console.log('[CHAT DEBUG][FE INIT RESPONSE]', {
+        conversationId: res?.data?._id,
+        participants: res?.data?.participants
+      });
       if (res.success) {
         navigate('/messages', { state: { conversationId: res.data._id } });
       }

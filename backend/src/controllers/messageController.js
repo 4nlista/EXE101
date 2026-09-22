@@ -34,11 +34,26 @@ const initPersonalConversation = async (req, res, next) => {
     const currentUserId = req.user.id;
     const { targetUserId } = req.body;
     
+    console.log('[CHAT DEBUG][BE INIT]', {
+      currentUserId,
+      targetUserId,
+      sameUser: currentUserId === targetUserId
+    });
+
     if (currentUserId === targetUserId) {
       return res.status(400).json({ success: false, message: 'Không thể tự chat với chính mình' });
     }
 
     const conversation = await messageService.findOrCreatePersonalConversation(currentUserId, targetUserId);
+    
+    console.log('[CHAT DEBUG][BE CONVERSATION]', {
+      conversationId: conversation?._id,
+      participants: conversation?.participants?.map(p => ({
+        userId: p.userId?._id || p.userId,
+        name: p.userId?.name
+      }))
+    });
+
     res.status(200).json({ success: true, data: conversation });
   } catch (error) {
     next(error);

@@ -77,6 +77,15 @@ export default function Messages() {
     if (location.state?.conversationId && conversations.length > 0) {
       const conv = conversations.find(c => c._id === location.state.conversationId);
       if (conv) {
+        console.log('[CHAT DEBUG][FE OPEN CONVERSATION]', {
+          requestedConversationId: location.state?.conversationId,
+          foundConversationId: conv?._id,
+          currentUserId,
+          participants: conv?.participants?.map(p => ({
+            userId: p.userId?._id || p.userId,
+            name: p.userId?.name
+          }))
+        });
         setActiveConversation(conv);
       }
     }
@@ -251,6 +260,11 @@ export default function Messages() {
             ) : (
               conversations.map(conv => {
                 const partner = conv.participants.find(p => p.userId?._id?.toString() !== currentUserId?.toString())?.userId;
+                console.log('[CHAT DEBUG][FE PARTNER]', {
+                  currentUserId,
+                  partnerId: partner?._id,
+                  partnerName: partner?.name
+                });
                 const isActive = activeConversation?._id === conv._id;
                 return (
                   <ListGroup.Item
