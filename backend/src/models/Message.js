@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { MESSAGE_TYPE } = require('../constants/messageEnum');
+const { MESSAGE_TYPE, MESSAGE_STATUS } = require('../constants/messageEnum');
 
 // Schema tin nhắn trong cuộc trò chuyện
 const messageSchema = new mongoose.Schema(
@@ -26,14 +26,17 @@ const messageSchema = new mongoose.Schema(
     content: {
       type: String
     },
-    // Tên file gốc (khi type = 'file')
-    // fileName: {
-    //   type: String
-    // },
-    // Dung lượng file (bytes)
-    // fileSize: {
-    //   type: Number
-    // },
+    // Trạng thái tin nhắn
+    status: {
+      type: String,
+      enum: Object.values(MESSAGE_STATUS),
+      default: MESSAGE_STATUS.SENT
+    },
+    // Đã thu hồi hay chưa
+    isRevoked: {
+      type: Boolean,
+      default: false
+    },
     // Đánh dấu đã xóa (soft delete)
     isDeleted: {
       type: Boolean,

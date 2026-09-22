@@ -18,4 +18,13 @@ router.get('/:conversationId', messageController.getConversationMessages);
 // Gửi tin nhắn
 router.post('/:conversationId', messageController.sendMessage);
 
+// Thu hồi tin nhắn
+router.put('/:id/revoke', messageController.revokeMessage);
+
+// Xóa đoạn chat (ẩn với user)
+router.put('/conversations/:id/clear', messageController.clearConversation);
+
+// Đánh dấu đã xem toàn bộ tin nhắn
+router.put('/conversations/:id/read', messageController.markConversationAsRead);
+
 module.exports = router;

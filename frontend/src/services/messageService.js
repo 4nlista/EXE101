@@ -23,3 +23,21 @@ export const initConversation = async (targetUserId) => {
   const response = await axiosClient.post('/messages/init', { targetUserId });
   return response;
 };
+
+// Thu hồi tin nhắn
+export const revokeMessage = async (messageId) => {
+  const response = await axiosClient.put(`/messages/${messageId}/revoke`);
+  return response;
+};
+
+// Xóa đoạn chat
+export const clearConversation = async (conversationId) => {
+  const response = await axiosClient.put(`/messages/conversations/${conversationId}/clear`);
+  return response;
+};
+
+// Đánh dấu đã xem
+export const markConversationAsRead = async (conversationId) => {
+  const response = await axiosClient.put(`/messages/conversations/${conversationId}/read`);
+  return response;
+};

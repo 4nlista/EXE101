@@ -77,9 +77,72 @@ const sendMessage = async (req, res, next) => {
   }
 };
 
+const revokeMessage = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { id } = req.params;
+    
+    const message = await messageService.revokeMessage(id, userId);
+    
+    // Gửi event socket
+    const conversation = await messageService.getUserConversations(userId);
+    const currentConv = conversation.find(c => c._id.toString() === message.conversationId.toString());
+    if (currentConv) {
+      currentConv.participants.forEach(p => {
+        if (p.userId._id.toString() !== userId) {
+          emitToUser(p.userId._id, 'message_revoked', { messageId: id, conversationId: message.conversationId });
+        }
+      });
+    }
+
+    res.json({ success: true, data: message });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+const clearConversation = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { id } = req.params;
+    
+    await messageService.clearConversation(id, userId);
+    res.json({ success: true, message: 'Đã xóa đoạn chat' });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+const markConversationAsRead = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { id } = req.params;
+    
+    await messageService.markConversationAsRead(id, userId);
+    
+    // Gửi event socket báo đã đọc
+    const conversation = await messageService.getUserConversations(userId);
+    const currentConv = conversation.find(c => c._id.toString() === id);
+    if (currentConv) {
+      currentConv.participants.forEach(p => {
+        if (p.userId._id.toString() !== userId) {
+          emitToUser(p.userId._id, 'messages_read', { conversationId: id, readerId: userId });
+        }
+      });
+    }
+
+    res.json({ success: true, message: 'Đã đánh dấu xem' });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   getUserConversations,
   getConversationMessages,
   initPersonalConversation,
-  sendMessage
+  sendMessage,
+  revokeMessage,
+  clearConversation,
+  markConversationAsRead
 };

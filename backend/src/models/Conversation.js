@@ -15,6 +15,11 @@ const participantSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
+    // Thời điểm xóa lịch sử chat (những tin nhắn trước thời điểm này sẽ bị ẩn)
+    clearedAt: {
+      type: Date,
+      default: null
+    },
     // Thời điểm tham gia
     joinedAt: {
       type: Date,

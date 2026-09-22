@@ -11,4 +11,11 @@ const MESSAGE_TYPE = {
   FILE: 'file'        // Tin nhắn đính kèm file
 };
 
-module.exports = { CONVERSATION_TYPE, MESSAGE_TYPE };
+// Trạng thái tin nhắn
+const MESSAGE_STATUS = {
+  SENT: 'sent',           // Đã gửi
+  DELIVERED: 'delivered', // Đã nhận tới máy
+  READ: 'read'            // Đã xem
+};
+
+module.exports = { CONVERSATION_TYPE, MESSAGE_TYPE, MESSAGE_STATUS };
