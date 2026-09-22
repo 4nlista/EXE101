@@ -35,6 +35,9 @@ const initSocket = (server) => {
   io.on('connection', (socket) => {
     console.log(`User connected: ${socket.userId} with socket ID: ${socket.id}`);
     userSockets.set(socket.userId.toString(), socket.id);
+    
+    // Join user room for multi-device support
+    socket.join(`user:${socket.userId}`);
 
     // Tham gia room của conversation (dùng chung cho chat 1-1 và group)
     socket.on('join_conversation', (conversationId) => {
@@ -61,11 +64,10 @@ const getIo = () => {
   return io;
 };
 
-// Hàm tiện ích để gửi event tới 1 user cụ thể
+// Hàm tiện ích để gửi event tới 1 user cụ thể (hỗ trợ nhiều tab/thiết bị qua user room)
 const emitToUser = (userId, eventName, data) => {
-  const socketId = userSockets.get(userId.toString());
-  if (socketId && io) {
-    io.to(socketId).emit(eventName, data);
+  if (io) {
+    io.to(`user:${userId}`).emit(eventName, data);
   }
 };
 

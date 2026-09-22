@@ -1,14 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Container, Row, Col, ListGroup, Form, InputGroup, Dropdown } from 'react-bootstrap';
+import { Container, Row, Col, ListGroup, Form, InputGroup, Dropdown, Badge } from 'react-bootstrap';
 import { FaPaperPlane, FaUserCircle, FaEllipsisV, FaCheck, FaCheckDouble } from 'react-icons/fa';
-import { io } from 'socket.io-client';
 import { getConversations, getMessages, sendMessage, revokeMessage, clearConversation, markConversationAsRead } from '../../services/messageService';
 import { toast } from 'react-toastify';
 import Button from '../../components/Button';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-
-const SOCKET_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8686';
+import { useSocket } from '../../contexts/SocketContext';
 
 const formatDateTime = (dateString) => {
   if (!dateString) return '';
@@ -35,28 +33,14 @@ const CustomToggle = React.forwardRef(({ children, onClick, className }, ref) =>
 export default function Messages() {
   const { currentUser } = useAuth();
   const currentUserId = currentUser?._id || currentUser?.id;
+  const { socket } = useSocket();
 
-  const [socket, setSocket] = useState(null);
   const [conversations, setConversations] = useState([]);
   const [activeConversation, setActiveConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [messageInput, setMessageInput] = useState('');
   const messagesEndRef = useRef(null);
   const location = useLocation();
-
-  // Khởi tạo socket
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    const newSocket = io(SOCKET_URL, {
-      auth: { token }
-    });
-
-    setSocket(newSocket);
-
-    return () => newSocket.close();
-  }, []);
 
   const fetchConversations = async () => {
     try {
@@ -98,8 +82,26 @@ export default function Messages() {
           const res = await getMessages(activeConversation._id);
           if (res.success) {
             setMessages(res.data);
-            // Đánh dấu đã xem khi mở chat
-            await markConversationAsRead(activeConversation._id);
+            // Đánh dấu đã xem khi mở chat (nếu có unread)
+            const myParticipant = activeConversation.participants.find(p => p.userId?._id?.toString() === currentUserId?.toString() || p.userId?.toString() === currentUserId?.toString());
+            if (myParticipant && myParticipant.unreadCount > 0) {
+              await markConversationAsRead(activeConversation._id);
+              // Cập nhật lại local conversations state để xóa unreadCount
+              setConversations(prev => prev.map(c => {
+                if (c._id === activeConversation._id) {
+                  return {
+                    ...c,
+                    participants: c.participants.map(p => {
+                      if (p.userId?._id?.toString() === currentUserId?.toString() || p.userId?.toString() === currentUserId?.toString()) {
+                        return { ...p, unreadCount: 0 };
+                      }
+                      return p;
+                    })
+                  };
+                }
+                return c;
+              }));
+            }
           }
         } catch (error) {
           toast.error('Lỗi tải tin nhắn');
@@ -125,23 +127,41 @@ export default function Messages() {
     const handleNewMessage = (data) => {
       const { conversationId, message } = data;
       setConversations(prev => {
-        const newConvs = [...prev];
-        const idx = newConvs.findIndex(c => c._id === conversationId);
+        const idx = prev.findIndex(c => c._id === conversationId);
         if (idx !== -1) {
-          newConvs[idx].lastMessage = {
-            content: message.content,
-            senderId: message.senderId,
-            sentAt: message.createdAt
+          const newConvs = [...prev];
+          const updatedConv = {
+            ...newConvs[idx],
+            lastMessage: {
+              content: message.content,
+              senderId: message.senderId,
+              sentAt: message.createdAt
+            }
           };
-          const [moved] = newConvs.splice(idx, 1);
-          newConvs.unshift(moved);
+
+          // Tăng unreadCount cho mình nếu KHÔNG ĐANG MỞ chat này
+          if (!activeConversation || activeConversation._id !== conversationId) {
+            const myPartIdx = updatedConv.participants.findIndex(p => p.userId?._id?.toString() === currentUserId?.toString() || p.userId?.toString() === currentUserId?.toString());
+            if (myPartIdx !== -1) {
+              const updatedParticipants = [...updatedConv.participants];
+              updatedParticipants[myPartIdx] = {
+                ...updatedParticipants[myPartIdx],
+                unreadCount: (updatedParticipants[myPartIdx].unreadCount || 0) + 1
+              };
+              updatedConv.participants = updatedParticipants;
+            }
+          }
+
+          newConvs.splice(idx, 1);
+          newConvs.unshift(updatedConv);
+          return newConvs;
         }
-        return newConvs;
+        return prev;
       });
 
       if (activeConversation && activeConversation._id === conversationId) {
         setMessages(prev => [...prev, message]);
-        // Báo đã đọc
+        // Báo đã đọc ngay lập tức vì đang mở
         markConversationAsRead(conversationId);
       }
     };
@@ -199,18 +219,22 @@ export default function Messages() {
       setMessages(prev => prev.map(m => m._id === tempId ? res.data : m));
 
       setConversations(prev => {
-        const newConvs = [...prev];
-        const idx = newConvs.findIndex(c => c._id === activeConversation._id);
+        const idx = prev.findIndex(c => c._id === activeConversation._id);
         if (idx !== -1) {
-          newConvs[idx].lastMessage = {
-            content: currentInput,
-            senderId: { _id: currentUserId },
-            sentAt: new Date()
+          const newConvs = [...prev];
+          const updatedConv = {
+            ...newConvs[idx],
+            lastMessage: {
+              content: currentInput,
+              senderId: { _id: currentUserId },
+              sentAt: new Date()
+            }
           };
-          const [moved] = newConvs.splice(idx, 1);
-          newConvs.unshift(moved);
+          newConvs.splice(idx, 1);
+          newConvs.unshift(updatedConv);
+          return newConvs;
         }
-        return newConvs;
+        return prev;
       });
     } catch (error) {
       toast.error('Lỗi khi gửi tin nhắn');
@@ -260,48 +284,75 @@ export default function Messages() {
             ) : (
               conversations.map(conv => {
                 const partner = conv.participants.find(p => p.userId?._id?.toString() !== currentUserId?.toString())?.userId;
+                const myParticipant = conv.participants.find(p => p.userId?._id?.toString() === currentUserId?.toString() || p.userId?.toString() === currentUserId?.toString());
+                const unreadCount = myParticipant?.unreadCount || 0;
+                const isActive = activeConversation?._id === conv._id;
+                
                 console.log('[CHAT DEBUG][FE PARTNER]', {
                   currentUserId,
                   partnerId: partner?._id,
                   partnerName: partner?.name
                 });
-                const isActive = activeConversation?._id === conv._id;
+                
                 return (
                   <ListGroup.Item
                     key={conv._id}
                     action
                     active={isActive}
                     onClick={() => setActiveConversation(conv)}
-                    className={`p-3 border-bottom ${isActive ? 'bg-primary border-primary' : ''}`}
-                    style={{ cursor: 'pointer' }}
+                    className="d-flex align-items-center p-3 border-0 border-bottom"
+                    style={{ cursor: 'pointer', backgroundColor: isActive ? 'var(--gray-100)' : 'transparent' }}
                   >
-                    <div className="d-flex align-items-center gap-3">
-                      <img
-                        src={partner?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(partner?.name || 'A')}&background=random`}
-                        alt="avatar"
-                        className="rounded-circle object-fit-cover"
-                        style={{ width: '48px', height: '48px' }}
-                      />
-                      <div className="flex-grow-1 overflow-hidden">
-                        <div className={`fw-semibold text-truncate ${isActive ? 'text-white' : 'text-dark'}`}>
-                          {partner?.name || 'Người dùng ẩn danh'}
-                        </div>
-                        <div className={`small text-truncate ${isActive ? 'text-white-50' : 'text-muted'}`}>
-                          {conv.lastMessage?.senderId?.toString() === currentUserId?.toString() ? 'Bạn: ' : ''}
+                    <div className="position-relative me-3">
+                      {partner?.avatar ? (
+                        <img
+                          src={partner.avatar}
+                          alt={partner.name}
+                          className="rounded-circle object-fit-cover"
+                          width={48} height={48}
+                        />
+                      ) : (
+                        <FaUserCircle size={48} className="text-secondary" />
+                      )}
+                      {/* Có thể thêm chấm xanh online nếu làm tính năng online sau */}
+                    </div>
+                    
+                    <div className="flex-grow-1 overflow-hidden">
+                      <div className="d-flex justify-content-between align-items-baseline mb-1">
+                        <h6 className={`mb-0 text-truncate ${unreadCount > 0 ? 'fw-bold text-dark' : 'text-dark'}`}>
+                          {conv.type === 'group' ? conv.name : partner?.name || 'Người dùng'}
+                        </h6>
+                        {conv.lastMessage && (
+                          <small className={`text-nowrap ms-2 ${unreadCount > 0 ? 'fw-bold text-primary' : 'text-muted'}`} style={{ fontSize: '0.75rem' }}>
+                            {formatDateTime(conv.lastMessage.sentAt)}
+                          </small>
+                        )}
+                      </div>
+                      
+                      <div className="d-flex justify-content-between align-items-center">
+                        <p className={`mb-0 text-truncate ${unreadCount > 0 ? 'fw-bold text-dark' : 'text-muted'}`} style={{ fontSize: '0.875rem', paddingRight: '8px' }}>
+                          {conv.lastMessage?.senderId?.toString() === currentUserId?.toString() && 'Bạn: '}
                           {conv.lastMessage?.content || 'Chưa có tin nhắn'}
+                        </p>
+                        
+                        <div className="d-flex align-items-center">
+                          {unreadCount > 0 && (
+                            <Badge pill bg="danger" className="me-2">
+                              {unreadCount}
+                            </Badge>
+                          )}
+                          
+                          {/* Dropdown Menu - Xóa đoạn chat */}
+                          <Dropdown onClick={(e) => e.stopPropagation()}>
+                            <Dropdown.Toggle as={CustomToggle} className={`p-2 ${isActive ? 'text-dark' : 'text-muted'}`}>
+                              <FaEllipsisV size={14} />
+                            </Dropdown.Toggle>
+                            <Dropdown.Menu align="end">
+                              <Dropdown.Item className="text-danger" onClick={() => handleClearConversation(conv._id)}>Xóa đoạn chat</Dropdown.Item>
+                            </Dropdown.Menu>
+                          </Dropdown>
                         </div>
                       </div>
-
-                      {/* Dropdown Menu - Xóa đoạn chat */}
-                      <Dropdown onClick={(e) => e.stopPropagation()}>
-                        <Dropdown.Toggle as={CustomToggle} className={`p-2 ${isActive ? 'text-white' : 'text-muted'}`}>
-                          <FaEllipsisV size={14} />
-                        </Dropdown.Toggle>
-                        <Dropdown.Menu align="end">
-                          <Dropdown.Item className="text-danger" onClick={() => handleClearConversation(conv._id)}>Xóa đoạn chat</Dropdown.Item>
-                        </Dropdown.Menu>
-                      </Dropdown>
-
                     </div>
                   </ListGroup.Item>
                 );

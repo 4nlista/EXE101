@@ -35,7 +35,7 @@ const getConversationMessages = async (conversationId, userId, limit = 50, skip 
   }
 
   const me = conversation.participants.find(p => p.userId.toString() === userId.toString());
-  
+
   const query = { conversationId, isDeleted: false };
   if (me && me.clearedAt) {
     query.createdAt = { $gt: me.clearedAt };
@@ -46,7 +46,7 @@ const getConversationMessages = async (conversationId, userId, limit = 50, skip 
     .skip(skip)
     .limit(limit)
     .populate('senderId', 'name avatar');
-    
+
   return messages.reverse(); // Trả về thứ tự cũ -> mới
 };
 
@@ -103,6 +103,16 @@ const sendMessage = async (conversationId, senderId, content, type = 'text') => 
   };
   await conversation.save();
 
+  // Tăng unreadCount cho tất cả những người không phải là người gửi (dùng $inc để tránh race condition)
+  for (const p of conversation.participants) {
+    if (p.userId.toString() !== senderId.toString()) {
+      await Conversation.updateOne(
+        { _id: conversationId, 'participants.userId': p.userId },
+        { $inc: { 'participants.$.unreadCount': 1 } }
+      );
+    }
+  }
+
   return await Message.findById(message._id).populate('senderId', 'name avatar');
 };
 
@@ -113,7 +123,7 @@ const revokeMessage = async (messageId, userId) => {
   if (message.senderId.toString() !== userId.toString()) {
     throw new Error('Bạn không có quyền thu hồi tin nhắn của người khác');
   }
-  
+
   const ONE_DAY = 24 * 60 * 60 * 1000;
   if (Date.now() - new Date(message.createdAt).getTime() > ONE_DAY) {
     throw new Error('Chỉ có thể thu hồi tin nhắn trong vòng 24 giờ');
@@ -130,12 +140,13 @@ const clearConversation = async (conversationId, userId) => {
     _id: conversationId,
     'participants.userId': userId
   });
-  
+
   if (!conversation) throw new Error('Không tìm thấy cuộc trò chuyện');
 
   const participant = conversation.participants.find(p => p.userId.toString() === userId.toString());
   if (participant) {
     participant.clearedAt = new Date();
+    participant.unreadCount = 0; // Đặt lại số tin nhắn chưa đọc khi xóa đoạn chat
     await conversation.save();
   }
   return true;
@@ -144,14 +155,40 @@ const clearConversation = async (conversationId, userId) => {
 // 7. Đánh dấu tất cả tin nhắn trong đoạn chat là đã xem
 const markConversationAsRead = async (conversationId, userId) => {
   await Message.updateMany(
-    { 
-      conversationId, 
+    {
+      conversationId,
       senderId: { $ne: userId },
       status: { $ne: MESSAGE_STATUS.READ }
     },
     { $set: { status: MESSAGE_STATUS.READ } }
   );
+
+  const conversation = await Conversation.findOne({ _id: conversationId, 'participants.userId': userId });
+  if (conversation) {
+    const participant = conversation.participants.find(p => p.userId.toString() === userId.toString());
+    if (participant) {
+      participant.unreadCount = 0;
+      await conversation.save();
+    }
+  }
+
   return true;
+};
+
+// 8. Lấy tổng số tin nhắn chưa đọc
+const getTotalUnreadCount = async (userId) => {
+  const conversations = await Conversation.find({ 'participants.userId': userId });
+  let total = 0;
+  console.log('[DEBUG] getTotalUnreadCount for', userId);
+  conversations.forEach(conv => {
+    const participant = conv.participants.find(p => p.userId.toString() === userId.toString());
+    if (participant) {
+      console.log(`[DEBUG] Conv ${conv._id} unreadCount:`, participant.unreadCount);
+      total += (participant.unreadCount || 0);
+    }
+  });
+  console.log('[DEBUG] Total returned:', total);
+  return total;
 };
 
 module.exports = {
@@ -161,5 +198,6 @@ module.exports = {
   sendMessage,
   revokeMessage,
   clearConversation,
-  markConversationAsRead
+  markConversationAsRead,
+  getTotalUnreadCount
 };

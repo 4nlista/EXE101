@@ -15,6 +15,11 @@ const participantSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
+    // Số tin nhắn chưa đọc
+    unreadCount: {
+      type: Number,
+      default: 0
+    },
     // Thời điểm xóa lịch sử chat (những tin nhắn trước thời điểm này sẽ bị ẩn)
     clearedAt: {
       type: Date,

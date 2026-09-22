@@ -9,6 +9,9 @@ router.use(verifyToken);
 // Khởi tạo hoặc lấy conversation 1-1
 router.post('/init', messageController.initPersonalConversation);
 
+// Lấy tổng số lượng tin nhắn chưa đọc
+router.get('/unread-count', messageController.getTotalUnreadCount);
+
 // Lấy danh sách conversation của user
 router.get('/conversations', messageController.getUserConversations);
 

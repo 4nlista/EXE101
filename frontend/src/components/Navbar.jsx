@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useSocket } from '../contexts/SocketContext';
 import { Badge } from 'react-bootstrap';
 import { Bell, Settings, LogOut, ChevronDown, User, Home, Briefcase, MessageSquareMore, Sparkles } from 'lucide-react';
 import LogoImg from '../assets/images/Logo.png';
 
 export default function Navbar() {
   const { currentUser, logout } = useAuth();
+  const { totalUnreadCount } = useSocket();
   const navigate = useNavigate();
   const location = useLocation();
   const [showDrop, setShowDrop] = useState(false);
@@ -19,7 +21,7 @@ export default function Navbar() {
   const navs = [
     { name: 'Bảng tin', path: '/feed', icon: Home },
     { name: 'Dự án', path: '/manage', icon: Briefcase },
-    { name: 'Tin nhắn', path: '/messages', icon: MessageSquareMore },
+    { name: 'Tin nhắn', path: '/messages', icon: MessageSquareMore, badge: totalUnreadCount > 0 ? totalUnreadCount : null },
     { name: 'AI Hub', path: '/ai-hub', icon: Sparkles }
   ];
 

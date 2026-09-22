@@ -11,6 +11,16 @@ const getUserConversations = async (req, res, next) => {
   }
 };
 
+const getTotalUnreadCount = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const total = await messageService.getTotalUnreadCount(userId);
+    res.json({ success: true, data: total });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const getConversationMessages = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -76,14 +86,18 @@ const sendMessage = async (req, res, next) => {
     const conversation = await messageService.getUserConversations(senderId); // Tạm dùng hàm này để lấy full
     const currentConv = conversation.find(c => c._id.toString() === conversationId);
     if (currentConv) {
-      currentConv.participants.forEach(p => {
+      for (const p of currentConv.participants) {
         if (p.userId._id.toString() !== senderId) {
           emitToUser(p.userId._id, 'new_message', {
             conversationId,
             message
           });
+          
+          // Phát sự kiện cập nhật unreadCount cho người nhận
+          const totalUnreadCount = await messageService.getTotalUnreadCount(p.userId._id.toString());
+          emitToUser(p.userId._id, 'unread_count_update', { totalUnreadCount });
         }
-      });
+      }
     }
 
     res.json({ success: true, data: message });
@@ -135,7 +149,7 @@ const markConversationAsRead = async (req, res, next) => {
     
     await messageService.markConversationAsRead(id, userId);
     
-    // Gửi event socket báo đã đọc
+    // Gửi event socket báo đã đọc (theo code cũ)
     const conversation = await messageService.getUserConversations(userId);
     const currentConv = conversation.find(c => c._id.toString() === id);
     if (currentConv) {
@@ -145,6 +159,10 @@ const markConversationAsRead = async (req, res, next) => {
         }
       });
     }
+    
+    // Gửi lại event cập nhật tổng số unread cho chính người đọc
+    const totalUnreadCount = await messageService.getTotalUnreadCount(userId);
+    emitToUser(userId, 'unread_count_update', { totalUnreadCount });
 
     res.json({ success: true, message: 'Đã đánh dấu xem' });
   } catch (error) {
@@ -154,6 +172,7 @@ const markConversationAsRead = async (req, res, next) => {
 
 module.exports = {
   getUserConversations,
+  getTotalUnreadCount,
   getConversationMessages,
   initPersonalConversation,
   sendMessage,

@@ -41,3 +41,9 @@ export const markConversationAsRead = async (conversationId) => {
   const response = await axiosClient.put(`/messages/conversations/${conversationId}/read`);
   return response;
 };
+
+// Lấy tổng số lượng tin nhắn chưa đọc
+export const getUnreadCount = async () => {
+  const response = await axiosClient.get('/messages/unread-count');
+  return response;
+};
