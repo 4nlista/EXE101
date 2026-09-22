@@ -73,7 +73,26 @@ export default function Messages() {
     try {
       const res = await getConversations();
       if (res.success) {
-        setConversations(res.data);
+        let fetchedConvs = res.data;
+        
+        // Nếu chuyển từ trang Profile qua, có truyền sẵn conversation object
+        // mà backend đã lọc mất (do đã clear chat) thì add tạm vào để người dùng chat
+        if (location.state?.conversation && location.state?.conversationId) {
+          const exists = fetchedConvs.some(c => c._id === location.state.conversationId);
+          if (!exists) {
+            fetchedConvs = [location.state.conversation, ...fetchedConvs];
+          }
+        }
+        
+        setConversations(fetchedConvs);
+        
+        // Cập nhật activeConversation ngay sau khi tải xong nếu có id
+        if (location.state?.conversationId) {
+          const conv = fetchedConvs.find(c => c._id === location.state.conversationId);
+          if (conv) {
+            setActiveConversation(conv);
+          }
+        }
       }
     } catch (error) {
       toast.error('Lỗi khi tải danh sách cuộc trò chuyện', { toastId: 'fetch_conv_error' });
@@ -82,25 +101,8 @@ export default function Messages() {
 
   useEffect(() => {
     fetchConversations();
-  }, []);
-
-  useEffect(() => {
-    if (location.state?.conversationId && conversations.length > 0) {
-      const conv = conversations.find(c => c._id === location.state.conversationId);
-      if (conv) {
-        console.log('[CHAT DEBUG][FE OPEN CONVERSATION]', {
-          requestedConversationId: location.state?.conversationId,
-          foundConversationId: conv?._id,
-          currentUserId,
-          participants: conv?.participants?.map(p => ({
-            userId: p.userId?._id || p.userId,
-            name: p.userId?.name
-          }))
-        });
-        setActiveConversation(conv);
-      }
-    }
-  }, [location.state, conversations]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state]);
 
   useEffect(() => {
     if (activeConversation) {
@@ -315,6 +317,14 @@ export default function Messages() {
                 const unreadCount = myParticipant?.unreadCount || 0;
                 const isActive = activeConversation?._id === conv._id;
 
+                // Xử lý lastMessage bị ẩn nếu đã clear đoạn chat
+                let displayLastMessage = conv.lastMessage;
+                if (myParticipant?.clearedAt && conv.lastMessage?.sentAt) {
+                  if (new Date(conv.lastMessage.sentAt) <= new Date(myParticipant.clearedAt)) {
+                    displayLastMessage = null; // Ẩn tin nhắn cũ khỏi sidebar
+                  }
+                }
+
                 console.log('[CHAT DEBUG][FE PARTNER]', {
                   currentUserId,
                   partnerId: partner?._id,
@@ -350,16 +360,16 @@ export default function Messages() {
                         {conv.type === 'group' ? conv.name : partner?.name || 'Người dùng'}
                       </h6>
                       <p className={`mb-0 text-truncate ${unreadCount > 0 ? 'fw-bold text-dark' : 'text-muted'}`} style={{ fontSize: '0.875rem' }}>
-                        {conv.lastMessage?.senderId?.toString() === currentUserId?.toString() && 'Bạn: '}
-                        {conv.lastMessage?.content || 'Chưa có tin nhắn'}
+                        {displayLastMessage?.senderId?.toString() === currentUserId?.toString() && 'Bạn: '}
+                        {displayLastMessage?.content || 'Chưa có tin nhắn'}
                       </p>
                     </div>
 
                     <div className="d-flex flex-column align-items-end justify-content-between ms-2" style={{ minWidth: '70px', height: '42px' }}>
                       <div className="d-flex justify-content-end w-100 mb-1">
-                        {conv.lastMessage && (
+                        {displayLastMessage && (
                           <small className={`text-nowrap ${unreadCount > 0 ? 'fw-bold text-primary' : 'text-muted'}`} style={{ fontSize: '0.75rem' }}>
-                            {formatRelativeTime(conv.lastMessage.sentAt)}
+                            {formatRelativeTime(displayLastMessage.sentAt)}
                           </small>
                         )}
                       </div>
@@ -372,7 +382,7 @@ export default function Messages() {
                         )}
 
                         {/* Dropdown Menu - Xóa đoạn chat */}
-                        <Dropdown onClick={(e) => e.stopPropagation()}>
+                        <Dropdown>
                           <Dropdown.Toggle as={CustomToggle} className={`p-1 ${isActive ? 'text-dark' : 'text-muted'}`}>
                             <FaEllipsisV size={14} />
                           </Dropdown.Toggle>

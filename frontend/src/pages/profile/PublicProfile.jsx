@@ -156,7 +156,7 @@ export default function PublicProfilePage() {
         participants: res?.data?.participants
       });
       if (res.success) {
-        navigate('/messages', { state: { conversationId: res.data._id } });
+        navigate('/messages', { state: { conversationId: res.data._id, conversation: res.data } });
       }
     } catch (error) {
       toast.error('Không thể bắt đầu cuộc trò chuyện');
