@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card, Badge } from 'react-bootstrap';
-import { Heart, Clock, Users, Target } from 'lucide-react';
+import { Heart, Clock, Users, BookOpen } from 'lucide-react';
 import Button from './Button';
 import { formatCreatedDate, calculateDaysLeft } from '../utils/formatDate';
 
@@ -14,65 +14,75 @@ export default function ProjectCard({ project, onViewDetail }) {
 
   return (
     <Card
-      className="h-100 shadow-sm"
+      className="h-100 shadow-sm border-1"
       style={{
-        transition: 'transform 0.2s',
+        transition: 'transform 0.2s, box-shadow 0.2s',
         cursor: 'pointer',
-        borderColor: '#c0c2c5',
-        borderWidth: '1px'
+        borderRadius: '16px',
+        backgroundColor: '#ffffff'
       }}
-      onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-3px)'}
-      onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'translateY(-4px)';
+        e.currentTarget.style.boxShadow = '0 10px 20px rgba(0,0,0,0.08)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = 'translateY(0)';
+        e.currentTarget.style.boxShadow = '0 0.125rem 0.25rem rgba(0, 0, 0, 0.075)';
+      }}
     >
-      <Card.Body className="d-flex flex-column pt-3">
+      <Card.Body className="d-flex flex-column p-4">
         {/* Hàng 1: Thời gian (Ngày đăng + Thời gian còn lại) đặt sát mép 2 bên */}
-        <div className="d-flex justify-content-between align-items-center mb-2">
+        <div className="d-flex justify-content-between align-items-center mb-3">
           {project.createdAt && (
-            <Badge pill bg="light" text="secondary" className="d-flex align-items-center px-2 py-1 border fw-normal">
-              <Clock size={12} className="me-1" />
-              <span style={{ fontSize: '0.65rem' }}>{formatCreatedDate(project.createdAt)}</span>
+            <Badge pill bg="light" text="secondary" className="d-flex align-items-center px-2 py-1 border">
+              <Clock size={12} />
+              <span style={{ fontSize: '0.7rem' }}>{formatCreatedDate(project.createdAt)}</span>
             </Badge>
           )}
-          <Badge pill className="d-flex align-items-center px-2 py-1 fw-normal text-white">
-            <Clock size={12} className="me-1" />
-            <span style={{ fontSize: '0.65rem' }}>{calculateDaysLeft(project.deadline)}</span>
+          <Badge pill bg="primary" className="d-flex align-items-center py-1 fw-normal text-white">
+            <Clock size={12} />
+            <span style={{ fontSize: '0.7rem' }}>{calculateDaysLeft(project.deadline)}</span>
           </Badge>
         </div>
 
-        {/* Ngành */}
-        {project.ownerId?.departmentId?.name && (
-          <div className="d-flex align-items-center gap-1 mt-1 text-muted" style={{ fontSize: '12px' }}>
-            <span className="text-dark small">{project.ownerId.departmentId.name}</span>
-          </div>
-        )}
-
-        {/* Hàng 2: Tiêu đề dự án (3) */}
-        <Card.Title className="fw-bold mb-2 fs-6 text-dark" style={{ lineHeight: '1.0' }}>
+        {/* Hàng 2: Tiêu đề dự án */}
+        <Card.Title className="fw-bold mb-2 text-dark" style={{ fontSize: '1.0rem', lineHeight: '1.0' }}>
           {project.title}
         </Card.Title>
 
-        {/* Hàng 3: Mô tả (4) */}
+        {/* Ngành */}
+        {project.ownerId?.departmentId?.name && (
+          <div className="mb-2 ms-1">
+            <Badge bg="light" text="secondary" className="d-flex align-items-center d-inline-flex px-2 py-1 border fw-normal rounded-2">
+              <BookOpen size={12} className="me-1" />
+              <span style={{ fontSize: '0.75rem' }}>{project.ownerId.departmentId.name}</span>
+            </Badge>
+          </div>
+        )}
+
+        {/* Hàng 3: Mô tả */}
         <Card.Text
-          className="text-secondary small mb-3"
+          className="text-muted small mb-2 px-2"
           style={{
             display: '-webkit-box',
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
-            lineHeight: '1.5'
+            lineHeight: '1.6'
           }}
         >
           {project.description}
         </Card.Text>
 
-        {/* Hàng 4: Số lượng tuyển (5) */}
-        <div className="mb-2 text-dark fw-bold small">
-          Số lượng tuyển: <span style={{ color: '#a05b0cff' }}>{project.maxMembers} ứng viên</span>
+        {/* Hàng 4: Số lượng tuyển */}
+        <div className="mb-3 text-dark fw-medium small d-flex align-items-center text-muted">
+          <Users size={14} className="me-2 text-primary" />
+          <span>Số lượng tuyển: <span style={{ color: '#ea580c' }}>{project.maxMembers} ứng viên</span></span>
         </div>
 
         {/* Khối thông tin*/}
         <div className="mt-auto">
-          <hr className="text-muted mb-3 mt-1" style={{ opacity: 0.15 }} />
+          <hr className="text-muted mb-3 mt-0" style={{ opacity: 0.2 }} />
 
           <div className="d-flex justify-content-between align-items-center">
             {/* Trái: Avatar (6) + Tên người đăng (7) */}
@@ -81,7 +91,7 @@ export default function ProjectCard({ project, onViewDetail }) {
                 src={project.ownerId?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(project.ownerId?.name || 'A')}&background=random`}
                 alt="avatar"
                 className="rounded-circle me-2"
-                style={{ width: '32px', height: '32px', objectFit: 'cover', border: '1px solid #eee' }}
+                style={{ width: '32px', height: '32px', objectFit: 'cover', border: '1px solid #9b9595ff' }}
               />
               <span className="fw-medium text-dark small text-truncate" style={{ maxWidth: '100px' }}>
                 {project.ownerId?.name || 'Ẩn danh'}
