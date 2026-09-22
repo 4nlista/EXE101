@@ -15,6 +15,33 @@ const formatDateTime = (dateString) => {
   return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 };
 
+const formatRelativeTime = (dateString) => {
+  if (!dateString) return '';
+  const d = new Date(dateString);
+  const now = new Date();
+  const diffMs = now - d;
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHour = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHour / 24);
+
+  if (diffSec < 60) {
+    return 'Vừa xong';
+  } else if (diffMin < 60) {
+    return `${diffMin} phút trước`;
+  } else if (diffHour < 24) {
+    return `${diffHour} giờ trước`;
+  } else if (diffDay < 7) {
+    return `${diffDay} ngày trước`;
+  } else {
+    const pad = (n) => n.toString().padStart(2, '0');
+    if (d.getFullYear() !== now.getFullYear()) {
+      return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+    }
+    return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}`;
+  }
+};
+
 const CustomToggle = React.forwardRef(({ children, onClick, className }, ref) => (
   <span
     ref={ref}
@@ -287,15 +314,16 @@ export default function Messages() {
                 const myParticipant = conv.participants.find(p => p.userId?._id?.toString() === currentUserId?.toString() || p.userId?.toString() === currentUserId?.toString());
                 const unreadCount = myParticipant?.unreadCount || 0;
                 const isActive = activeConversation?._id === conv._id;
-                
+
                 console.log('[CHAT DEBUG][FE PARTNER]', {
                   currentUserId,
                   partnerId: partner?._id,
                   partnerName: partner?.name
                 });
-                
+
                 return (
                   <ListGroup.Item
+                    as="div"
                     key={conv._id}
                     action
                     active={isActive}
@@ -316,42 +344,42 @@ export default function Messages() {
                       )}
                       {/* Có thể thêm chấm xanh online nếu làm tính năng online sau */}
                     </div>
-                    
+
                     <div className="flex-grow-1 overflow-hidden">
-                      <div className="d-flex justify-content-between align-items-baseline mb-1">
-                        <h6 className={`mb-0 text-truncate ${unreadCount > 0 ? 'fw-bold text-dark' : 'text-dark'}`}>
-                          {conv.type === 'group' ? conv.name : partner?.name || 'Người dùng'}
-                        </h6>
+                      <h6 className={`mb-1 text-truncate ${unreadCount > 0 ? 'fw-bold text-dark' : 'text-dark'}`}>
+                        {conv.type === 'group' ? conv.name : partner?.name || 'Người dùng'}
+                      </h6>
+                      <p className={`mb-0 text-truncate ${unreadCount > 0 ? 'fw-bold text-dark' : 'text-muted'}`} style={{ fontSize: '0.875rem' }}>
+                        {conv.lastMessage?.senderId?.toString() === currentUserId?.toString() && 'Bạn: '}
+                        {conv.lastMessage?.content || 'Chưa có tin nhắn'}
+                      </p>
+                    </div>
+
+                    <div className="d-flex flex-column align-items-end justify-content-between ms-2" style={{ minWidth: '70px', height: '42px' }}>
+                      <div className="d-flex justify-content-end w-100 mb-1">
                         {conv.lastMessage && (
-                          <small className={`text-nowrap ms-2 ${unreadCount > 0 ? 'fw-bold text-primary' : 'text-muted'}`} style={{ fontSize: '0.75rem' }}>
-                            {formatDateTime(conv.lastMessage.sentAt)}
+                          <small className={`text-nowrap ${unreadCount > 0 ? 'fw-bold text-primary' : 'text-muted'}`} style={{ fontSize: '0.75rem' }}>
+                            {formatRelativeTime(conv.lastMessage.sentAt)}
                           </small>
                         )}
                       </div>
-                      
-                      <div className="d-flex justify-content-between align-items-center">
-                        <p className={`mb-0 text-truncate ${unreadCount > 0 ? 'fw-bold text-dark' : 'text-muted'}`} style={{ fontSize: '0.875rem', paddingRight: '8px' }}>
-                          {conv.lastMessage?.senderId?.toString() === currentUserId?.toString() && 'Bạn: '}
-                          {conv.lastMessage?.content || 'Chưa có tin nhắn'}
-                        </p>
-                        
-                        <div className="d-flex align-items-center">
-                          {unreadCount > 0 && (
-                            <Badge pill bg="danger" className="me-2">
-                              {unreadCount}
-                            </Badge>
-                          )}
-                          
-                          {/* Dropdown Menu - Xóa đoạn chat */}
-                          <Dropdown onClick={(e) => e.stopPropagation()}>
-                            <Dropdown.Toggle as={CustomToggle} className={`p-2 ${isActive ? 'text-dark' : 'text-muted'}`}>
-                              <FaEllipsisV size={14} />
-                            </Dropdown.Toggle>
-                            <Dropdown.Menu align="end">
-                              <Dropdown.Item className="text-danger" onClick={() => handleClearConversation(conv._id)}>Xóa đoạn chat</Dropdown.Item>
-                            </Dropdown.Menu>
-                          </Dropdown>
-                        </div>
+
+                      <div className="d-flex align-items-center justify-content-end w-100">
+                        {unreadCount > 0 && (
+                          <Badge pill bg="danger" className="me-2">
+                            {unreadCount}
+                          </Badge>
+                        )}
+
+                        {/* Dropdown Menu - Xóa đoạn chat */}
+                        <Dropdown onClick={(e) => e.stopPropagation()}>
+                          <Dropdown.Toggle as={CustomToggle} className={`p-1 ${isActive ? 'text-dark' : 'text-muted'}`}>
+                            <FaEllipsisV size={14} />
+                          </Dropdown.Toggle>
+                          <Dropdown.Menu align="end" style={{ zIndex: 1050 }}>
+                            <Dropdown.Item className="text-danger" onClick={(e) => { e.stopPropagation(); handleClearConversation(conv._id); }}>Xóa đoạn chat</Dropdown.Item>
+                          </Dropdown.Menu>
+                        </Dropdown>
                       </div>
                     </div>
                   </ListGroup.Item>
