@@ -21,8 +21,11 @@ const initSocket = (server) => {
       if (!token) {
         return next(new Error('Authentication error'));
       }
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      socket.userId = decoded.userId;
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'universe-secret-key');
+      socket.userId = decoded.id;
+      if (!socket.userId) {
+        return next(new Error('Authentication error: Invalid token payload'));
+      }
       next();
     } catch (error) {
       next(new Error('Authentication error'));
