@@ -105,15 +105,15 @@ export default function MyProjectsTab() {
                 <div className="flex-grow-1" style={{ minWidth: '0' }}>
                   <h6 className="fw-bold mb-1 text-truncate">{project.title}</h6>
                   <div className="d-flex align-items-center gap-2 text-muted" style={{ fontSize: '13px' }}>
-                    <span className="text-truncate">{project.departmentIds?.map(d => d.name).join(' · ')}</span>
                     <span>•</span>
-                    <span>Đăng bởi bạn</span>
+                    <span className="text-truncate">{project.departmentIds?.map(d => d.name).join(' · ')}</span>
+
                   </div>
                 </div>
 
-                <div className="mx-4 text-center" style={{ width: '120px' }}>
-                  <div className="text-muted mb-1" style={{ fontSize: '12px' }}>Hạn ứng tuyển</div>
-                  <div className="fw-semibold text-dark" style={{ fontSize: '14px' }}>
+                <div className="mx-5">
+                  <div className="text-dark mb-1 fw-bold" style={{ fontSize: '12px' }}>Hạn ứng tuyển</div>
+                  <div className="text-muted" style={{ fontSize: '13px' }}>
                     {formatDate(project.deadline)}
                   </div>
                 </div>
@@ -125,7 +125,7 @@ export default function MyProjectsTab() {
                   </div>
                   <div className="progress" style={{ height: '6px' }}>
                     <div
-                      className="progress-bar bg-warning"
+                      className="progress-bar bg-success"
                       style={{ width: `${Math.min(100, ((project.members?.length || 0) / project.maxMembers) * 100)}%` }}
                     />
                   </div>
@@ -143,8 +143,8 @@ export default function MyProjectsTab() {
 
                 <div className="ms-2 d-flex align-items-center gap-2">
                   <Button
-                    variant="outline-primary"
-                    className="rounded-pill px-4 py-1"
+                    variant="secondary text-dark border-2"
+                    className="rounded-pill px-3"
                     onClick={() => navigate(`/manage/${project._id}`)}
                   >
                     Quản lý
@@ -153,7 +153,7 @@ export default function MyProjectsTab() {
                     <Dropdown.Toggle as="div" className="btn btn-link text-muted p-1" style={{ cursor: 'pointer' }}>
                       <FaEllipsisV />
                     </Dropdown.Toggle>
-                    <Dropdown.Menu className="border-0 shadow-sm rounded-3">
+                    <Dropdown.Menu className="border-1 shadow-sm rounded-5">
                       <Dropdown.Item onClick={() => handleDeleteClick(project._id)} className="text-danger">
                         Xóa bài đăng
                       </Dropdown.Item>

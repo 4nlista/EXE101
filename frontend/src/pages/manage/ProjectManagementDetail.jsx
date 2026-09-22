@@ -114,7 +114,7 @@ export default function ProjectManagementDetail() {
                   {project.status === PROJECT_STATUS.OPEN ? 'Đang tuyển' : 'Đã đóng'}
                 </Badge>
               </div>
-              <div className="text-muted" style={{ fontSize: '14px' }}>
+              <div className="text-muted" style={{ fontSize: '13px' }}>
                 Đăng bởi: <span className="fw-semibold text-dark">{project.ownerId?.name || 'Bạn'}</span>
                 <span className="mx-2">•</span>
                 {formatDate(project.createdAt)}
@@ -132,31 +132,31 @@ export default function ProjectManagementDetail() {
                 style={{ width: `${Math.min(100, (members.length / project.maxMembers) * 100)}%` }}
               />
             </div>
-            <Button variant="outline-primary" className="rounded-pill px-4" onClick={() => setShowUpdateModal(true)}>
-              <FaEdit className="me-2" /> Chỉnh sửa
+            <Button variant="primary" className="rounded-pill px-3" onClick={() => setShowUpdateModal(true)}>
+              <FaEdit className="me-0" /> Chỉnh sửa
             </Button>
           </div>
         </div>
 
-        <Row className="g-3 border-top border-bottom py-3 mb-3 text-center">
-          <Col md={3} className="border-end">
-            <div className="text-muted mb-1" style={{ fontSize: '13px' }}>Ngành</div>
-            <div className="fw-semibold text-dark">{project.departmentIds?.map(d => d.name).join(', ')}</div>
+        <Row className="g-3 border-top border-bottom py-2 mb-3">
+          <Col md={5} className="border-end">
+            <div className="text-dark mb-1 fw-bold" style={{ fontSize: '13px' }}>Ngành</div>
+            <div className="">{project.departmentIds?.map(d => d.name).join(', ')}</div>
           </Col>
-          <Col md={3} className="border-end">
-            <div className="text-muted mb-1" style={{ fontSize: '13px' }}>Mục tiêu điểm</div>
-            <div className="fw-semibold text-dark">{project.gradeTarget ? `${project.gradeTarget} / 10` : 'Không có'}</div>
+          <Col md={3} className="border-end ">
+            <div className="text-dark mb-1 fw-bold" style={{ fontSize: '13px' }}>Mục tiêu điểm</div>
+            <div className="">{project.gradeTarget ? `${project.gradeTarget} / 10` : 'Không có'}</div>
           </Col>
           <Col md={3}>
-            <div className="text-muted mb-1" style={{ fontSize: '13px' }}>Hạn ứng tuyển</div>
-            <div className="fw-semibold text-dark">{project.deadline ? formatDate(project.deadline) : 'Không có'}</div>
+            <div className="text-dark mb-1 fw-bold" style={{ fontSize: '13px' }}>Hạn ứng tuyển</div>
+            <div className="">{project.deadline ? formatDate(project.deadline) : 'Không có'}</div>
           </Col>
         </Row>
 
         <Row className="g-4">
           <Col md={6}>
             <h6 className="fw-bold mb-2">Tổng quan dự án</h6>
-            <p className="text-muted" style={{ fontSize: '14px', whiteSpace: 'pre-line' }}>{project.description}</p>
+            <p className="text-muted" style={{ fontSize: '13px', whiteSpace: 'pre-line' }}>{project.description}</p>
           </Col>
           <Col md={6}>
             <h6 className="fw-bold mb-2">Yêu cầu ứng viên</h6>
@@ -180,10 +180,10 @@ export default function ProjectManagementDetail() {
       </Nav>
 
       {/* Content */}
-      <div className="bg-white rounded-4 shadow-sm border p-4">
+      <div className="rounded-4 shadow-sm border p-4">
         {activeTab === 'applicants' && (
           <div className="table-responsive">
-            <Table hover className="align-middle border-top border-bottom mb-0">
+            <Table striped hover className="align-middle border-top border-bottom mb-2 ">
               <thead className="bg-light">
                 <tr>
                   <th className="py-3 text-muted fw-semibold border-0 text-center" style={{ width: '60px' }}>STT</th>
@@ -226,7 +226,13 @@ export default function ProjectManagementDetail() {
                       </td>
                       <td className="text-center">{getStatusBadge(app.status)}</td>
                       <td className="text-center">
-                        <a href={app.cvFileUrl} target="_blank" rel="noopener noreferrer" className="text-primary text-decoration-none">
+                        <a
+                          href={app.cvFileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn btn-sm rounded-pill text-white"
+                          style={{ backgroundColor: '#515253ff', borderColor: '#f7f7f7ff' }}
+                        >
                           Xem CV
                         </a>
                       </td>

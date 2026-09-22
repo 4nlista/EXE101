@@ -2,7 +2,7 @@ import React from 'react';
 import Modal from 'react-bootstrap/Modal';
 import Button from './Button';
 
-const ConfirmActionModal = ({ show, onHide, onConfirm, title, message, confirmText = 'Xác nhận', variant = 'primary', isLoading = false }) => {
+const ConfirmActionModal = ({ show, onHide, onConfirm, title, message, confirmText = 'Xác nhận', isLoading = false }) => {
   return (
     <Modal show={show} onHide={onHide} centered>
       <Modal.Header closeButton>
@@ -12,10 +12,10 @@ const ConfirmActionModal = ({ show, onHide, onConfirm, title, message, confirmTe
         <p className="mb-0 text-muted">{message}</p>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={onHide} disabled={isLoading}>
+        <Button variant="secondary text-dark" onClick={onHide} disabled={isLoading}>
           Hủy
         </Button>
-        <Button variant={variant} onClick={onConfirm} isLoading={isLoading}>
+        <Button variant="primary text-white" onClick={onConfirm} isLoading={isLoading}>
           {confirmText}
         </Button>
       </Modal.Footer>

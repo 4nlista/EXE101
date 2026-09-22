@@ -133,7 +133,7 @@ export default function ProjectDetailModal({ project, show, onHide }) {
     } catch (error) {
       const status = error.response?.data?.status;
       const rejectionCount = error.response?.data?.rejectionCount;
-      
+
       if (status) {
         setAppStatus({ canApply: false, status, rejectionCount });
         setErrorMsg('');
@@ -338,7 +338,7 @@ export default function ProjectDetailModal({ project, show, onHide }) {
                 {/* ── Footer Buttons ── */}
                 <div className="mt-4 pt-3 border-top d-flex justify-content-center">
                   <div className="w-100 d-flex justify-content-end gap-2">
-                    <Button variant="outline-secondary" type="button" onClick={onHide} className="fw-medium px-4 bg-white">
+                    <Button variant="outline-light" type="button" onClick={onHide} className="fw-medium px-4 bg-secondary text-white">
                       Hủy
                     </Button>
                     <Button type="submit" variant="primary" disabled={!applyFile} loading={isSubmitting} className="fw-medium px-4 d-flex align-items-center gap-2" style={{ backgroundColor: '#ea580c', borderColor: '#ea580c' }}>
