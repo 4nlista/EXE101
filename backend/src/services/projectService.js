@@ -56,7 +56,11 @@ const getProjects = async (query) => {
 
   // Thực hiện truy vấn với populate để lấy tên người đăng và tên ngành học
   const projects = await Project.find(filter)
-    .populate('ownerId', 'name avatar university')
+    .populate({
+      path: 'ownerId',
+      select: 'name avatar departmentId',
+      populate: { path: 'departmentId', select: 'name' }
+    })
     .populate('departmentIds', 'name')
     .sort(sortOrder)
     .skip(skip)
@@ -183,7 +187,14 @@ const deleteProject = async (projectId, ownerId) => {
 
 const getProjectApplicants = async (projectId, ownerId, query) => {
   const project = await Project.findOne({ _id: projectId, ownerId })
-    .populate('members.userId', 'name avatar university major');
+    .populate({
+      path: 'members.userId',
+      select: 'name avatar departmentId majorId',
+      populate: [
+        { path: 'departmentId', select: 'name' },
+        { path: 'majorId', select: 'name' }
+      ]
+    });
   if (!project) throw new Error('Không tìm thấy dự án hoặc bạn không có quyền xem.');
 
   const { status } = query;
@@ -191,7 +202,14 @@ const getProjectApplicants = async (projectId, ownerId, query) => {
   if (status) filter.status = status;
 
   const applications = await Application.find(filter)
-    .populate('applicantId', 'name avatar university major')
+    .populate({
+      path: 'applicantId',
+      select: 'name avatar departmentId majorId',
+      populate: [
+        { path: 'departmentId', select: 'name' },
+        { path: 'majorId', select: 'name' }
+      ]
+    })
     .sort({ createdAt: -1 });
 
   return {

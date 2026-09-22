@@ -80,13 +80,13 @@ export default function ProjectManagementDetail() {
   const getStatusBadge = (status) => {
     switch (status) {
       case APPLICATION_STATUS.PENDING:
-        return <Badge bg="warning" text="dark" className="rounded-pill px-3 py-2 bg-opacity-25 fw-normal">PENDING</Badge>;
+        return <Badge bg="warning" text="dark" className="rounded-pill px-3 py-2 bg-opacity-25 fw-normal">Đang xử lý</Badge>;
       case APPLICATION_STATUS.APPROVED:
-        return <Badge bg="success" className="rounded-pill px-3 py-2 fw-normal">APPROVED</Badge>;
+        return <Badge bg="success" className="rounded-pill px-3 py-2 fw-normal">Đã duyệt</Badge>;
       case APPLICATION_STATUS.REJECTED:
-        return <Badge bg="danger" className="rounded-pill px-3 py-2 fw-normal">REJECTED</Badge>;
+        return <Badge bg="danger" className="rounded-pill px-3 py-2 fw-normal">Từ chối</Badge>;
       case APPLICATION_STATUS.INVITED:
-        return <Badge bg="info" className="rounded-pill px-3 py-2 fw-normal">INVITED</Badge>;
+        return <Badge bg="info" className="rounded-pill px-3 py-2 fw-normal">Được mời</Badge>;
       default:
         return null;
     }
@@ -214,13 +214,13 @@ export default function ProjectManagementDetail() {
                           />
                           <div>
                             <div className="fw-semibold text-dark">{app.applicantId?.name}</div>
-                            <div className="text-muted" style={{ fontSize: '12px' }}>{app.applicantId?.major || app.applicantId?.university || 'Chưa cập nhật'}</div>
+                            <div className="text-muted" style={{ fontSize: '12px' }}>{app.applicantId?.majorId?.name || app.applicantId?.departmentId?.name || 'Chưa cập nhật'}</div>
                           </div>
                         </div>
                       </td>
                       <td className="text-muted">{formatDate(app.createdAt)}</td>
                       <td>
-                        <Button variant="outline-secondary" size="sm" className="rounded-pill d-flex align-items-center gap-1" disabled title="Tính năng VIP/Premium">
+                        <Button variant="outline-primary" size="sm" className="rounded-pill d-flex align-items-center gap-1" disabled title="Tính năng VIP/Premium">
                           <FaStar className="text-warning" /> Match
                         </Button>
                       </td>
@@ -236,7 +236,6 @@ export default function ProjectManagementDetail() {
                             <Button
                               variant="outline-success"
                               size="sm"
-                              className="rounded-pill px-3"
                               onClick={() => {
                                 setConfirmAction({ type: 'approve', appId: app._id, name: app.applicantId?.name });
                                 setShowConfirm(true);
@@ -245,7 +244,6 @@ export default function ProjectManagementDetail() {
                             <Button
                               variant="outline-danger"
                               size="sm"
-                              className="rounded-pill px-3"
                               onClick={() => {
                                 setConfirmAction({ type: 'reject', appId: app._id, name: app.applicantId?.name });
                                 setShowConfirm(true);
@@ -257,7 +255,6 @@ export default function ProjectManagementDetail() {
                           <Button
                             variant="primary"
                             size="sm"
-                            className="rounded-pill px-3 bg-opacity-10 text-primary border-0 fw-semibold"
                             onClick={() => navigate('/messages')}
                           >Nhắn tin</Button>
                         )}
@@ -265,7 +262,6 @@ export default function ProjectManagementDetail() {
                           <Button
                             variant="outline-info"
                             size="sm"
-                            className="rounded-pill px-3"
                             onClick={() => {
                               setConfirmAction({ type: 'invite', appId: app._id, name: app.applicantId?.name });
                               setShowConfirm(true);
@@ -297,25 +293,25 @@ export default function ProjectManagementDetail() {
                         style={{ width: '64px', height: '64px', objectFit: 'cover' }}
                       />
                       <h6 className="fw-bold mb-1">{member.userId.name}</h6>
-                      <p className="text-muted mb-3" style={{ fontSize: '13px' }}>{member.userId.major || member.userId.university || 'Chưa cập nhật'}</p>
+                      <p className="text-muted mb-3" style={{ fontSize: '13px' }}>{member.userId?.majorId?.name || member.userId?.departmentId?.name || 'Chưa cập nhật'}</p>
 
                       <div className="d-flex flex-column gap-2 mt-auto w-100">
                         <div className="d-flex gap-2 w-100">
                           <Button
-                            variant="outline-primary"
-                            className="w-50 rounded-pill py-1"
+                            variant="info text-white"
+                            className="w-50 rounded-pill"
                             onClick={() => navigate(`/profile/${member.userId._id}`)}
                             style={{ fontSize: '13px' }}
                           >Profile</Button>
                           <Button
                             variant="primary"
-                            className="w-50 rounded-pill py-1 bg-opacity-10 text-primary border-0 fw-semibold"
+                            className="w-50 rounded-pill text-white"
                             onClick={() => navigate('/messages')}
                             style={{ fontSize: '13px' }}
                           >Nhắn tin</Button>
                         </div>
                         <Button
-                          variant="outline-danger"
+                          variant="warning"
                           className="w-100 rounded-pill py-1"
                           onClick={() => {
                             setConfirmAction({ type: 'kick', userId: member.userId._id, name: member.userId.name });
@@ -358,7 +354,7 @@ export default function ProjectManagementDetail() {
         }
       />
 
-      <UpdateProjectModal 
+      <UpdateProjectModal
         show={showUpdateModal}
         onHide={() => setShowUpdateModal(false)}
         project={project}

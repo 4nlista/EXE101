@@ -39,10 +39,10 @@ export default function ProjectCard({ project, onViewDetail }) {
           </Badge>
         </div>
 
-        {/* Ngôi trường (University) */}
-        {project.ownerId?.university && (
-          <div className="mb-2">
-            <span className="fw-bold text-dark small">{project.ownerId?.university}</span>
+        {/* Ngành */}
+        {project.ownerId?.departmentId?.name && (
+          <div className="d-flex align-items-center gap-1 mt-1 text-muted" style={{ fontSize: '12px' }}>
+            <span className="text-dark small">{project.ownerId.departmentId.name}</span>
           </div>
         )}
 
