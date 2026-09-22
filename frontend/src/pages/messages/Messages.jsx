@@ -7,7 +7,7 @@ import { toast } from 'react-toastify';
 import Button from '../../components/Button';
 import { useLocation } from 'react-router-dom';
 
-const SOCKET_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5000';
+const SOCKET_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8686';
 
 export default function Messages() {
   const [socket, setSocket] = useState(null);

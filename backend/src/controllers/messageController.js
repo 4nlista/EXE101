@@ -39,7 +39,7 @@ const initPersonalConversation = async (req, res, next) => {
     }
 
     const conversation = await messageService.findOrCreatePersonalConversation(currentUserId, targetUserId);
-    res.json({ success: true, data: conversation });
+    res.status(200).json({ success: true, data: conversation });
   } catch (error) {
     next(error);
   }

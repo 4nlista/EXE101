@@ -1,43 +1,25 @@
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+import axiosClient from '../utils/axiosClient';
 
 // Lấy danh sách cuộc trò chuyện
 export const getConversations = async () => {
-  const response = await axios.get(`${API_URL}/messages/conversations`, {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem('token')}`
-    }
-  });
-  return response.data;
+  const response = await axiosClient.get('/messages/conversations');
+  return response;
 };
 
 // Lấy danh sách tin nhắn
 export const getMessages = async (conversationId) => {
-  const response = await axios.get(`${API_URL}/messages/${conversationId}`, {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem('token')}`
-    }
-  });
-  return response.data;
+  const response = await axiosClient.get(`/messages/${conversationId}`);
+  return response;
 };
 
 // Gửi tin nhắn
 export const sendMessage = async (conversationId, content) => {
-  const response = await axios.post(`${API_URL}/messages/${conversationId}`, { content, type: 'text' }, {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem('token')}`
-    }
-  });
-  return response.data;
+  const response = await axiosClient.post(`/messages/${conversationId}`, { content, type: 'text' });
+  return response;
 };
 
 // Bắt đầu cuộc trò chuyện mới
 export const initConversation = async (targetUserId) => {
-  const response = await axios.post(`${API_URL}/messages/init`, { targetUserId }, {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem('token')}`
-    }
-  });
-  return response.data;
+  const response = await axiosClient.post('/messages/init', { targetUserId });
+  return response;
 };
