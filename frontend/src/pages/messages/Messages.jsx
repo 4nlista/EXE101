@@ -6,6 +6,7 @@ import { getConversations, getMessages, sendMessage, revokeMessage, clearConvers
 import { toast } from 'react-toastify';
 import Button from '../../components/Button';
 import { useLocation } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 const SOCKET_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8686';
 
@@ -32,6 +33,9 @@ const CustomToggle = React.forwardRef(({ children, onClick, className }, ref) =>
 ));
 
 export default function Messages() {
+  const { currentUser } = useAuth();
+  const currentUserId = currentUser?._id || currentUser?.id;
+
   const [socket, setSocket] = useState(null);
   const [conversations, setConversations] = useState([]);
   const [activeConversation, setActiveConversation] = useState(null);
@@ -39,9 +43,6 @@ export default function Messages() {
   const [messageInput, setMessageInput] = useState('');
   const messagesEndRef = useRef(null);
   const location = useLocation();
-
-  const currentUser = JSON.parse(localStorage.getItem('user'));
-  const currentUserId = currentUser?._id || currentUser?.id;
 
   // Khởi tạo socket
   useEffect(() => {
@@ -249,7 +250,7 @@ export default function Messages() {
               <div className="p-4 text-center text-muted">Chưa có tin nhắn nào</div>
             ) : (
               conversations.map(conv => {
-                const partner = conv.participants.find(p => p.userId?._id !== currentUserId)?.userId;
+                const partner = conv.participants.find(p => p.userId?._id?.toString() !== currentUserId?.toString())?.userId;
                 const isActive = activeConversation?._id === conv._id;
                 return (
                   <ListGroup.Item
@@ -302,13 +303,13 @@ export default function Messages() {
               {/* Chat Header */}
               <div className="p-3 border-bottom d-flex align-items-center gap-3 bg-light">
                 <img
-                  src={activeConversation.participants.find(p => p.userId?._id !== currentUserId)?.userId?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(activeConversation.participants.find(p => p.userId?._id !== currentUserId)?.userId?.name || 'A')}&background=random`}
+                  src={activeConversation.participants.find(p => p.userId?._id?.toString() !== currentUserId?.toString())?.userId?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(activeConversation.participants.find(p => p.userId?._id?.toString() !== currentUserId?.toString())?.userId?.name || 'A')}&background=random`}
                   alt="avatar"
                   className="rounded-circle object-fit-cover"
                   style={{ width: '40px', height: '40px' }}
                 />
                 <h5 className="mb-0 fw-bold">
-                  {activeConversation.participants.find(p => p.userId?._id !== currentUserId)?.userId?.name || 'Người dùng'}
+                  {activeConversation.participants.find(p => p.userId?._id?.toString() !== currentUserId?.toString())?.userId?.name || 'Người dùng'}
                 </h5>
               </div>
 
