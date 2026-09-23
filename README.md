@@ -16,19 +16,19 @@
 
 ### ◆ Xác thực & Phân quyền
 
-Hệ thống hỗ trợ đăng ký tài khoản qua Email với xác thực OTP (6 số, thời hạn 5 phút), đăng nhập bằng Email/Mật khẩu hoặc liên kết Google, và chức năng quên mật khẩu với quy trình xác minh an toàn.
+Hệ thống hỗ trợ đăng ký tài khoản qua Email với xác thực OTP, đăng nhập bằng Email/Mật khẩu hoặc liên kết Google, và chức năng quên mật khẩu với quy trình xác minh an toàn.
 
 ### ◆ Thiết lập hồ sơ cá nhân
 
-Sau khi đăng ký, người dùng hoàn thiện hồ sơ qua 4 bước: thông tin cá nhân, thông tin học tập (ngành, chuyên ngành, kỳ học), hồ sơ năng lực (kỹ năng chính, điểm mạnh/yếu, lịch sử dự án) và mục tiêu điểm số. Quy trình được thiết kế theo dạng Step Indicator trực quan.
+Sau khi đăng ký, người dùng hoàn thiện hồ sơ qua 4 bước: thông tin cá nhân, thông tin học tập (ngành, chuyên ngành, kỳ học), hồ sơ năng lực (kỹ năng chính, lịch sử dự án) và điểm số GPA. Quy trình được thiết kế theo dạng Step Indicator trực quan.
 
 ### ◆ Bảng tin dự án
 
-Trang khám phá các bài đăng tuyển thành viên với giao diện chia làm sidebar bộ lọc (ngành, mục tiêu điểm, trạng thái, thời gian) và danh sách dự án dạng card. Mỗi card hiển thị tên ngành, độ phù hợp (%), thời hạn, tiêu đề, mô tả ngắn gọn và số lượng tuyển.
+Trang khám phá các bài đăng tuyển thành viên với giao diện chia làm sidebar bộ lọc (ngành, mục tiêu điểm, trạng thái, thời gian) và danh sách dự án dạng card. Mỗi card hiển thị tên ngành, thời hạn, tiêu đề, mô tả ngắn gọn và số lượng tuyển.
 
 ### ◆ Đăng tải dự án mới
 
-Người dùng có thể tạo bài đăng tuyển thành viên với đầy đủ thông tin: tiêu đề, tổng quan dự án, yêu cầu ứng viên, ngành, mục tiêu điểm, số lượng tuyển theo từng vị trí (Designer, Frontend, Tester...) và hạn ứng tuyển.
+Người dùng có thể tạo bài đăng tuyển thành viên với đầy đủ thông tin: tiêu đề, tổng quan dự án, yêu cầu ứng viên, ngành, mục tiêu điểm, số lượng tuyển và hạn ứng tuyển.
 
 ### ◆ Xem chi tiết & Ứng tuyển
 
@@ -36,7 +36,7 @@ Xem toàn bộ thông tin chi tiết bài đăng và gửi hồ sơ ứng tuyể
 
 ### ◆ Tin nhắn & Kết nối
 
-Hệ thống nhắn tin hỗ trợ chat cá nhân (1-1) và chat nhóm (từ 3 người trở lên). Người dùng có thể gửi ảnh, upload file, tìm kiếm nội dung chat, tắt thông báo và xóa cuộc trò chuyện.
+Hệ thống nhắn tin hỗ trợ chat cá nhân (1-1) và chat nhóm (từ 3 người trở lên). Người dùng có thể gửi tin nhắn trao đổi trong cuộc hội thoại.
 
 ### ◆ Cộng đồng
 
@@ -48,11 +48,7 @@ Trang quản lý cho phép theo dõi các bài đăng đã tạo, xem danh sách
 
 ### ◆ AI Hub
 
-Tích hợp Gemini API để tự động sinh mô tả dự án từ từ khóa, phân tích kỹ năng và gợi ý dự án phù hợp, tìm danh sách người dùng phù hợp nhất với bài đăng.
-
-### ◆ Tài liệu môn học
-
-Khám phá và tìm kiếm tài liệu theo mã môn, ngành, chuyên ngành và kỳ học. Hỗ trợ sinh viên tiếp cận nguồn tài liệu học tập phong phú.
+Tích hợp box chat Gemini API để tự động sinh mô tả dự án từ từ khóa, phân tích kỹ năng và gợi ý dự án phù hợp, tìm danh sách người dùng phù hợp nhất với bài đăng.
 
 ### ◆ Nạp tiền & Gói dịch vụ
 
@@ -102,13 +98,13 @@ npm run dev
 
 ## ▸ Vai trò trong hệ thống
 
-**Student (Sinh viên)** — Đối tượng chính của nền tảng. Sinh viên có thể tìm kiếm đồng đội, ứng tuyển dự án, tạo bài đăng tuyển thành viên, sử dụng AI Hub và khám phá tài liệu học tập.
+**Student (Sinh viên)** — Đối tượng chính của nền tảng. Sinh viên có thể tìm kiếm thành viên cùng mục tiêu, ứng tuyển dự án, tạo bài đăng tuyển thành viên, sử dụng AI Hub hỗ trợ.
 
 **Admin (Quản trị viên)** — Quản lý toàn bộ hệ thống bao gồm quản trị người dùng, giám sát vận hành, thống kê doanh thu và dữ liệu, đảm bảo bảo mật thông tin.
 
 ## ▸ License
 
-Dự án thuộc môn **EXE101** — FPT University.
+Dự án thuộc môn **EXE101-201** — FPT University.
 
 <p align="center">
   Made with ♥ by <strong>UniVerse AI Team</strong>
