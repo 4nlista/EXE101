@@ -1,9 +1,9 @@
-import axiosInstance from './axiosInstance';
+import axiosClient from '../utils/axiosClient';
 
 const paymentService = {
   // Tạo Order và lấy thông tin QR Code (VietQR)
   createPayment: async (packageType, amount) => {
-    const response = await axiosInstance.post('/payment/create_payment', {
+    const response = await axiosClient.post('/payment/create_payment', {
       packageType,
       amount
     });
@@ -12,7 +12,7 @@ const paymentService = {
 
   // Client gọi API liên tục (Polling) để kiểm tra trạng thái thanh toán 
   checkPaymentStatus: async (orderId) => {
-    const response = await axiosInstance.get(`/payment/status/${orderId}`);
+    const response = await axiosClient.get(`/payment/status/${orderId}`);
     return response.data;
   }
 };
