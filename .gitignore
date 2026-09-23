@@ -10,12 +10,12 @@ dist-ssr/
 !package.json
 !package-lock.json
 
-# Bỏ qua các file ảnh
-*.jpg
-*.jpeg
-*.png
-*.gif
-*.webp
-*.svg
-*.ico
-*.bmp
+# Bỏ qua các file ảnh (Đã comment lại để deploy web)
+# *.jpg
+# *.jpeg
+# *.png
+# *.gif
+# *.webp
+# *.svg
+# *.ico
+# *.bmp
