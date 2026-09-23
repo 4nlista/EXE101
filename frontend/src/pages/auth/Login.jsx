@@ -4,8 +4,8 @@ import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../../contexts/AuthContext';
 import { ROLE_CODE } from '../../constants/roleEnum';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import LogoImg from '../../../src/assets/images/Logo.png';
-import IconLoginImg from '../../../src/assets/images/Icon_login.png';
+import LogoImg from '../../assets/images/Logo.png';
+import IconLoginImg from '../../assets/images/Icon_login.png';
 
 // Import các UI Component hạt nhân
 import Input from '../../components/Input';
@@ -92,27 +92,27 @@ export default function Login() {
           </div>
 
           <form onSubmit={handleSubmit} noValidate>
-            
+
             {/* Lỗi Form-level (Hiển thị bằng Component Alert) */}
             <Alert type="danger" className="mb-4">
               {globalErr}
             </Alert>
 
             {/* Email Input */}
-            <Input 
+            <Input
               label="Email"
               icon={Mail}
-              id="email" 
-              name="email" 
+              id="email"
+              name="email"
               type="email"
               placeholder="user@example.com"
-              value={form.email} 
+              value={form.email}
               onChange={handleChange}
               error={errors.email}
             />
 
             {/* Password Input (có nút show/hide tự động từ Component Input) */}
-            <Input 
+            <Input
               label={
                 <div className="d-flex justify-content-between align-items-center w-100">
                   <span>Mật khẩu</span>
@@ -120,11 +120,11 @@ export default function Login() {
                 </div>
               }
               icon={Lock}
-              id="password" 
+              id="password"
               name="password"
               type="password"
               placeholder="••••••••"
-              value={form.password} 
+              value={form.password}
               onChange={handleChange}
               error={errors.password}
             />
@@ -142,16 +142,16 @@ export default function Login() {
             </div>
 
             {/* Nút Submit sử dụng Button Component */}
-            <Button 
-              type="submit" 
-              variant="primary" 
-              fullWidth 
+            <Button
+              type="submit"
+              variant="primary"
+              fullWidth
               loading={loading}
               className="py-2 fw-bold"
             >
               Đăng nhập →
             </Button>
-            
+
           </form>
 
           <div className="auth-divider-row my-4">
