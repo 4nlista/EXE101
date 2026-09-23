@@ -12,7 +12,7 @@ const sendEmail = require('../utils/emailSender');
 // Hàm 1: Tạo mã QR thanh toán (Backend trả về link VietQR)
 exports.createPaymentUrl = async (req) => {
   const { packageType, amount } = req.body;
-  const userId = req.user._id;
+  const userId = req.user.id || req.user._id;
 
   // Lấy giá chuẩn để chống thay đổi amount từ Client
   let trueAmount = 0;
@@ -55,7 +55,7 @@ exports.createPaymentUrl = async (req) => {
   // Cú pháp: https://img.vietqr.io/image/<BANK_BIN>/<ACCOUNT_NO>?amount=<AMOUNT>&addInfo=<CONTENT>
   // Nội dung chuyển khoản phải chứa orderId để Webhook nhận diện được
   const addInfo = `EXE101 ${orderId}`;
-  const qrUrl = `https://img.vietqr.io/image/${bankBin}/${bankAccount}-qr_only.png?amount=${trueAmount}&addInfo=${addInfo}`;
+  const qrUrl = `https://img.vietqr.io/image/${bankBin}/${bankAccount}-qr_only.png?amount=${trueAmount}&addInfo=${encodeURIComponent(addInfo)}`;
 
   return { 
     qrUrl,
@@ -106,8 +106,21 @@ exports.sepayWebhook = async (req) => {
     // Khách chuyển thiếu tiền -> Chuyển sang Failed
     transaction.status = TRANSACTION_STATUS.FAILED;
     transaction.sepayTransactionId = code; 
+    transaction.description = `Chuyển thiếu tiền (${transferAmount}đ / ${transaction.amount}đ). Cần Admin xử lý hoàn tiền thủ công.`;
     await transaction.save();
-    return { success: true, message: 'Giao dịch chuyển thiếu tiền' };
+
+    // Bắn thông báo cho User biết giao dịch lỗi
+    const user = await User.findById(transaction.userId);
+    if (user) {
+      await Notification.create({
+        userId: user._id,
+        type: NOTIFICATION_TYPE.SUBSCRIPTION,
+        title: 'Giao dịch không thành công',
+        message: `Bạn đã chuyển thiếu tiền (chỉ gửi ${transferAmount.toLocaleString()}đ). Giao dịch bị hủy. Vui lòng liên hệ bộ phận CSKH để được hoàn tiền.`
+      });
+    }
+
+    return { success: true, message: 'Giao dịch chuyển thiếu tiền. Chờ Admin xử lý hoàn tiền.' };
   }
 
   // Xử lý thành công

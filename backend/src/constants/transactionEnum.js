@@ -2,7 +2,8 @@
 const TRANSACTION_STATUS = {
   PENDING: 'pending',   // Đang chờ xử lý thanh toán
   SUCCESS: 'success',   // Thanh toán thành công
-  FAILED: 'failed'      // Thanh toán thất bại
+  FAILED: 'failed',     // Thanh toán thất bại
+  REFUNDED: 'refunded'  // Đã hoàn tiền (xử lý thủ công)
 };
 
 // Phương thức thanh toán

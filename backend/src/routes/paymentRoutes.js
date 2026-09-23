@@ -12,4 +12,7 @@ router.get('/status/:orderId', verifyToken, paymentController.checkPaymentStatus
 // Route Webhook cho SePay bắn về (không có Auth của user vì SePay gọi ẩn)
 router.post('/sepay_webhook', paymentController.sepayWebhook);
 
+// Route giả lập thanh toán (dành cho môi trường DEV/TEST)
+router.post('/mock_payment', verifyToken, paymentController.mockPayment);
+
 module.exports = router;

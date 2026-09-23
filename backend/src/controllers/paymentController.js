@@ -42,3 +42,36 @@ exports.sepayWebhook = async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 };
+
+// POST /api/payment/mock_payment
+// API giả lập thanh toán thành công (Chỉ dùng cho môi trường Test/Dev)
+exports.mockPayment = async (req, res, next) => {
+  try {
+    const { orderId } = req.body;
+    
+    // Lấy thông tin order
+    const paymentService = require('../services/paymentService');
+    const { Transaction } = require('../models');
+    const transaction = await Transaction.findById(orderId);
+    
+    if (!transaction) {
+        return res.status(404).json({ success: false, message: 'Transaction not found' });
+    }
+
+    // Giả mạo dữ liệu webhook
+    const mockReq = {
+      body: {
+        transferAmount: transaction.amount,
+        transferType: 'in',
+        content: `EXE101 ${orderId}`,
+        code: `MOCK_${Date.now()}`,
+        transactionDate: new Date().toISOString()
+      }
+    };
+
+    const result = await paymentService.sepayWebhook(mockReq);
+    res.status(200).json({ success: true, result });
+  } catch (error) {
+    next(error);
+  }
+};

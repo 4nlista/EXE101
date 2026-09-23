@@ -34,11 +34,15 @@ const transactionSchema = new mongoose.Schema(
     description: {
       type: String
     },
-    // 'pending' | 'success' | 'failed'
+    // 'pending' | 'success' | 'failed' | 'refunded'
     status: {
       type: String,
       enum: Object.values(TRANSACTION_STATUS),
       default: TRANSACTION_STATUS.PENDING
+    },
+    // Ghi chú của Admin (Dùng để note lịch sử xử lý hoàn tiền, lỗi...)
+    adminNote: {
+      type: String
     }
   },
   { timestamps: true }

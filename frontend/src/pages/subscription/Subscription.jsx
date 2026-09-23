@@ -92,7 +92,7 @@ export default function Subscription() {
         startPolling(res.data.orderId);
       }
     } catch (error) {
-      alert(error.response?.data?.message || 'Có lỗi xảy ra khi tạo thanh toán');
+      alert(error?.message || error?.response?.data?.message || 'Có lỗi xảy ra khi tạo thanh toán');
     } finally {
       setLoadingType(null);
     }
@@ -125,6 +125,18 @@ export default function Subscription() {
       if (pollingInterval.current) clearInterval(pollingInterval.current);
     };
   }, []);
+
+  // Chỉ dùng cho DEV/TEST: Giả lập thanh toán thành công
+  const handleMockPayment = async () => {
+    try {
+      if (!qrData?.orderId) return;
+      await paymentService.mockPayment(qrData.orderId);
+      // Backend sẽ đổi trạng thái transaction thành công
+      // Frontend chỉ cần chờ lượt polling tiếp theo (tối đa 3 giây) là sẽ cập nhật
+    } catch (error) {
+      console.error('Lỗi khi gọi giả lập thanh toán:', error);
+    }
+  };
 
   // Đóng modal thanh toán
   const handleCloseModal = () => {
@@ -270,6 +282,12 @@ export default function Subscription() {
                 <img src={qrData.qrUrl} alt="Mã VietQR" style={{ width: '250px', height: '250px', objectFit: 'contain' }} />
               </div>
 
+              {/* LƯU Ý CHO USER */}
+              <div className="alert alert-warning text-start fs-6 mb-3 p-2" role="alert" style={{ fontSize: '0.9rem' }}>
+                <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                <strong>Lưu ý:</strong> Vui lòng chuyển <strong>đúng số tiền</strong> và giữ nguyên <strong>nội dung chuyển khoản</strong>. Nếu cố tình chuyển sai số tiền, giao dịch sẽ thất bại. Mọi thắc mắc vui lòng liên hệ Admin.
+              </div>
+
               <div className="text-start bg-light p-3 rounded mb-3 fs-6 border">
                 <div className="d-flex justify-content-between mb-2">
                   <span className="text-muted">Số tiền:</span>
@@ -281,9 +299,17 @@ export default function Subscription() {
                 </div>
               </div>
 
-              <div className="d-flex justify-content-center align-items-center text-primary mt-2">
+              <div className="d-flex justify-content-center align-items-center text-primary mt-2 mb-3">
                 <Spinner animation="border" size="sm" className="me-2" />
                 <span>Đang kiểm tra giao dịch...</span>
+              </div>
+
+              {/* CHỈ HIỂN THỊ KHI TEST/DEV */}
+              <div className="text-center border-top pt-3 mt-2">
+                <p className="text-muted small mb-2">Chế độ thử nghiệm (Không tốn tiền)</p>
+                <Button variant="outline-success" size="sm" onClick={handleMockPayment}>
+                  Giả lập thanh toán thành công
+                </Button>
               </div>
             </>
           )}

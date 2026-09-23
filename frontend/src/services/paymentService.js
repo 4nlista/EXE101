@@ -7,13 +7,21 @@ const paymentService = {
       packageType,
       amount
     });
-    return response.data;
+    return response;
   },
 
   // Client gọi API liên tục (Polling) để kiểm tra trạng thái thanh toán 
   checkPaymentStatus: async (orderId) => {
     const response = await axiosClient.get(`/payment/status/${orderId}`);
-    return response.data;
+    return response;
+  },
+
+  // (Chỉ dùng cho DEV/TEST) Giả lập thanh toán thành công
+  mockPayment: async (orderId) => {
+    const response = await axiosClient.post('/payment/mock_payment', {
+      orderId
+    });
+    return response;
   }
 };
 
