@@ -16,6 +16,8 @@ import AIHub from '../pages/ai/AIHub';
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import Settings from '../pages/settings/Settings';
 import ProfileOnboarding from '../pages/profile/ProfileOnboarding';
+import Subscription from '../pages/subscription/Subscription';
+import PaymentResult from '../pages/subscription/PaymentResult';
 import { ROLE_CODE } from '../constants/roleEnum';
 
 // Route cho Admin
@@ -97,6 +99,10 @@ export default function AppRoutes() {
         <Route path="/messages" element={<Messages />} />
         <Route path="/ai-hub" element={<AIHub />} />
         <Route path="/settings" element={<Settings />} />
+        
+        {/* Thanh toán & Gói dịch vụ */}
+        <Route path="/subscription" element={<Subscription />} />
+        <Route path="/payment-result" element={<PaymentResult />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

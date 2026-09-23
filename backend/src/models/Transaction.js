@@ -19,14 +19,10 @@ const transactionSchema = new mongoose.Schema(
     paymentMethod: {
       type: String,
       enum: Object.values(PAYMENT_METHOD),
-      default: PAYMENT_METHOD.VNPAY
+      default: PAYMENT_METHOD.SEPAY
     },
-    // Mã giao dịch từ VNPay (dùng để đối soát)
-    vnpayTransactionId: {
-      type: String
-    },
-    // Mã phản hồi từ VNPay
-    vnpayResponseCode: {
+    // Mã giao dịch từ SePay (Reference Code ngân hàng)
+    sepayTransactionId: {
       type: String
     },
     // Liên kết với gói đăng ký nào (tùy chọn)
@@ -48,9 +44,9 @@ const transactionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Index: tìm giao dịch theo user và mã VNPay
+// Index: tìm giao dịch theo user và mã SePay
 transactionSchema.index({ userId: 1 });
-transactionSchema.index({ vnpayTransactionId: 1 });
+transactionSchema.index({ sepayTransactionId: 1 });
 
 const Transaction = mongoose.model('Transaction', transactionSchema);
 

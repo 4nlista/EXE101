@@ -1,0 +1,20 @@
+import axiosInstance from './axiosInstance';
+
+const paymentService = {
+  // Tạo Order và lấy thông tin QR Code (VietQR)
+  createPayment: async (packageType, amount) => {
+    const response = await axiosInstance.post('/payment/create_payment', {
+      packageType,
+      amount
+    });
+    return response.data;
+  },
+
+  // Client gọi API liên tục (Polling) để kiểm tra trạng thái thanh toán 
+  checkPaymentStatus: async (orderId) => {
+    const response = await axiosInstance.get(`/payment/status/${orderId}`);
+    return response.data;
+  }
+};
+
+export default paymentService;

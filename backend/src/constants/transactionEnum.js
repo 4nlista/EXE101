@@ -7,7 +7,7 @@ const TRANSACTION_STATUS = {
 
 // Phương thức thanh toán
 const PAYMENT_METHOD = {
-  VNPAY: 'vnpay'    // Thanh toán qua VNPay
+  SEPAY: 'sepay'    // Thanh toán chuyển khoản qua mã VietQR (SePay)
 };
 
 module.exports = { TRANSACTION_STATUS, PAYMENT_METHOD };
