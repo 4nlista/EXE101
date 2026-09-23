@@ -74,7 +74,7 @@ export default function Messages() {
       const res = await getConversations();
       if (res.success) {
         let fetchedConvs = res.data;
-        
+
         // Nếu chuyển từ trang Profile qua, có truyền sẵn conversation object
         // mà backend đã lọc mất (do đã clear chat) thì add tạm vào để người dùng chat
         if (location.state?.conversation && location.state?.conversationId) {
@@ -83,9 +83,9 @@ export default function Messages() {
             fetchedConvs = [location.state.conversation, ...fetchedConvs];
           }
         }
-        
+
         setConversations(fetchedConvs);
-        
+
         // Cập nhật activeConversation ngay sau khi tải xong nếu có id
         if (location.state?.conversationId) {
           const conv = fetchedConvs.find(c => c._id === location.state.conversationId);
@@ -324,12 +324,6 @@ export default function Messages() {
                     displayLastMessage = null; // Ẩn tin nhắn cũ khỏi sidebar
                   }
                 }
-
-                console.log('[CHAT DEBUG][FE PARTNER]', {
-                  currentUserId,
-                  partnerId: partner?._id,
-                  partnerName: partner?.name
-                });
 
                 return (
                   <ListGroup.Item

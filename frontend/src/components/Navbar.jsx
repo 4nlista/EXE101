@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
 import { Badge } from 'react-bootstrap';
-import { Bell, Settings, LogOut, ChevronDown, User, Home, Briefcase, MessageSquareMore, Sparkles } from 'lucide-react';
+import { Bell, Settings, LogOut, ChevronDown, User, Home, Briefcase, MessageSquareMore, Sparkles, Crown } from 'lucide-react';
 import LogoImg from '../assets/images/Logo.png';
 
 export default function Navbar() {
@@ -91,6 +91,7 @@ export default function Navbar() {
                     </span>
                   )}
                 </button>
+                <button className="drop-item" onClick={() => { navigate('/subscription'); setShowDrop(false); }}><Crown size={16} className="text-warning" /> Nâng cấp tài khoản</button>
                 <button className="drop-item" onClick={() => { navigate('/settings'); setShowDrop(false); }}><Settings size={16} /> Cài đặt</button>
                 <div className="drop-sep" />
                 <button className="drop-item danger" onClick={handleLogout}><LogOut size={16} /> Đăng xuất</button>

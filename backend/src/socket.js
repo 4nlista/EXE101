@@ -33,9 +33,8 @@ const initSocket = (server) => {
   });
 
   io.on('connection', (socket) => {
-    console.log(`User connected: ${socket.userId} with socket ID: ${socket.id}`);
     userSockets.set(socket.userId.toString(), socket.id);
-    
+
     // Join user room for multi-device support
     socket.join(`user:${socket.userId}`);
 
