@@ -8,6 +8,7 @@ import ConfirmActionModal from '../../components/ConfirmActionModal';
 import Button from '../../components/Button';
 import { getMyProjects, getMyProjectStats, deleteProject } from '../../services/projectService';
 import { PROJECT_STATUS } from '../../constants/projectEnum';
+import StatusBadge from '../../components/StatusBadge';
 import { formatDate } from '../../utils/formatDate';
 
 export default function MyProjectsTab() {
@@ -132,13 +133,10 @@ export default function MyProjectsTab() {
                 </div>
 
                 <div className="mx-4 text-center" style={{ width: '120px' }}>
-                  <Badge
-                    bg={project.status === PROJECT_STATUS.OPEN ? 'warning' : 'success'}
-                    text={project.status === PROJECT_STATUS.OPEN ? 'dark' : 'light'}
-                    className="rounded-pill px-3 py-2 fw-normal bg-opacity-25"
-                  >
-                    {project.status === PROJECT_STATUS.OPEN ? 'Đang tuyển' : 'Đã đủ thành viên'}
-                  </Badge>
+                  <StatusBadge
+                    variant={project.status === PROJECT_STATUS.OPEN ? 'success' : 'secondary'}
+                    text={project.status === PROJECT_STATUS.OPEN ? 'Đang tuyển' : 'Đã đủ thành viên'}
+                  />
                 </div>
 
                 <div className="ms-2 d-flex align-items-center gap-2">

@@ -1,13 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Card, Table, Badge, Form, Row, Col, Spinner } from 'react-bootstrap';
-import { Search, AlertCircle, ReceiptText } from 'lucide-react';
+import { Container, Card, Table, Form, Row, Col, Spinner } from 'react-bootstrap';
+import { Search, AlertCircle, ReceiptText, CheckCircle2 } from 'lucide-react';
 import paymentService from '../../services/paymentService';
+import StatusBadge from '../../components/StatusBadge';
 
 export default function HistoryPayment() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
+
+  const getStatusText = (status) => {
+    switch (status) {
+      case 'SUCCESS': return 'Thành công';
+      case 'FAILED': return 'Thất bại';
+      case 'PENDING': return 'Đang xử lý';
+      case 'CANCELLED': return 'Đã hủy';
+      default: return status;
+    }
+  };
 
   const fetchTransactions = async () => {
     try {
@@ -43,7 +54,7 @@ export default function HistoryPayment() {
     const dd = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const yyyy = date.getFullYear();
-    return `${hh}:${mm}:${ss} - ${dd}/${month}/${yyyy}`;
+    return `${dd}/${month}/${yyyy} - ${hh}:${mm}:${ss}`;
   };
 
   return (
@@ -89,11 +100,11 @@ export default function HistoryPayment() {
               <Table hover className="align-middle mb-0">
                 <thead className="bg-light">
                   <tr>
-                    <th className="border-0 text-muted rounded-start" style={{ width: '25%' }}>Mã Giao Dịch</th>
-                    <th className="border-0 text-muted" style={{ width: '25%' }}>Dịch vụ</th>
-                    <th className="border-0 text-muted" style={{ width: '20%' }}>Thời gian</th>
-                    <th className="border-0 text-muted" style={{ width: '15%' }}>Số tiền</th>
-                    <th className="border-0 text-muted rounded-end text-center" style={{ width: '15%' }}>Trạng thái</th>
+                    <th className="border-0 text-muted fw-normal rounded-start" style={{ width: '35%' }}>Mã Giao Dịch <span className="text-danger">*</span></th>
+                    <th className="border-0 text-muted fw-normal" style={{ width: '15%' }}>Dịch vụ <span className="text-danger">*</span></th>
+                    <th className="border-0 text-muted fw-normal" style={{ width: '30%' }}>Thời gian <span className="text-danger">*</span></th>
+                    <th className="border-0 text-muted fw-normal" style={{ width: '15%' }}>Số tiền <span className="text-danger">*</span></th>
+                    <th className="border-0 text-muted fw-normal rounded-end text-center" style={{ width: '15%' }}>Trạng thái <span className="text-danger">*</span></th>
                   </tr>
                 </thead>
                 <tbody style={{ borderTop: 'none' }}>
@@ -118,9 +129,11 @@ export default function HistoryPayment() {
                         </span>
                       </td>
                       <td className="text-center">
-                        <Badge bg="success" className="px-3 py-2 rounded-pill fw-medium">
-                          Thành công
-                        </Badge>
+                        <StatusBadge
+                          variant={tx.status?.toUpperCase() === 'SUCCESS' ? 'success' : tx.status?.toUpperCase() === 'FAILED' ? 'danger' : 'warning'}
+                          icon={tx.status?.toUpperCase() === 'SUCCESS' ? CheckCircle2 : AlertCircle}
+                          text={getStatusText(tx.status?.toUpperCase())}
+                        />
                       </td>
                     </tr>
                   ))}

@@ -7,6 +7,7 @@ import Button from '../../components/Button';
 import { getMyApplications, cancelApplication, acceptInvite, declineInvite } from '../../services/applicationService';
 import { APPLICATION_STATUS } from '../../constants/applicationEnum';
 import { formatDate } from '../../utils/formatDate';
+import StatusBadge from '../../components/StatusBadge';
 
 export default function MyApplicationsTab() {
   const [applications, setApplications] = useState([]);
@@ -62,13 +63,13 @@ export default function MyApplicationsTab() {
   const getStatusBadge = (status) => {
     switch (status) {
       case APPLICATION_STATUS.PENDING:
-        return <Badge bg="warning" text="dark" className="rounded-pill px-3 py-2 bg-opacity-25 fw-normal">Đang chờ duyệt</Badge>;
+        return <StatusBadge variant="warning" text="Đang chờ duyệt" />;
       case APPLICATION_STATUS.APPROVED:
-        return <Badge bg="success" className="rounded-pill px-3 py-2 fw-normal">Đã duyệt</Badge>;
+        return <StatusBadge variant="success" text="Đã duyệt" />;
       case APPLICATION_STATUS.REJECTED:
-        return <Badge bg="danger" className="rounded-pill px-3 py-2 fw-normal">Đã từ chối</Badge>;
+        return <StatusBadge variant="danger" text="Đã từ chối" />;
       case APPLICATION_STATUS.INVITED:
-        return <Badge bg="info" className="rounded-pill px-3 py-2 fw-normal">Được mời</Badge>;
+        return <StatusBadge variant="primary" text="Được mời" />;
       default:
         return null;
     }

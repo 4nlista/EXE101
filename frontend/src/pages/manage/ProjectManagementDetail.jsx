@@ -17,6 +17,7 @@ import { initConversation } from '../../services/messageService';
 import { APPLICATION_STATUS } from '../../constants/applicationEnum';
 import { PROJECT_STATUS } from '../../constants/projectEnum';
 import { formatDate } from '../../utils/formatDate';
+import StatusBadge from '../../components/StatusBadge';
 import UpdateProjectModal from './UpdateProjectModal';
 
 export default function ProjectManagementDetail() {
@@ -99,13 +100,13 @@ export default function ProjectManagementDetail() {
   const getStatusBadge = (status) => {
     switch (status) {
       case APPLICATION_STATUS.PENDING:
-        return <Badge bg="warning" text="dark" className="rounded-pill px-3 py-2 bg-opacity-25 fw-normal">Đang xử lý</Badge>;
+        return <StatusBadge variant="warning" text="Đang xử lý" />;
       case APPLICATION_STATUS.APPROVED:
-        return <Badge bg="success" className="rounded-pill px-3 py-2 fw-normal">Đã duyệt</Badge>;
+        return <StatusBadge variant="success" text="Đã duyệt" />;
       case APPLICATION_STATUS.REJECTED:
-        return <Badge bg="danger" className="rounded-pill px-3 py-2 fw-normal">Từ chối</Badge>;
+        return <StatusBadge variant="danger" text="Từ chối" />;
       case APPLICATION_STATUS.INVITED:
-        return <Badge bg="info" className="rounded-pill px-3 py-2 fw-normal">Được mời</Badge>;
+        return <StatusBadge variant="primary" text="Được mời" />;
       default:
         return null;
     }
@@ -164,9 +165,10 @@ export default function ProjectManagementDetail() {
             <div>
               <div className="d-flex align-items-center gap-2 mb-2">
                 <h4 className="fw-bold mb-0">{project.title}</h4>
-                <Badge bg={project.status === PROJECT_STATUS.OPEN ? 'warning' : 'secondary'} className="rounded-pill px-3 py-1 bg-opacity-25 text-dark">
-                  {project.status === PROJECT_STATUS.OPEN ? 'Đang tuyển' : 'Đã đóng'}
-                </Badge>
+                <StatusBadge
+                  variant={project.status === PROJECT_STATUS.OPEN ? 'success' : 'secondary'}
+                  text={project.status === PROJECT_STATUS.OPEN ? 'Đang tuyển' : 'Đã đóng'}
+                />
               </div>
               <div className="text-muted" style={{ fontSize: '13px' }}>
                 Đăng bởi: <span className="fw-semibold text-dark">{project.ownerId?.name || 'Bạn'}</span>
@@ -279,7 +281,7 @@ export default function ProjectManagementDetail() {
                     <tr key={app._id}>
                       <td className="text-center text-muted">{idx + 1}</td>
                       <td>
-                        <div 
+                        <div
                           className="d-flex align-items-center gap-3 hover-opacity"
                           style={{ cursor: 'pointer', transition: 'opacity 0.2s' }}
                           onClick={() => {

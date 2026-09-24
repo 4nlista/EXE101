@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { AlertCircle, CheckCircle, Copy, Clock } from 'lucide-react';
 import Button from '../../components/Button';
 import paymentService from '../../services/paymentService';
+import StatusBadge from '../../components/StatusBadge';
 import { useAuth } from '../../contexts/AuthContext';
 import { TRANSACTION_STATUS } from '../../constants/transactionEnum';
 
@@ -151,9 +152,12 @@ export default function Payment() {
                   <img src={qrData.qrUrl} alt="Mã VietQR" style={{ width: '100%', maxWidth: '280px', height: 'auto', objectFit: 'contain' }} />
                 </div>
 
-                <div className="d-flex justify-content-center align-items-center text-primary mb-3 fw-medium bg-white px-3 py-2 rounded-pill shadow-sm">
-                  <Spinner animation="grow" size="sm" className="me-2 text-primary" style={{ width: '1rem', height: '1rem' }} />
-                  Đang chờ thanh toán...
+                <div className="mb-3 mt-2">
+                  <StatusBadge 
+                    variant="primary" 
+                    isSpinning={true}
+                    text="Đang chờ thanh toán..." 
+                  />
                 </div>
 
                 <div className="d-flex align-items-center text-danger fw-bold fs-5 mt-2">
