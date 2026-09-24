@@ -57,7 +57,7 @@ exports.createPaymentUrl = async (req) => {
   const addInfo = `EXE101 ${orderId}`;
   const qrUrl = `https://img.vietqr.io/image/${bankBin}-${bankAccount}-qr_only.png?amount=${trueAmount}&addInfo=${encodeURIComponent(addInfo)}`;
 
-  return { 
+  return {
     qrUrl,
     orderId,
     amount: trueAmount,
@@ -105,7 +105,7 @@ exports.sepayWebhook = async (req) => {
   if (transferAmount < transaction.amount) {
     // Khách chuyển thiếu tiền -> Chuyển sang Failed
     transaction.status = TRANSACTION_STATUS.FAILED;
-    transaction.sepayTransactionId = code; 
+    transaction.sepayTransactionId = code;
     transaction.description = `Chuyển thiếu tiền (${transferAmount}đ / ${transaction.amount}đ). Cần Admin xử lý hoàn tiền thủ công.`;
     await transaction.save();
 
@@ -129,7 +129,7 @@ exports.sepayWebhook = async (req) => {
   transaction.paidAt = new Date(transactionDate);
 
   const user = await User.findById(transaction.userId);
-  const packageType = transaction.description.replace('Mua_goi_', ''); 
+  const packageType = transaction.description.replace('Mua_goi_', '');
   const isUpgradingToPremium = packageType === PACKAGE_TYPE.PREMIUM;
 
   let activeSub = await Subscription.findOne({ userId: user._id, status: SUBSCRIPTION_STATUS.ACTIVE });
@@ -139,7 +139,7 @@ exports.sepayWebhook = async (req) => {
   if (activeSub) {
     if (activeSub.packageType === packageType) {
       // Gia hạn
-      startDate = activeSub.endDate; 
+      startDate = activeSub.endDate;
       endDate = moment(startDate).add(30, 'days').toDate();
       activeSub.endDate = endDate;
       await activeSub.save();
@@ -179,13 +179,13 @@ exports.sepayWebhook = async (req) => {
     <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
       <h2 style="color: #2e6c80;">Thanh toán thành công!</h2>
       <p>Xin chào <strong>${user.name || user.email}</strong>,</p>
-      <p>Cảm ơn bạn đã tin tưởng nâng cấp tài khoản qua mã QR ngân hàng.</p>
+      <p>Cảm ơn bạn đã tin tưởng dịch vụ nâng cấp tài khoản qua mã QR ngân hàng.</p>
       <ul>
         <li><strong>Gói dịch vụ:</strong> ${packageType.toUpperCase()}</li>
         <li><strong>Mã đối soát (Ngân hàng):</strong> ${code}</li>
-        <li><strong>Thời hạn đến:</strong> ${moment(endDate).format('HH:mm - DD/MM/YYYY')}</li>
+        <li><strong>Thời hạn đến:</strong> ${moment(endDate).format('DD/MM/YYYY-HH:mm')}</li>
       </ul>
-      <p>Hãy trải nghiệm các tính năng cao cấp ngay hôm nay!</p>
+      <p>Hãy trải nghiệm các tính năng cao cấp bắt đầu ngay hôm nay!</p>
     </div>
   `;
   await sendEmail(user.email, 'Xác nhận thanh toán gói dịch vụ thành công', emailHtml);
@@ -226,17 +226,19 @@ exports.getTransactionInfo = async (orderId, userId) => {
   }
 
   // Tạo lại thông tin QR giống lúc createPaymentUrl
-  const bankId = 'MB'; 
-  const accountNo = '0396697192'; 
-  const accountName = 'DO TUAN MINH';
+  const bankBin = process.env.SEPAY_BANK_BIN || '970422'; // Mặc định MB
+  const bankAccount = process.env.SEPAY_BANK_ACCOUNT || 'VUI LÒNG CẤU HÌNH .ENV';
 
-  const qrUrl = `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.jpg?amount=${transaction.amount}&addInfo=EXE101%20${transaction._id}&accountName=${accountName}`;
-  
+  const addInfo = `EXE101 ${transaction._id}`;
+  const qrUrl = `https://img.vietqr.io/image/${bankBin}-${bankAccount}-qr_only.png?amount=${transaction.amount}&addInfo=${encodeURIComponent(addInfo)}`;
+
   return {
     orderId: transaction._id,
     amount: transaction.amount,
-    content: `EXE101 ${transaction._id}`,
+    content: addInfo,
     qrUrl,
+    bankBin,
+    bankAccount,
     createdAt: transaction.createdAt
   };
 };

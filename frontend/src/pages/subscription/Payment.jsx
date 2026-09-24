@@ -134,7 +134,7 @@ export default function Payment() {
   }
 
   return (
-    <Container className="py-2" style={{ maxWidth: '1200px' }}>
+    <Container className="py-1" style={{ maxWidth: '1200px' }}>
 
 
       {/* BODY: THÔNG TIN THANH TOÁN CHI TIẾT */}
@@ -145,7 +145,7 @@ export default function Payment() {
 
               {/* CỘT TRÁI: MÃ QR */}
               <Col md={5} className="border-end p-4 p-md-5 d-flex flex-column align-items-center justify-content-center bg-light rounded-start-4">
-                <h5 className="fw-bold text-dark mb-4 text-center">Mở App Ngân hàng quét mã QR</h5>
+                <h5 className="fw-bold text-dark mb-4 text-center">Quét Mã QR</h5>
 
                 <div className="bg-white p-2 rounded-3 border mb-4 shadow-sm position-relative">
                   <img src={qrData.qrUrl} alt="Mã VietQR" style={{ width: '100%', maxWidth: '280px', height: 'auto', objectFit: 'contain' }} />
@@ -167,58 +167,48 @@ export default function Payment() {
                 <h5 className="fw-bold text-dark text-center">Thông tin chuyển khoản</h5>
 
                 {/* BẢNG THÔNG TIN CÓ NÚT COPY */}
-                <div className="border rounded-3 mb-4 overflow-hidden bg-white">
-                  {/* Row 1: Ngân hàng */}
-                  <div className="d-flex border-bottom p-3 align-items-center">
-                    <div className="text-muted w-25">Ngân hàng</div>
-                    <div className="fw-bold flex-grow-1">MBBank</div>
+                <div className="border rounded-3 mb-4 bg-white p-3">
+
+                  {/* Số tiền */}
+                  <div className="mb-4">
+                    <div className="text-dark fw-bold mb-2">Số tiền <span className="text-danger">*</span></div>
+                    <div className="d-flex align-items-center justify-content-between p-3 bg-light border rounded">
+                      <div className="fw-bold text-danger fs-4">{qrData.amount.toLocaleString('vi-VN')} đ</div>
+                      <button className="btn btn-sm btn-outline-secondary d-flex align-items-center" onClick={() => copyToClipboard(qrData.amount.toString())}>
+                        <Copy size={14} className="me-1" /> Copy
+                      </button>
+                    </div>
                   </div>
-                  {/* Row 2: Thụ hưởng */}
-                  <div className="d-flex border-bottom p-3 align-items-center">
-                    <div className="text-muted w-25">Thụ hưởng</div>
-                    <div className="fw-bold flex-grow-1">NGUYEN BAO AN</div>
-                  </div>
-                  {/* Row 3: Số tài khoản */}
-                  <div className="d-flex border-bottom p-3 align-items-center">
-                    <div className="text-muted w-25">Số tài khoản</div>
-                    <div className="fw-bold flex-grow-1 text-dark fs-5">0396697192</div>
-                    <button className="btn btn-sm btn-light border text-primary" onClick={() => copyToClipboard('0396697192')}>
-                      <Copy size={14} className="me-1" /> Copy
-                    </button>
-                  </div>
-                  {/* Row 4: Số tiền */}
-                  <div className="d-flex border-bottom p-3 align-items-center">
-                    <div className="text-muted w-25">Số tiền</div>
-                    <div className="fw-bold flex-grow-1 text-danger fs-5">{qrData.amount.toLocaleString('vi-VN')} đ</div>
-                    <button className="btn btn-sm btn-light border text-primary" onClick={() => copyToClipboard(qrData.amount.toString())}>
-                      <Copy size={14} className="me-1" /> Copy
-                    </button>
-                  </div>
-                  {/* Row 5: Nội dung */}
-                  <div className="d-flex p-3 align-items-center bg-light">
-                    <div className="text-muted w-25">Nội dung CK</div>
-                    <div className="fw-bold flex-grow-1 text-primary fs-5">{qrData.content}</div>
-                    <button className="btn btn-sm btn-light border text-primary" onClick={() => copyToClipboard(qrData.content)}>
-                      <Copy size={14} className="me-1" /> Copy
-                    </button>
+
+                  {/* Nội dung CK */}
+                  <div className="mb-2">
+                    <div className="text-dark fw-bold mb-2">Nội dung chuyển khoản <span className="text-danger">*</span></div>
+                    <div className="d-flex align-items-center justify-content-between p-3 bg-light border rounded">
+                      <div className="fw-bold text-primary fs-5">{qrData.content}</div>
+                      <button className="btn btn-sm btn-outline-secondary d-flex align-items-center" onClick={() => copyToClipboard(qrData.content)}>
+                        <Copy size={14} className="me-1" /> Copy
+                      </button>
+                    </div>
                   </div>
                 </div>
 
                 {/* KHUNG LƯU Ý VÀNG */}
-                <Alert variant="warning" className="border-warning border-opacity-50 text-dark p-3 rounded-3 mb-auto shadow-sm">
-                  <strong><AlertCircle size={16} className="me-1 mb-1 text-danger" />Lưu ý quan trọng:</strong><br />
-                  Vui lòng chuyển <strong>chính xác Số tiền</strong> và giữ nguyên <strong>Nội dung chuyển khoản</strong> để hệ thống tự động xác nhận ngay lập tức. Mọi sự sai sót có thể dẫn đến việc treo đơn hàng.
-                </Alert>
+                <div className="bg-warning bg-opacity-10 border border-warning text-dark p-3 rounded-3 mb-4 d-flex align-items-start">
+                  <AlertCircle size={20} className="text-danger me-2 flex-shrink-0 mt-1" />
+                  <div>
+                    Lưu ý: Vui lòng giữ nguyên nội dung chuyển khoản <strong>{qrData.content}</strong> để xác nhận thanh toán tự động.
+                  </div>
+                </div>
 
-                <div className="mt-4 pt-4 border-top d-flex justify-content-between align-items-center">
-                  <Button variant="outline-dark" onClick={handleCancel} className="fw-bold px-4 py-2">
+                <div className="border-top d-flex justify-content-between align-items-center">
+                  <Button variant="dark" onClick={handleCancel} className="fw-bold">
                     Hủy giao dịch
                   </Button>
 
                   {/* CHỈ HIỂN THỊ KHI TEST/DEV */}
                   <div className="text-end">
                     <Button variant="success" size="sm" onClick={handleMockPayment} className="shadow-sm">
-                      TEST: Giả lập thành công
+                      Giả lập thành công
                     </Button>
                   </div>
                 </div>
