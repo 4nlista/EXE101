@@ -38,8 +38,6 @@ const runSubscriptionCron = () => {
   cron.schedule('0 1 * * *', async () => {
     console.log('--- CRON JOB: Bắt đầu dọn dẹp các đơn hàng PENDING quá hạn ---');
     try {
-      const { Transaction } = require('../models');
-      if (!Transaction) return; // Nếu chưa export trong index.js models thì sẽ lỗi, lấy trực tiếp
       const TransactionModel = require('../models/Transaction');
       const { TRANSACTION_STATUS } = require('../constants/transactionEnum');
       

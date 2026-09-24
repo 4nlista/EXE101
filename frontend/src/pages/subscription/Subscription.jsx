@@ -4,11 +4,13 @@ import { Check, Star, AlertCircle, CheckCircle } from 'lucide-react';
 import Button from '../../components/Button';
 import paymentService from '../../services/paymentService';
 import { useAuth } from '../../contexts/AuthContext';
+import { PACKAGE_TYPE } from '../../constants/subscriptionEnum';
+import { TRANSACTION_STATUS } from '../../constants/transactionEnum';
 
 // Cấu hình thông tin các gói dịch vụ (Tái sử dụng dữ liệu - Clean Code)
 const SUBSCRIPTION_PACKAGES = [
   {
-    id: 'free',
+    id: PACKAGE_TYPE.FREE,
     title: 'Cơ bản',
     priceText: 'Miễn phí',
     period: '',
@@ -28,7 +30,7 @@ const SUBSCRIPTION_PACKAGES = [
     ],
   },
   {
-    id: 'vip',
+    id: PACKAGE_TYPE.VIP,
     title: 'VIP',
     priceText: '59.000đ',
     period: '/ tháng',
@@ -48,7 +50,7 @@ const SUBSCRIPTION_PACKAGES = [
     ],
   },
   {
-    id: 'premium',
+    id: PACKAGE_TYPE.PREMIUM,
     title: 'PREMIUM',
     priceText: '139.000đ',
     period: '/ tháng',
@@ -76,7 +78,7 @@ export default function Subscription() {
   // States cho SePay QR Modal
   const [showQrModal, setShowQrModal] = useState(false);
   const [qrData, setQrData] = useState(null);
-  const [paymentStatus, setPaymentStatus] = useState('pending'); // pending, success, failed
+  const [paymentStatus, setPaymentStatus] = useState(TRANSACTION_STATUS.PENDING); // pending, success, failed
 
   const pollingInterval = useRef(null);
 
@@ -87,7 +89,7 @@ export default function Subscription() {
       const res = await paymentService.createPayment(packageType, amount);
       if (res.success && res.data) {
         setQrData(res.data);
-        setPaymentStatus('pending');
+        setPaymentStatus(TRANSACTION_STATUS.PENDING);
         setShowQrModal(true);
         startPolling(res.data.orderId);
       }
@@ -105,11 +107,11 @@ export default function Subscription() {
     pollingInterval.current = setInterval(async () => {
       try {
         const res = await paymentService.checkPaymentStatus(orderId);
-        if (res.success && res.status !== 'pending') {
+        if (res.success && res.status !== TRANSACTION_STATUS.PENDING) {
           setPaymentStatus(res.status);
           clearInterval(pollingInterval.current);
 
-          if (res.status === 'success') {
+          if (res.status === TRANSACTION_STATUS.SUCCESS) {
             await fetchMyProfile(); // Cập nhật lại thông tin user khi nâng cấp thành công
           }
         }
@@ -186,8 +188,8 @@ export default function Subscription() {
       <Row className="justify-content-center g-4">
         {SUBSCRIPTION_PACKAGES.map((pkg) => {
           const isCurrent = isCurrentPackage(pkg.id);
-          const isFree = pkg.id === 'free';
-          const isVipDisabled = pkg.id === 'vip' && isCurrentPackage('premium');
+          const isFree = pkg.id === PACKAGE_TYPE.FREE;
+          const isVipDisabled = pkg.id === PACKAGE_TYPE.VIP && isCurrentPackage(PACKAGE_TYPE.PREMIUM);
 
           return (
             <Col key={pkg.id} md={4}>
@@ -314,7 +316,7 @@ export default function Subscription() {
             </>
           )}
 
-          {paymentStatus === 'success' && (
+          {paymentStatus === TRANSACTION_STATUS.SUCCESS && (
             <div className="py-4">
               <CheckCircle size={60} className="text-success mb-3 mx-auto d-block" />
               <h4 className="fw-bold text-success mb-2">Thanh toán thành công!</h4>
@@ -325,7 +327,7 @@ export default function Subscription() {
             </div>
           )}
 
-          {paymentStatus === 'failed' && (
+          {paymentStatus === TRANSACTION_STATUS.FAILED && (
             <div className="py-4">
               <AlertCircle size={60} className="text-danger mb-3 mx-auto d-block" />
               <h4 className="fw-bold text-danger mb-2">Thanh toán chưa thành công</h4>

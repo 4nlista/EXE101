@@ -51,7 +51,7 @@ exports.mockPayment = async (req, res, next) => {
     
     // Lấy thông tin order
     const paymentService = require('../services/paymentService');
-    const { Transaction } = require('../models');
+    const Transaction = require('../models/Transaction');
     const transaction = await Transaction.findById(orderId);
     
     if (!transaction) {

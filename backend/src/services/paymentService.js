@@ -55,7 +55,7 @@ exports.createPaymentUrl = async (req) => {
   // Cú pháp: https://img.vietqr.io/image/<BANK_BIN>/<ACCOUNT_NO>?amount=<AMOUNT>&addInfo=<CONTENT>
   // Nội dung chuyển khoản phải chứa orderId để Webhook nhận diện được
   const addInfo = `EXE101 ${orderId}`;
-  const qrUrl = `https://img.vietqr.io/image/${bankBin}/${bankAccount}-qr_only.png?amount=${trueAmount}&addInfo=${encodeURIComponent(addInfo)}`;
+  const qrUrl = `https://img.vietqr.io/image/${bankBin}-${bankAccount}-qr_only.png?amount=${trueAmount}&addInfo=${encodeURIComponent(addInfo)}`;
 
   return { 
     qrUrl,
@@ -183,7 +183,7 @@ exports.sepayWebhook = async (req) => {
       <ul>
         <li><strong>Gói dịch vụ:</strong> ${packageType.toUpperCase()}</li>
         <li><strong>Mã đối soát (Ngân hàng):</strong> ${code}</li>
-        <li><strong>Thời hạn đến:</strong> ${moment(endDate).format('DD/MM/YYYY')}</li>
+        <li><strong>Thời hạn đến:</strong> ${moment(endDate).format('HH:mm - DD/MM/YYYY')}</li>
       </ul>
       <p>Hãy trải nghiệm các tính năng cao cấp ngay hôm nay!</p>
     </div>

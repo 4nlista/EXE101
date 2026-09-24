@@ -4,6 +4,8 @@ const Notification = require('../models/Notification');
 const { APPLICATION_STATUS } = require('../constants/applicationEnum');
 const { PROJECT_STATUS } = require('../constants/projectEnum');
 const { NOTIFICATION_TYPE } = require('../constants/notificationEnum');
+const User = require('../models/User');
+const { PACKAGE_TYPE } = require('../constants/subscriptionEnum');
 
 /**
  * Lấy danh sách dự án với phân trang và bộ lọc
@@ -92,6 +94,37 @@ const createProject = async (projectData, ownerId) => {
     maxMembers,
     deadline
   } = projectData;
+
+  // 1. Kiểm tra giới hạn tạo dự án trong tháng dựa trên Gói đăng ký
+  const user = await User.findById(ownerId);
+  if (!user) throw new Error('Không tìm thấy người dùng');
+
+  const currentPackage = user.currentPackage || PACKAGE_TYPE.FREE;
+
+  if (currentPackage !== PACKAGE_TYPE.PREMIUM) {
+    // Tìm ngày đầu tiên của tháng hiện tại
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    // Đếm số lượng dự án đã tạo trong tháng này
+    const projectCount = await Project.countDocuments({
+      ownerId,
+      createdAt: { $gte: startOfMonth }
+    });
+
+    if (currentPackage === PACKAGE_TYPE.FREE && projectCount >= 3) {
+      const err = new Error('Bạn đã đạt giới hạn đăng 3 dự án/tháng của gói Cơ bản. Vui lòng nâng cấp.');
+      err.statusCode = 403;
+      throw err;
+    }
+
+    if (currentPackage === PACKAGE_TYPE.VIP && projectCount >= 10) {
+      const err = new Error('Bạn đã đạt giới hạn đăng 10 dự án/tháng của gói VIP. Vui lòng nâng cấp.');
+      err.statusCode = 403;
+      throw err;
+    }
+  }
 
   const newProject = new Project({
     ownerId,

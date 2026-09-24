@@ -5,11 +5,13 @@ import { CheckCircle, XCircle } from 'lucide-react';
 import paymentService from '../../services/paymentService';
 import Button from '../../components/Button';
 
+import { TRANSACTION_STATUS } from '../../constants/transactionEnum';
+
 export default function PaymentResult() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [status, setStatus] = useState('loading'); // loading, success, fail
+  const [status, setStatus] = useState('loading'); // loading, success, failed
   const [message, setMessage] = useState('');
 
   useEffect(() => {
@@ -21,14 +23,14 @@ export default function PaymentResult() {
       try {
         const res = await paymentService.verifyPayment(location.search);
         if (res.success) {
-          setStatus('success');
+          setStatus(TRANSACTION_STATUS.SUCCESS);
           setMessage(res.message);
         } else {
-          setStatus('fail');
+          setStatus(TRANSACTION_STATUS.FAILED);
           setMessage(res.message);
         }
       } catch (error) {
-        setStatus('fail');
+        setStatus(TRANSACTION_STATUS.FAILED);
         setMessage(error.response?.data?.message || 'Lỗi xác thực giao dịch');
       }
     };
@@ -47,7 +49,7 @@ export default function PaymentResult() {
             </>
           )}
 
-          {status === 'success' && (
+          {status === TRANSACTION_STATUS.SUCCESS && (
             <>
               <CheckCircle size={60} className="text-success mb-3 mx-auto d-block" />
               <h4 className="fw-bold text-success mb-3">Thanh toán thành công!</h4>
@@ -56,7 +58,7 @@ export default function PaymentResult() {
             </>
           )}
 
-          {status === 'fail' && (
+          {status === TRANSACTION_STATUS.FAILED && (
             <>
               <XCircle size={60} className="text-danger mb-3 mx-auto d-block" />
               <h4 className="fw-bold text-danger mb-3">Thanh toán thất bại</h4>
