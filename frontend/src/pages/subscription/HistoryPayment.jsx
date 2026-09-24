@@ -104,7 +104,7 @@ export default function HistoryPayment() {
                 <option value="Gói PREMIUM">Gói PREMIUM</option>
               </Form.Select>
 
-              <Button variant="secondary" className="d-flex align-items-center border-2" onClick={handleExport}>
+              <Button variant="secondary text-dark" className="d-flex align-items-center border-2" onClick={handleExport}>
                 <Download size={16} /> Export
               </Button>
             </div>

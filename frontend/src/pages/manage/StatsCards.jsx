@@ -18,6 +18,22 @@ export default function StatsCards({ stats }) {
       title: 'Đã đủ thành viên',
       count: stats.closedProjects || 0,
       desc: 'dự án đã đủ số lượng thành viên',
+      icon: <FaCheckCircle size={24} className="text-secondary" />,
+      bgColor: '#f8f9fa',
+      iconBg: '#e9ecef'
+    },
+    {
+      title: 'Đang thực hiện',
+      count: stats.inProgressProjects || 0,
+      desc: 'dự án team đang làm việc',
+      icon: <FaUserFriends size={24} className="text-primary" />,
+      bgColor: '#eff6ff',
+      iconBg: '#dbeafe'
+    },
+    {
+      title: 'Đã kết thúc',
+      count: stats.completedProjects || 0,
+      desc: 'dự án đã hoàn thành',
       icon: <FaCheckCircle size={24} className="text-success" />,
       bgColor: '#f0fdf4',
       iconBg: '#dcfce7'
@@ -26,9 +42,9 @@ export default function StatsCards({ stats }) {
       title: 'Hồ sơ chờ duyệt',
       count: stats.pendingApplications || 0,
       desc: 'ứng viên đang chờ bạn xét duyệt',
-      icon: <FaFileAlt size={24} className="text-primary" />,
-      bgColor: '#eff6ff',
-      iconBg: '#dbeafe'
+      icon: <FaFileAlt size={24} className="text-info" />,
+      bgColor: '#e0f2fe',
+      iconBg: '#bae6fd'
     }
   ];
 

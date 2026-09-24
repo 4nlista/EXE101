@@ -27,6 +27,9 @@ const getProjects = async (query) => {
 
   if (status) {
     filter.status = status;
+  } else {
+    // Luôn luôn chỉ lấy các dự án Đang tuyển (OPEN) ở Feed trừ khi filter cụ thể
+    filter.status = PROJECT_STATUS.OPEN;
   }
 
   if (minGrade || maxGrade) {
@@ -177,9 +180,11 @@ const getMyProjects = async (ownerId, query) => {
 };
 
 const getMyProjectStats = async (ownerId) => {
-  const [openCount, closedCount] = await Promise.all([
+  const [openCount, closedCount, inProgressCount, completedCount] = await Promise.all([
     Project.countDocuments({ ownerId, status: PROJECT_STATUS.OPEN }),
-    Project.countDocuments({ ownerId, status: PROJECT_STATUS.CLOSED })
+    Project.countDocuments({ ownerId, status: PROJECT_STATUS.CLOSED }),
+    Project.countDocuments({ ownerId, status: PROJECT_STATUS.IN_PROGRESS }),
+    Project.countDocuments({ ownerId, status: PROJECT_STATUS.COMPLETED })
   ]);
 
   const projects = await Project.find({ ownerId }).select('_id');
@@ -193,6 +198,8 @@ const getMyProjectStats = async (ownerId) => {
   return {
     openProjects: openCount,
     closedProjects: closedCount,
+    inProgressProjects: inProgressCount,
+    completedProjects: completedCount,
     pendingApplications: pendingCount
   };
 };
@@ -217,11 +224,19 @@ const updateProject = async (projectId, ownerId, updateData) => {
 
 const deleteProject = async (projectId, ownerId) => {
   const project = await Project.findOne({ _id: projectId, ownerId });
-  if (!project) throw new Error('Không tìm thấy dự án hoặc bạn không có quyền xóa.');
+  if (!project) throw new Error('Không tìm thấy dự án hoặc bạn không có quyền hủy.');
 
-  // Xóa tất cả applications liên quan
+  if (project.members && project.members.length > 0) {
+    throw new Error('Không thể hủy dự án vì đã có thành viên chính thức tham gia.');
+  }
+
+  // Hủy các đơn nộp (nếu có)
   await Application.deleteMany({ projectId });
-  await project.deleteOne();
+  
+  // Chuyển trạng thái thành CANCELLED thay vì xóa vật lý
+  project.status = PROJECT_STATUS.CANCELLED;
+  await project.save();
+  
   return true;
 };
 

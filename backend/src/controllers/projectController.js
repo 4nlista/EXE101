@@ -102,7 +102,7 @@ const deleteProject = async (req, res, next) => {
     const { projectId } = req.params;
     const ownerId = req.user.id;
     await projectService.deleteProject(projectId, ownerId);
-    res.status(200).json({ success: true, message: 'Xóa dự án thành công' });
+    res.status(200).json({ success: true, message: 'Hủy dự án thành công' });
   } catch (error) {
     next(error);
   }

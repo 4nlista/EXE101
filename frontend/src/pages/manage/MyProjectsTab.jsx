@@ -57,7 +57,7 @@ export default function MyProjectsTab() {
     try {
       const res = await deleteProject(selectedProjectId);
       if (res.success) {
-        toast.success('Xóa dự án thành công');
+        toast.success('Hủy dự án thành công');
         setShowDeleteModal(false);
         fetchStats();
         fetchProjects();
@@ -134,8 +134,18 @@ export default function MyProjectsTab() {
 
                 <div className="mx-4 text-center" style={{ width: '120px' }}>
                   <StatusBadge
-                    variant={project.status === PROJECT_STATUS.OPEN ? 'warning' : 'secondary'}
-                    text={project.status === PROJECT_STATUS.OPEN ? 'Đang tuyển' : 'Đã đóng'}
+                    variant={
+                      project.status === PROJECT_STATUS.OPEN ? 'warning' :
+                      project.status === PROJECT_STATUS.IN_PROGRESS ? 'primary' :
+                      project.status === PROJECT_STATUS.COMPLETED ? 'success' : 
+                      project.status === PROJECT_STATUS.CANCELLED ? 'danger' : 'secondary'
+                    }
+                    text={
+                      project.status === PROJECT_STATUS.OPEN ? 'Đang tuyển' :
+                      project.status === PROJECT_STATUS.IN_PROGRESS ? 'Đang thực hiện' :
+                      project.status === PROJECT_STATUS.COMPLETED ? 'Kết thúc' : 
+                      project.status === PROJECT_STATUS.CANCELLED ? 'Đã hủy' : 'Đã đóng'
+                    }
                   />
                 </div>
 
@@ -153,7 +163,7 @@ export default function MyProjectsTab() {
                     </Dropdown.Toggle>
                     <Dropdown.Menu className="border-1 shadow-sm rounded-5">
                       <Dropdown.Item onClick={() => handleDeleteClick(project._id)} className="text-danger">
-                        Xóa bài đăng
+                        Hủy dự án
                       </Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
@@ -168,9 +178,9 @@ export default function MyProjectsTab() {
         show={showDeleteModal}
         onHide={() => setShowDeleteModal(false)}
         onConfirm={confirmDelete}
-        title="Xóa dự án"
-        message="Bạn có chắc chắn muốn xóa bài đăng dự án này? Thao tác này không thể hoàn tác."
-        confirmText="Xóa dự án"
+        title="Hủy dự án"
+        message="Bạn có chắc chắn muốn hủy bài đăng dự án này? Thao tác này không thể hoàn tác và chỉ có thể thực hiện khi chưa có thành viên nào được duyệt."
+        confirmText="Hủy dự án"
         variant="danger"
       />
     </div>

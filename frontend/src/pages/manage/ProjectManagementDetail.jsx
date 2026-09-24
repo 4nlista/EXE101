@@ -166,8 +166,18 @@ export default function ProjectManagementDetail() {
               <div className="d-flex align-items-center gap-2 mb-2">
                 <h4 className="fw-bold mb-0">{project.title}</h4>
                 <StatusBadge
-                  variant={project.status === PROJECT_STATUS.OPEN ? 'warning' : 'secondary'}
-                  text={project.status === PROJECT_STATUS.OPEN ? 'Đang tuyển' : 'Đã đóng'}
+                  variant={
+                    project.status === PROJECT_STATUS.OPEN ? 'warning' :
+                      project.status === PROJECT_STATUS.IN_PROGRESS ? 'primary' :
+                        project.status === PROJECT_STATUS.COMPLETED ? 'success' :
+                          project.status === PROJECT_STATUS.CANCELLED ? 'danger' : 'secondary'
+                  }
+                  text={
+                    project.status === PROJECT_STATUS.OPEN ? 'Đang tuyển' :
+                      project.status === PROJECT_STATUS.IN_PROGRESS ? 'Đang thực hiện' :
+                        project.status === PROJECT_STATUS.COMPLETED ? 'Kết thúc' :
+                          project.status === PROJECT_STATUS.CANCELLED ? 'Đã hủy' : 'Đã đóng'
+                  }
                 />
               </div>
               <div className="text-muted" style={{ fontSize: '13px' }}>
@@ -249,7 +259,7 @@ export default function ProjectManagementDetail() {
               <option value={APPLICATION_STATUS.REJECTED}>Từ chối</option>
             </Form.Select>
             <Button variant="secondary text-dark" size="sm" className="d-flex align-items-center gap-1 rounded px-3" onClick={exportToCSV}>
-              <FaDownload /> Export CSV
+              <FaDownload /> Export
             </Button>
           </div>
         )}
@@ -324,7 +334,7 @@ export default function ProjectManagementDetail() {
                         {app.status === APPLICATION_STATUS.PENDING && (
                           <div className="d-flex justify-content-center gap-2">
                             <Button
-                              variant="outline-success"
+                              variant="success"
                               size="sm"
                               onClick={() => {
                                 setConfirmAction({ type: 'approve', appId: app._id, name: app.applicantId?.name });
@@ -332,7 +342,7 @@ export default function ProjectManagementDetail() {
                               }}
                             >Duyệt</Button>
                             <Button
-                              variant="outline-danger"
+                              variant="danger"
                               size="sm"
                               onClick={() => {
                                 setConfirmAction({ type: 'reject', appId: app._id, name: app.applicantId?.name });
