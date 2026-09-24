@@ -166,7 +166,7 @@ export default function ProjectManagementDetail() {
               <div className="d-flex align-items-center gap-2 mb-2">
                 <h4 className="fw-bold mb-0">{project.title}</h4>
                 <StatusBadge
-                  variant={project.status === PROJECT_STATUS.OPEN ? 'success' : 'secondary'}
+                  variant={project.status === PROJECT_STATUS.OPEN ? 'warning' : 'secondary'}
                   text={project.status === PROJECT_STATUS.OPEN ? 'Đang tuyển' : 'Đã đóng'}
                 />
               </div>

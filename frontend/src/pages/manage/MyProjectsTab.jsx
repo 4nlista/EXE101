@@ -134,8 +134,8 @@ export default function MyProjectsTab() {
 
                 <div className="mx-4 text-center" style={{ width: '120px' }}>
                   <StatusBadge
-                    variant={project.status === PROJECT_STATUS.OPEN ? 'success' : 'secondary'}
-                    text={project.status === PROJECT_STATUS.OPEN ? 'Đang tuyển' : 'Đã đủ thành viên'}
+                    variant={project.status === PROJECT_STATUS.OPEN ? 'warning' : 'secondary'}
+                    text={project.status === PROJECT_STATUS.OPEN ? 'Đang tuyển' : 'Đã đóng'}
                   />
                 </div>
 
