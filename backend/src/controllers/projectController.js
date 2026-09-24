@@ -168,6 +168,19 @@ const kickMember = async (req, res, next) => {
   }
 };
 
+const checkProjectLimit = async (req, res, next) => {
+  try {
+    const ownerId = req.user.id;
+    const result = await projectService.checkLimit(ownerId);
+    return res.status(200).json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getProjects,
   createProject,
@@ -180,5 +193,6 @@ module.exports = {
   approveApplicant,
   rejectApplicant,
   inviteApplicant,
-  kickMember
+  kickMember,
+  checkProjectLimit
 };

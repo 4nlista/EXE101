@@ -18,6 +18,7 @@ import Settings from '../pages/settings/Settings';
 import ProfileOnboarding from '../pages/profile/ProfileOnboarding';
 import Subscription from '../pages/subscription/Subscription';
 import PaymentResult from '../pages/subscription/PaymentResult';
+import HistoryPayment from '../pages/subscription/HistoryPayment';
 import { ROLE_CODE } from '../constants/roleEnum';
 
 // Route cho Admin
@@ -103,6 +104,7 @@ export default function AppRoutes() {
         {/* Thanh toán & Gói dịch vụ */}
         <Route path="/subscription" element={<Subscription />} />
         <Route path="/payment-result" element={<PaymentResult />} />
+        <Route path="/transactions" element={<HistoryPayment />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -23,6 +23,19 @@ exports.checkPaymentStatus = async (req, res, next) => {
   }
 };
 
+// GET /api/payment/my-transactions
+// Lấy lịch sử giao dịch thành công của user
+exports.getMyTransactions = async (req, res, next) => {
+  try {
+    const { from, to } = req.query;
+    const userId = req.user.id || req.user._id;
+    const transactions = await paymentService.getMyTransactions(userId, from, to);
+    res.status(200).json({ success: true, data: transactions });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // POST /api/payment/sepay_webhook
 // API để SePay gọi tới mỗi khi nhận được tiền
 exports.sepayWebhook = async (req, res) => {

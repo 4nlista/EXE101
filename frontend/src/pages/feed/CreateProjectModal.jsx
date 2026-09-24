@@ -1,17 +1,21 @@
 import React, { useState } from 'react';
 import { Row, Col } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Modal from '../../components/Modal';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
 import Select from '../../components/Select';
 import Alert from '../../components/Alert';
+import { Hourglass } from 'lucide-react';
 import { masterDataService } from '../../services/masterDataService';
-import { createProject } from '../../services/projectService';
+import { createProject, checkProjectLimit } from '../../services/projectService';
 import { toast } from 'react-toastify';
+import { Spinner } from 'react-bootstrap';
 
 export default function CreateProjectModal({ show, onHide }) {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   // Form State
   const [formData, setFormData] = useState({
@@ -36,6 +40,19 @@ export default function CreateProjectModal({ show, onHide }) {
     staleTime: Infinity,
   });
   const departments = deptRes?.data || [];
+
+  // Check Limit
+  const { data: limitRes, isLoading: isCheckingLimit, isFetching } = useQuery({
+    queryKey: ['projectLimit'],
+    queryFn: checkProjectLimit,
+    enabled: show, // Chỉ gọi khi mở Modal
+    fetchPolicy: 'network-only' // Luôn fetch mới
+  });
+
+  const isAllowed = limitRes?.data?.isAllowed ?? true;
+  const limitMessage = limitRes?.data?.message || 'Bạn đã đạt giới hạn đăng bài. Vui lòng nâng cấp gói.';
+
+  const showUpsell = isLimitReached || !isAllowed;
 
   // Mutation
   const createMutation = useMutation({
@@ -145,20 +162,28 @@ export default function CreateProjectModal({ show, onHide }) {
       </Modal.Header>
 
       <Modal.Body className="py-2 px-4" style={{ overflowX: 'hidden' }}>
-        {isLimitReached ? (
+        {(isCheckingLimit || isFetching) ? (
           <div className="text-center py-5">
-            <div className="mb-4">
-              <span style={{ fontSize: '4rem' }}>🚀</span>
+            <Spinner animation="border" variant="primary" />
+            <p className="mt-2 text-muted">Đang kiểm tra quyền hạn...</p>
+          </div>
+        ) : showUpsell ? (
+          <div className="text-center py-5">
+            <div className="mb-4 text-warning">
+              <Hourglass size={64} strokeWidth={1.5} />
             </div>
             <h3 className="fw-bold text-dark mb-3">Đã đạt giới hạn dự án</h3>
-            <p className="text-muted mb-4 fs-6">{serverError}</p>
-            <Button 
-              variant="primary" 
+            <p className="text-muted mb-4 fs-6">{serverError || limitMessage}</p>
+            <Button
+              variant="primary"
               className="px-4 py-2 fw-bold"
-              style={{ backgroundColor: '#ea580c', borderColor: '#ea580c', borderRadius: '8px' }} 
-              onClick={() => { window.location.href = '/subscription' }}
+              style={{ backgroundColor: '#0077ffff', borderColor: '#ffffffff', borderRadius: '20px' }}
+              onClick={() => {
+                onHide(); // Đóng modal trước
+                navigate('/subscription'); // Dùng navigate của React Router
+              }}
             >
-              Nâng cấp gói ngay
+              Nâng cấp gói
             </Button>
           </div>
         ) : (
@@ -292,7 +317,7 @@ export default function CreateProjectModal({ show, onHide }) {
         )}
       </Modal.Body>
 
-      {!isLimitReached && (
+      {(!showUpsell && !isCheckingLimit && !isFetching) && (
         <Modal.Footer className="pt-2">
           <Button variant="outline-secondary" onClick={handleClose} disabled={createMutation.isLoading}>
             Hủy

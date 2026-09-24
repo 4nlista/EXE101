@@ -193,3 +193,26 @@ exports.sepayWebhook = async (req) => {
   // Trả về JSON thành công cho webhook của SePay
   return { success: true, message: 'Xử lý thành công giao dịch SePay' };
 };
+
+// Hàm 4: Lấy lịch sử giao dịch thành công của User
+exports.getMyTransactions = async (userId, fromDate, toDate) => {
+  const query = {
+    userId,
+    status: TRANSACTION_STATUS.SUCCESS
+  };
+
+  if (fromDate || toDate) {
+    query.createdAt = {};
+    if (fromDate) {
+      query.createdAt.$gte = new Date(fromDate);
+    }
+    if (toDate) {
+      const to = new Date(toDate);
+      to.setHours(23, 59, 59, 999);
+      query.createdAt.$lte = to;
+    }
+  }
+
+  const transactions = await Transaction.find(query).sort({ createdAt: -1 });
+  return transactions;
+};

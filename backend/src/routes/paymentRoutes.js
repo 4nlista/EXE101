@@ -9,6 +9,9 @@ router.post('/create_payment', verifyToken, paymentController.createPaymentUrl);
 // Route cho Client gọi ngầm kiểm tra trạng thái thanh toán (yêu cầu đăng nhập)
 router.get('/status/:orderId', verifyToken, paymentController.checkPaymentStatus);
 
+// Route lấy lịch sử giao dịch thành công của user
+router.get('/my-transactions', verifyToken, paymentController.getMyTransactions);
+
 // Route Webhook cho SePay bắn về (không có Auth của user vì SePay gọi ẩn)
 router.post('/sepay_webhook', paymentController.sepayWebhook);
 

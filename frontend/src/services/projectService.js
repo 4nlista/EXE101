@@ -16,6 +16,10 @@ export const createProject = async (data) => {
   return await axiosClient.post('/projects', data);
 };
 
+export const checkProjectLimit = async () => {
+  return await axiosClient.get('/projects/check-limit');
+};
+
 export const getMyProjects = async (params = {}) => {
   return await axiosClient.get('/projects/my-projects', { params });
 };

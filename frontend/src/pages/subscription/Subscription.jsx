@@ -268,36 +268,35 @@ export default function Subscription() {
       </Row>
 
       {/* Modal QR Thanh Toán SePay */}
-      <Modal show={showQrModal} onHide={handleCloseModal} centered backdrop="static">
+      <Modal show={showQrModal} onHide={handleCloseModal}>
         <Modal.Header closeButton>
-          <Modal.Title className="fw-bold">Thanh toán bằng VietQR</Modal.Title>
+          <Modal.Title className="fw-bold text-center">Thanh toán bằng VietQR</Modal.Title>
         </Modal.Header>
-        <Modal.Body className="text-center p-4">
+        <Modal.Body className="text-center">
           {paymentStatus === 'pending' && qrData && (
             <>
-              <p className="text-muted mb-4">
+              <p className="text-dark">
                 Mở ứng dụng ngân hàng và quét mã bên dưới. <br />
                 Hệ thống sẽ <strong>duyệt tự động</strong> ngay khi xác nhận giao dịch.
               </p>
 
-              <div className="bg-light p-3 rounded d-inline-block mb-3 border">
-                <img src={qrData.qrUrl} alt="Mã VietQR" style={{ width: '250px', height: '250px', objectFit: 'contain' }} />
+              <div className="bg-light p-1 rounded d-inline-block border">
+                <img src={qrData.qrUrl} alt="Mã VietQR" style={{ width: '200px', height: '200px', objectFit: 'contain' }} />
               </div>
 
               {/* LƯU Ý CHO USER */}
-              <div className="alert alert-warning text-start fs-6 mb-3 p-2" role="alert" style={{ fontSize: '0.9rem' }}>
-                <i className="bi bi-exclamation-triangle-fill me-2"></i>
-                <strong>Lưu ý:</strong> Vui lòng chuyển <strong>đúng số tiền</strong> và giữ nguyên <strong>nội dung chuyển khoản</strong>. Nếu cố tình chuyển sai số tiền, giao dịch sẽ thất bại. Mọi thắc mắc vui lòng liên hệ Admin.
+              <div className="bg-warning bg-opacity-10 border border-warning border-opacity-50 text-dark text-start p-2 rounded mb-3" style={{ fontSize: '0.85rem', lineHeight: '1.4' }}>
+                <strong><AlertCircle size={14} className="me-1 mb-1 text-danger" />Lưu ý:</strong> Vui lòng chuyển <strong>đúng số tiền</strong> và giữ nguyên <strong>nội dung chuyển khoản</strong>. Nếu cố tình chuyển sai số tiền, giao dịch sẽ thất bại và mất số tiền. Mọi thắc mắc vui lòng liên hệ <strong>0396697192</strong>.
               </div>
 
-              <div className="text-start bg-light p-3 rounded mb-3 fs-6 border">
-                <div className="d-flex justify-content-between mb-2">
-                  <span className="text-muted">Số tiền:</span>
+              <div className="text-start bg-light p-1 rounded border" style={{ fontSize: '0.95rem' }}>
+                <div className="d-flex justify-content-between mb-1 border-bottom pb-1">
+                  <span className="fw-bold">Số tiền:</span>
                   <strong className="text-danger">{qrData.amount.toLocaleString('vi-VN')} VND</strong>
                 </div>
-                <div className="d-flex justify-content-between">
-                  <span className="text-muted">Nội dung chuyển khoản:</span>
-                  <strong className="text-primary">{qrData.content}</strong>
+                <div className="d-flex justify-content-between align-items-center">
+                  <span className="fw-bold">Nội dung:</span>
+                  <strong className="text-primary text-break text-end" style={{ fontSize: '0.85rem' }}>{qrData.content}</strong>
                 </div>
               </div>
 

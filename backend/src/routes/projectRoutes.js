@@ -44,6 +44,13 @@ router.get(
   projectController.getMyProjectStats
 );
 
+// Route GET /api/projects/check-limit - Kiểm tra giới hạn tạo dự án
+router.get(
+  '/check-limit',
+  verifyToken,
+  projectController.checkProjectLimit
+);
+
 // Route GET /api/projects/:projectId - Lấy chi tiết dự án
 router.get(
   '/:projectId',
