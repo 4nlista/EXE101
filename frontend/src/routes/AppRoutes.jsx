@@ -19,6 +19,7 @@ import ProfileOnboarding from '../pages/profile/ProfileOnboarding';
 import Subscription from '../pages/subscription/Subscription';
 import PaymentResult from '../pages/subscription/PaymentResult';
 import HistoryPayment from '../pages/subscription/HistoryPayment';
+import Payment from '../pages/subscription/Payment';
 import { ROLE_CODE } from '../constants/roleEnum';
 
 // Route cho Admin
@@ -105,6 +106,7 @@ export default function AppRoutes() {
         <Route path="/subscription" element={<Subscription />} />
         <Route path="/payment-result" element={<PaymentResult />} />
         <Route path="/transactions" element={<HistoryPayment />} />
+        <Route path="/payment/:orderId" element={<Payment />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

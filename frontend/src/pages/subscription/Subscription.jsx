@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Container, Row, Col, Card, Badge, Spinner, Modal } from 'react-bootstrap';
-import { Check, Star, AlertCircle, CheckCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Container, Row, Col, Card, Badge, Spinner } from 'react-bootstrap';
+import { Check } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import Button from '../../components/Button';
 import paymentService from '../../services/paymentService';
 import { useAuth } from '../../contexts/AuthContext';
@@ -72,78 +73,23 @@ const SUBSCRIPTION_PACKAGES = [
 ];
 
 export default function Subscription() {
-  const { currentUser, fetchMyProfile } = useAuth();
+  const { currentUser } = useAuth();
+  const navigate = useNavigate();
   const [loadingType, setLoadingType] = useState(null);
-
-  // States cho SePay QR Modal
-  const [showQrModal, setShowQrModal] = useState(false);
-  const [qrData, setQrData] = useState(null);
-  const [paymentStatus, setPaymentStatus] = useState(TRANSACTION_STATUS.PENDING); // pending, success, failed
-
-  const pollingInterval = useRef(null);
 
   // Gửi yêu cầu khởi tạo thanh toán
   const handlePayment = async (packageType, amount) => {
     try {
       setLoadingType(packageType);
       const res = await paymentService.createPayment(packageType, amount);
-      if (res.success && res.data) {
-        setQrData(res.data);
-        setPaymentStatus(TRANSACTION_STATUS.PENDING);
-        setShowQrModal(true);
-        startPolling(res.data.orderId);
+      if (res.success && res.data && res.data.orderId) {
+        navigate(`/payment/${res.data.orderId}`);
       }
     } catch (error) {
       alert(error?.message || error?.response?.data?.message || 'Có lỗi xảy ra khi tạo thanh toán');
     } finally {
       setLoadingType(null);
     }
-  };
-
-  // Bắt đầu kiểm tra tự động trạng thái đơn hàng (Polling 3 giây/lần)
-  const startPolling = (orderId) => {
-    if (pollingInterval.current) clearInterval(pollingInterval.current);
-
-    pollingInterval.current = setInterval(async () => {
-      try {
-        const res = await paymentService.checkPaymentStatus(orderId);
-        if (res.success && res.status !== TRANSACTION_STATUS.PENDING) {
-          setPaymentStatus(res.status);
-          clearInterval(pollingInterval.current);
-
-          if (res.status === TRANSACTION_STATUS.SUCCESS) {
-            await fetchMyProfile(); // Cập nhật lại thông tin user khi nâng cấp thành công
-          }
-        }
-      } catch (error) {
-        console.error('Lỗi khi polling trạng thái thanh toán:', error);
-      }
-    }, 3000);
-  };
-
-  // Hủy interval khi component unmount
-  useEffect(() => {
-    return () => {
-      if (pollingInterval.current) clearInterval(pollingInterval.current);
-    };
-  }, []);
-
-  // Chỉ dùng cho DEV/TEST: Giả lập thanh toán thành công
-  const handleMockPayment = async () => {
-    try {
-      if (!qrData?.orderId) return;
-      await paymentService.mockPayment(qrData.orderId);
-      // Backend sẽ đổi trạng thái transaction thành công
-      // Frontend chỉ cần chờ lượt polling tiếp theo (tối đa 3 giây) là sẽ cập nhật
-    } catch (error) {
-      console.error('Lỗi khi gọi giả lập thanh toán:', error);
-    }
-  };
-
-  // Đóng modal thanh toán
-  const handleCloseModal = () => {
-    setShowQrModal(false);
-    if (pollingInterval.current) clearInterval(pollingInterval.current);
   };
 
   // Kiểm tra gói hiện tại của người dùng
@@ -267,77 +213,6 @@ export default function Subscription() {
         })}
       </Row>
 
-      {/* Modal QR Thanh Toán SePay */}
-      <Modal show={showQrModal} onHide={handleCloseModal}>
-        <Modal.Header closeButton>
-          <Modal.Title className="fw-bold text-center">Thanh toán bằng VietQR</Modal.Title>
-        </Modal.Header>
-        <Modal.Body className="text-center">
-          {paymentStatus === 'pending' && qrData && (
-            <>
-              <p className="text-dark">
-                Mở ứng dụng ngân hàng và quét mã bên dưới. <br />
-                Hệ thống sẽ <strong>duyệt tự động</strong> ngay khi xác nhận giao dịch.
-              </p>
-
-              <div className="bg-light p-1 rounded d-inline-block border">
-                <img src={qrData.qrUrl} alt="Mã VietQR" style={{ width: '200px', height: '200px', objectFit: 'contain' }} />
-              </div>
-
-              {/* LƯU Ý CHO USER */}
-              <div className="bg-warning bg-opacity-10 border border-warning border-opacity-50 text-dark text-start p-2 rounded mb-3" style={{ fontSize: '0.85rem', lineHeight: '1.4' }}>
-                <strong><AlertCircle size={14} className="me-1 mb-1 text-danger" />Lưu ý:</strong> Vui lòng chuyển <strong>đúng số tiền</strong> và giữ nguyên <strong>nội dung chuyển khoản</strong>. Nếu cố tình chuyển sai số tiền, giao dịch sẽ thất bại và mất số tiền. Mọi thắc mắc vui lòng liên hệ <strong>0396697192</strong>.
-              </div>
-
-              <div className="text-start bg-light p-1 rounded border" style={{ fontSize: '0.95rem' }}>
-                <div className="d-flex justify-content-between mb-1 border-bottom pb-1">
-                  <span className="fw-bold">Số tiền:</span>
-                  <strong className="text-danger">{qrData.amount.toLocaleString('vi-VN')} VND</strong>
-                </div>
-                <div className="d-flex justify-content-between align-items-center">
-                  <span className="fw-bold">Nội dung:</span>
-                  <strong className="text-primary text-break text-end" style={{ fontSize: '0.85rem' }}>{qrData.content}</strong>
-                </div>
-              </div>
-
-              <div className="d-flex justify-content-center align-items-center text-primary mt-2 mb-3">
-                <Spinner animation="border" size="sm" className="me-2" />
-                <span>Đang kiểm tra giao dịch...</span>
-              </div>
-
-              {/* CHỈ HIỂN THỊ KHI TEST/DEV */}
-              <div className="text-center border-top pt-3 mt-2">
-                <p className="text-muted small mb-2">Chế độ thử nghiệm (Không tốn tiền)</p>
-                <Button variant="outline-success" size="sm" onClick={handleMockPayment}>
-                  Giả lập thanh toán thành công
-                </Button>
-              </div>
-            </>
-          )}
-
-          {paymentStatus === TRANSACTION_STATUS.SUCCESS && (
-            <div className="py-4">
-              <CheckCircle size={60} className="text-success mb-3 mx-auto d-block" />
-              <h4 className="fw-bold text-success mb-2">Thanh toán thành công!</h4>
-              <p className="text-muted">Gói dịch vụ của bạn đã được nâng cấp.</p>
-              <Button variant="primary" className="mt-3 px-4 fw-bold" onClick={handleCloseModal}>
-                Hoàn tất
-              </Button>
-            </div>
-          )}
-
-          {paymentStatus === TRANSACTION_STATUS.FAILED && (
-            <div className="py-4">
-              <AlertCircle size={60} className="text-danger mb-3 mx-auto d-block" />
-              <h4 className="fw-bold text-danger mb-2">Thanh toán chưa thành công</h4>
-              <p className="text-muted">Giao dịch của bạn bị từ chối hoặc không đúng số tiền. Vui lòng thử lại hoặc liên hệ Admin.</p>
-              <Button variant="danger" className="mt-3 px-4 fw-bold" onClick={handleCloseModal}>
-                Đóng
-              </Button>
-            </div>
-          )}
-        </Modal.Body>
-      </Modal>
     </Container>
   );
 }

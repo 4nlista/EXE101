@@ -9,6 +9,12 @@ router.post('/create_payment', verifyToken, paymentController.createPaymentUrl);
 // Route cho Client gọi ngầm kiểm tra trạng thái thanh toán (yêu cầu đăng nhập)
 router.get('/status/:orderId', verifyToken, paymentController.checkPaymentStatus);
 
+// Route lấy thông tin giao dịch cụ thể (hiển thị ở trang Checkout)
+router.get('/transaction/:orderId', verifyToken, paymentController.getTransactionInfo);
+
+// Route hủy giao dịch (người dùng bấm Quay Lại / Hủy đơn)
+router.post('/cancel', verifyToken, paymentController.cancelPayment);
+
 // Route lấy lịch sử giao dịch thành công của user
 router.get('/my-transactions', verifyToken, paymentController.getMyTransactions);
 

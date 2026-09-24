@@ -216,3 +216,42 @@ exports.getMyTransactions = async (userId, fromDate, toDate) => {
   const transactions = await Transaction.find(query).sort({ createdAt: -1 });
   return transactions;
 };
+
+// Hàm 5: Lấy thông tin 1 giao dịch để hiển thị QR
+exports.getTransactionInfo = async (orderId, userId) => {
+  const transaction = await Transaction.findOne({ _id: orderId, userId });
+  if (!transaction) throw new Error('Không tìm thấy giao dịch');
+  if (transaction.status !== TRANSACTION_STATUS.PENDING) {
+    throw new Error('Giao dịch này không còn hợp lệ để thanh toán');
+  }
+
+  // Tạo lại thông tin QR giống lúc createPaymentUrl
+  const bankId = 'MB'; 
+  const accountNo = '0396697192'; 
+  const accountName = 'DO TUAN MINH';
+
+  const qrUrl = `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.jpg?amount=${transaction.amount}&addInfo=EXE101%20${transaction._id}&accountName=${accountName}`;
+  
+  return {
+    orderId: transaction._id,
+    amount: transaction.amount,
+    content: `EXE101 ${transaction._id}`,
+    qrUrl,
+    createdAt: transaction.createdAt
+  };
+};
+
+// Hàm 6: Hủy giao dịch
+exports.cancelPayment = async (orderId, userId) => {
+  const transaction = await Transaction.findOne({ _id: orderId, userId });
+  if (!transaction) throw new Error('Không tìm thấy giao dịch');
+  if (transaction.status !== TRANSACTION_STATUS.PENDING) {
+    throw new Error('Chỉ có thể hủy giao dịch đang chờ thanh toán');
+  }
+
+  transaction.status = TRANSACTION_STATUS.FAILED;
+  transaction.description = 'Người dùng chủ động hủy giao dịch';
+  await transaction.save();
+
+  return { success: true };
+};

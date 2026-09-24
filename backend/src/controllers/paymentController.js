@@ -23,6 +23,30 @@ exports.checkPaymentStatus = async (req, res, next) => {
   }
 };
 
+// GET /api/payment/transaction/:orderId
+exports.getTransactionInfo = async (req, res, next) => {
+  try {
+    const { orderId } = req.params;
+    const userId = req.user.id || req.user._id;
+    const data = await paymentService.getTransactionInfo(orderId, userId);
+    res.status(200).json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// POST /api/payment/cancel
+exports.cancelPayment = async (req, res, next) => {
+  try {
+    const { orderId } = req.body;
+    const userId = req.user.id || req.user._id;
+    const result = await paymentService.cancelPayment(orderId, userId);
+    res.status(200).json({ success: true, result });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // GET /api/payment/my-transactions
 // Lấy lịch sử giao dịch thành công của user
 exports.getMyTransactions = async (req, res, next) => {

@@ -22,6 +22,32 @@ const paymentService = {
       orderId
     });
     return response;
+  },
+
+  // Lấy lịch sử giao dịch
+  getMyTransactions: async (fromDate, toDate) => {
+    const params = new URLSearchParams();
+    if (fromDate) params.append('from', fromDate);
+    if (toDate) params.append('to', toDate);
+    
+    let url = '/payment/my-transactions';
+    if (params.toString()) {
+      url += `?${params.toString()}`;
+    }
+    const response = await axiosClient.get(url);
+    return response;
+  },
+
+  // Lấy chi tiết 1 đơn hàng PENDING
+  getTransactionInfo: async (orderId) => {
+    const response = await axiosClient.get(`/payment/transaction/${orderId}`);
+    return response;
+  },
+
+  // Hủy giao dịch
+  cancelPayment: async (orderId) => {
+    const response = await axiosClient.post('/payment/cancel', { orderId });
+    return response;
   }
 };
 

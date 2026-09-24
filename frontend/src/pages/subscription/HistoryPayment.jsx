@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Card, Table, Badge, Form, Row, Col, Spinner } from 'react-bootstrap';
 import { Search, AlertCircle, ReceiptText } from 'lucide-react';
-import moment from 'moment';
-import api from '../../services/api';
+import paymentService from '../../services/paymentService';
 
 export default function HistoryPayment() {
   const [transactions, setTransactions] = useState([]);
@@ -13,18 +12,9 @@ export default function HistoryPayment() {
   const fetchTransactions = async () => {
     try {
       setLoading(true);
-      let url = '/payment/my-transactions';
-      const params = new URLSearchParams();
-      if (fromDate) params.append('from', fromDate);
-      if (toDate) params.append('to', toDate);
-      
-      if (params.toString()) {
-        url += `?${params.toString()}`;
-      }
-
-      const res = await api.get(url);
-      if (res.data.success) {
-        setTransactions(res.data.data);
+      const res = await paymentService.getMyTransactions(fromDate, toDate);
+      if (res.success) {
+        setTransactions(res.data);
       }
     } catch (error) {
       console.error('Lỗi khi tải lịch sử giao dịch:', error);
@@ -45,6 +35,17 @@ export default function HistoryPayment() {
     return description;
   };
 
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const hh = String(date.getHours()).padStart(2, '0');
+    const mm = String(date.getMinutes()).padStart(2, '0');
+    const ss = String(date.getSeconds()).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const yyyy = date.getFullYear();
+    return `${hh}:${mm}:${ss} - ${dd}/${month}/${yyyy}`;
+  };
+
   return (
     <Container className="py-5" style={{ maxWidth: '1000px' }}>
       <div className="d-flex align-items-center mb-4">
@@ -58,8 +59,8 @@ export default function HistoryPayment() {
             <Col md={4}>
               <Form.Group>
                 <Form.Label className="fw-bold text-muted small">Từ ngày</Form.Label>
-                <Form.Control 
-                  type="date" 
+                <Form.Control
+                  type="date"
                   value={fromDate}
                   onChange={(e) => setFromDate(e.target.value)}
                 />
@@ -68,8 +69,8 @@ export default function HistoryPayment() {
             <Col md={4}>
               <Form.Group>
                 <Form.Label className="fw-bold text-muted small">Đến ngày</Form.Label>
-                <Form.Control 
-                  type="date" 
+                <Form.Control
+                  type="date"
                   value={toDate}
                   onChange={(e) => setToDate(e.target.value)}
                   min={fromDate}
@@ -108,7 +109,7 @@ export default function HistoryPayment() {
                       </td>
                       <td>
                         <div className="text-muted" style={{ fontSize: '0.9rem' }}>
-                          {moment(tx.createdAt).format('HH:mm - DD/MM/YYYY')}
+                          {formatDate(tx.createdAt)}
                         </div>
                       </td>
                       <td>
