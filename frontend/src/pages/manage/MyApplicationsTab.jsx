@@ -63,7 +63,7 @@ export default function MyApplicationsTab() {
   const getStatusBadge = (status) => {
     switch (status) {
       case APPLICATION_STATUS.PENDING:
-        return <StatusBadge variant="warning" text="Đang chờ duyệt" />;
+        return <StatusBadge variant="warning" text="Đang chờ" />;
       case APPLICATION_STATUS.APPROVED:
         return <StatusBadge variant="success" text="Đã duyệt" />;
       case APPLICATION_STATUS.REJECTED:
