@@ -52,11 +52,11 @@ Tích hợp box chat Gemini API để tự động sinh mô tả dự án từ t
 
 ### ◆ Nạp tiền & Gói dịch vụ
 
-Tích hợp VNPay thanh toán thật để phân cấp tài khoản:
+Tích hợp SePay thanh toán thật để phân cấp tài khoản:
 
-- **Gói Thường (Miễn phí):** Xem bài đăng, nộp hồ sơ, nhắn tin, quản lý bài đăng cá nhân.
-- **Gói VIP (59.000đ):** Được tạo bài đăng dự án và khám phá tài liệu môn học.
-- **Gói Premium (139.000đ):** Toàn quyền sử dụng AI Hub cùng tất cả tính năng.
+- **Gói Thường (Miễn phí):** 
+- **Gói VIP (59.000đ):** 
+- **Gói Premium (139.000đ):** 
 
 ---
 
@@ -68,7 +68,7 @@ Tích hợp VNPay thanh toán thật để phân cấp tài khoản:
 
 **Database:** MongoDB.
 
-**Thanh toán:** VNPay.
+**Thanh toán:** SePay.
 
 **AI:** Google Gemini API.
 
