@@ -276,8 +276,14 @@ export default function Messages() {
     try {
       await clearConversation(conversationId);
       toast.success('Đã xóa đoạn chat');
+      
+      // Xóa state để tránh fetchConversations tự động thêm lại
+      if (location.state?.conversationId === conversationId) {
+        window.history.replaceState({}, '');
+      }
+      
       if (activeConversation?._id === conversationId) setActiveConversation(null);
-      fetchConversations();
+      setConversations(prev => prev.filter(c => c._id !== conversationId));
     } catch (error) {
       toast.error('Lỗi khi xóa đoạn chat');
     }

@@ -88,7 +88,7 @@ export default function ProjectManagementDetail() {
       setLoading(true);
       const res = await initConversation(targetUserId);
       if (res.success) {
-        navigate('/messages', { state: { conversationId: res.data._id } });
+        navigate('/messages', { state: { conversationId: res.data._id, conversation: res.data } });
       }
     } catch (error) {
       toast.error('Không thể bắt đầu cuộc trò chuyện');
