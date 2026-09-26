@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mail, Phone, MapPin, Calendar, Award } from 'lucide-react';
+import { Mail, Phone, MapPin, Calendar, Award, User } from 'lucide-react';
 import { Card, Form } from 'react-bootstrap';
 
 export default function ProfileInfo({
@@ -9,21 +9,25 @@ export default function ProfileInfo({
   editData,
   setEditData,
   privacyData,
-  togglePrivacy
+  togglePrivacy,
+  errors = {}
 }) {
   return (
     <Card className="profile-card border-0 mb-3 shadow-sm">
       <Card.Body className="p-3">
         <div className="d-flex align-items-center justify-content-between border-bottom pb-2 mb-2">
-          <h5 className="fw-bold text-dark mb-0 fs-6">Giới thiệu</h5>
+          <h6 className="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+            <User size={18} className="text-secondary" />
+            Giới thiệu
+          </h6>
         </div>
 
         {/* Email */}
         {(isOwner || profileData.email) && (
           <div className="profile-info-item py-2 border-bottom">
             <div className="d-flex align-items-center justify-content-between">
-              <div className="d-flex align-items-center gap-1 flex-wrap">
-                <Mail size={15} className="text-secondary flex-shrink-0 me-1" />
+              <div className="d-flex align-items-center gap-1 flex-wrap" style={{ fontSize: '0.85rem' }}>
+                <Mail size={14} className="text-secondary flex-shrink-0 me-1" />
                 <span className="fw-bold text-dark me-1">Email<span className="text-danger">*</span>:</span>
                 {isEditMode ? (
                   <span className="text-muted fw-medium">[{profileData.email}]</span>
@@ -50,8 +54,8 @@ export default function ProfileInfo({
         {(isOwner || profileData.phone) && (
           <div className="profile-info-item py-2 border-bottom">
             <div className="d-flex align-items-center justify-content-between">
-              <div className="d-flex align-items-center gap-1 flex-wrap" style={{ flex: 1 }}>
-                <Phone size={15} className="text-secondary flex-shrink-0 me-1" />
+              <div className="d-flex align-items-center gap-1 flex-wrap" style={{ flex: 1, fontSize: '0.85rem' }}>
+                <Phone size={14} className="text-secondary flex-shrink-0 me-1" />
                 <span className="fw-bold text-dark me-1">Số điện thoại<span className="text-danger">*</span>:</span>
                 {isEditMode ? (
                   <Form.Control
@@ -85,8 +89,8 @@ export default function ProfileInfo({
         {(isOwner || profileData.address) && (
           <div className="profile-info-item py-2 border-bottom">
             <div className="d-flex align-items-center justify-content-between">
-              <div className="d-flex align-items-center gap-1 flex-wrap" style={{ flex: 1 }}>
-                <MapPin size={15} className="text-secondary flex-shrink-0 me-1" />
+              <div className="d-flex align-items-center gap-1 flex-wrap" style={{ flex: 1, fontSize: '0.85rem' }}>
+                <MapPin size={14} className="text-secondary flex-shrink-0 me-1" />
                 <span className="fw-bold text-dark me-1">Địa chỉ:</span>
                 {isEditMode ? (
                   <Form.Control
@@ -120,8 +124,8 @@ export default function ProfileInfo({
         {(isOwner || profileData.dob) && (
           <div className="profile-info-item py-2 border-bottom">
             <div className="d-flex align-items-center justify-content-between">
-              <div className="d-flex align-items-center gap-1 flex-wrap" style={{ flex: 1 }}>
-                <Calendar size={15} className="text-secondary flex-shrink-0 me-1" />
+              <div className="d-flex align-items-center gap-1 flex-wrap" style={{ flex: 1, fontSize: '0.85rem' }}>
+                <Calendar size={14} className="text-secondary flex-shrink-0 me-1" />
                 <span className="fw-bold text-dark me-1">Ngày sinh<span className="text-danger">*</span>:</span>
                 {isEditMode ? (
                   <Form.Control
@@ -152,38 +156,54 @@ export default function ProfileInfo({
         )}
 
         {/* GPA */}
-        {(isOwner || profileData.gradeGoal !== undefined) && (
+        {(isOwner || profileData.gpa !== undefined) && (
           <div className="profile-info-item py-2">
             <div className="d-flex align-items-center justify-content-between">
-              <div className="d-flex align-items-center gap-1 flex-wrap" style={{ flex: 1 }}>
-                <Award size={15} className="text-secondary flex-shrink-0 me-1" />
+              <div className="d-flex align-items-center gap-1 flex-wrap" style={{ flex: 1, fontSize: '0.85rem' }}>
+                <Award size={14} className="text-secondary flex-shrink-0 me-1" />
                 <span className="fw-bold text-dark me-1">GPA<span className="text-danger">*</span>:</span>
                 {isEditMode ? (
-                  <Form.Control
-                    size="sm"
-                    type="number"
-                    step="0.1"
-                    min="0"
-                    max="4"
-                    value={editData.gradeGoal}
-                    onChange={e => setEditData({ ...editData, gradeGoal: e.target.value })}
-                    placeholder="[GPA]"
-                    className="d-inline-block py-0 px-2"
-                    style={{ width: '85px', height: '28px', fontSize: '0.85rem' }}
-                  />
+                  <div>
+                    <Form.Control
+                      size="sm"
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      max="4.0"
+                      value={editData.gpa}
+                      onChange={e => {
+                        let val = e.target.value;
+                        const num = parseFloat(val);
+                        if (!isNaN(num)) {
+                          if (num > 4.0) val = '4.0';
+                          if (num < 0.0) val = '0.0';
+                        }
+                        setEditData({ ...editData, gpa: val });
+                      }}
+                      placeholder="[GPA]"
+                      className="d-inline-block py-0 px-2"
+                      style={{ width: '85px', height: '28px', fontSize: '0.85rem' }}
+                      isInvalid={!!errors.gpa}
+                    />
+                    {errors.gpa && (
+                      <Form.Control.Feedback type="invalid" className="d-block" style={{ fontSize: '0.75rem' }}>
+                        {errors.gpa}
+                      </Form.Control.Feedback>
+                    )}
+                  </div>
                 ) : (
-                  <span className="text-secondary">{profileData.gradeGoal !== undefined && profileData.gradeGoal !== null ? Number(profileData.gradeGoal).toFixed(1) : 'Đã ẩn'}</span>
+                  <span className="text-secondary">{profileData.gpa !== undefined && profileData.gpa !== null ? Number(profileData.gpa).toFixed(1) : 'Đã ẩn'}</span>
                 )}
               </div>
               {isEditMode && (
                 <Form.Check
                   type="switch"
-                  id="privacy-gradeGoal"
-                  checked={!!privacyData.gradeGoal}
-                  onChange={() => togglePrivacy('gradeGoal')}
+                  id="privacy-gpa"
+                  checked={!!privacyData.gpa}
+                  onChange={() => togglePrivacy('gpa')}
                   label=""
                   className="ms-2"
-                  title={privacyData.gradeGoal ? "Công khai" : "Riêng tư"}
+                  title={privacyData.gpa ? "Công khai" : "Riêng tư"}
                 />
               )}
             </div>

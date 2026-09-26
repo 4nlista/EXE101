@@ -105,8 +105,8 @@ const userSchema = new mongoose.Schema(
       ref: 'ProjectHistory'
     }],
 
-    // Mục tiêu điểm số (GPA) (kéo range 0.0 - 4.0)
-    gradeGoal: {
+    // Điểm trung bình (GPA) (scale 0.0 - 4.0)
+    gpa: {
       type: Number,
       min: 0,
       max: 4.0
@@ -124,7 +124,7 @@ const userSchema = new mongoose.Schema(
       majorId: { type: Boolean, default: true },
       mainSkills: { type: Boolean, default: true },
       projectHistory: { type: Boolean, default: true },
-      gradeGoal: { type: Boolean, default: true }
+      gpa: { type: Boolean, default: true }
     },
 
     // ===== VÍ & QUYỀN LỢI =====
@@ -134,11 +134,6 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: Object.values(PACKAGE_TYPE),
       default: PACKAGE_TYPE.FREE
-    },
-    // Số dư ví (đơn vị: VND)
-    walletBalance: {
-      type: Number,
-      default: 0
     }
   },
   { timestamps: true }

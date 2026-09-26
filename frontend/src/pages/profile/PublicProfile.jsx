@@ -14,6 +14,7 @@ import ProfileHeader from './components/ProfileHeader';
 import ProfileInfo from './components/ProfileInfo';
 import ProfileSkills from './components/ProfileSkills';
 import ProjectHistoryTable from './components/ProjectHistoryTable';
+import ProjectDetailPanel from './components/ProjectDetailPanel';
 import '../../styles/profile.css';
 import { toast } from 'react-toastify';
 import { initConversation } from '../../services/messageService';
@@ -40,6 +41,7 @@ export default function PublicProfilePage() {
   // States
   const [isEditMode, setIsEditMode] = useState(false);
   const [editData, setEditData] = useState({});
+  const [errors, setErrors] = useState({});
   const [privacyData, setPrivacyData] = useState({});
   const [selectedImage, setSelectedImage] = useState(null);
   const fileInputRef = useRef(null);
@@ -75,7 +77,7 @@ export default function PublicProfilePage() {
       departmentId: profileData.departmentId?._id || profileData.departmentId || '',
       majorId: profileData.majorId?._id || profileData.majorId || '',
       semester: profileData.semester || '',
-      gradeGoal: profileData.gradeGoal !== undefined ? profileData.gradeGoal : '',
+      gpa: profileData.gpa !== undefined ? profileData.gpa : '',
       mainSkills: Array.isArray(profileData.mainSkills) ? profileData.mainSkills : []
     });
     setPrivacyData(profileData.privacySettings || {});
@@ -101,6 +103,16 @@ export default function PublicProfilePage() {
   };
 
   const handleSaveProfile = async () => {
+    if (editData.gpa === '' || editData.gpa === null || editData.gpa === undefined) {
+      setErrors({ gpa: "Vui lòng nhập GPA" });
+      return;
+    }
+    if (Number(editData.gpa) < 0 || Number(editData.gpa) > 4) {
+      setErrors({ gpa: "GPA phải từ 0.0 đến 4.0" });
+      return;
+    }
+    setErrors({});
+
     const formData = new FormData();
     formData.append('name', editData.name);
     formData.append('phone', editData.phone);
@@ -109,7 +121,7 @@ export default function PublicProfilePage() {
     if (editData.departmentId) formData.append('departmentId', editData.departmentId);
     if (editData.majorId) formData.append('majorId', editData.majorId);
     formData.append('semester', editData.semester);
-    formData.append('gradeGoal', editData.gradeGoal);
+    formData.append('gpa', editData.gpa);
 
     // Ensure mainSkills is serialized as JSON string array
     const skillsArray = Array.isArray(editData.mainSkills)
@@ -208,8 +220,10 @@ export default function PublicProfilePage() {
     }
   };
 
+  const isDetailOpen = selectedProject || isAddingProject;
+
   return (
-    <Container className="py-3" style={{ maxWidth: '100%' }}>
+    <Container className="py-4">
       <ProfileHeader
         profileData={profileData}
         isOwner={isOwner}
@@ -228,8 +242,9 @@ export default function PublicProfilePage() {
         handleStartChat={handleStartChat}
       />
 
-      <Row>
-        <Col lg={3}>
+      <div className={`profile-body-layout mt-4 ${isDetailOpen ? 'detail-open' : ''}`}>
+        
+        <div className="profile-sidebar">
           <ProfileInfo
             profileData={profileData}
             isOwner={isOwner}
@@ -238,6 +253,7 @@ export default function PublicProfilePage() {
             setEditData={setEditData}
             privacyData={privacyData}
             togglePrivacy={togglePrivacy}
+            errors={errors}
           />
 
           <ProfileSkills
@@ -249,9 +265,9 @@ export default function PublicProfilePage() {
             privacyData={privacyData}
             togglePrivacy={togglePrivacy}
           />
-        </Col>
+        </div>
 
-        <Col lg={9}>
+        <div className="profile-main">
           <ProjectHistoryTable
             profileData={profileData}
             isOwner={isOwner}
@@ -267,8 +283,18 @@ export default function PublicProfilePage() {
             saveProjectDetail={saveProjectDetail}
             handleDeleteProject={handleDeleteProject}
           />
-        </Col>
-      </Row>
+        </div>
+
+        {isDetailOpen && (
+          <ProjectDetailPanel
+            isAddingProject={isAddingProject}
+            projectForm={projectForm}
+            setProjectForm={setProjectForm}
+            saveProjectDetail={saveProjectDetail}
+            closeProjectDetail={closeProjectDetail}
+          />
+        )}
+      </div>
     </Container>
   );
 }

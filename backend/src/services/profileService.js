@@ -57,7 +57,7 @@ const updateOnboardingProfile = async (userId, bodyData, avatarUrl) => {
     semester,
     departmentId,
     majorId,
-    gradeGoal
+    gpa
   } = bodyData;
 
   let mainSkills = bodyData.mainSkills ? JSON.parse(bodyData.mainSkills) : [];
@@ -96,7 +96,7 @@ const updateOnboardingProfile = async (userId, bodyData, avatarUrl) => {
     majorId,
     mainSkills: [...new Set(finalSkills)],
     projectHistory: projectHistoryIds,
-    gradeGoal,
+    gpa,
     onboardingCompleted: true
   };
 
@@ -104,7 +104,7 @@ const updateOnboardingProfile = async (userId, bodyData, avatarUrl) => {
     updateData.avatar = avatarUrl;
   }
 
-  const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true, runValidators: true });
+  const updatedUser = await User.findByIdAndUpdate(userId, updateData, { returnDocument: 'after', runValidators: true });
 
   return updatedUser;
 };
@@ -139,21 +139,21 @@ const getPublicProfile = async (userId) => {
   if (!privacy.majorId) delete publicData.majorId;
   if (!privacy.mainSkills) delete publicData.mainSkills;
   if (!privacy.projectHistory) delete publicData.projectHistory;
-  if (!privacy.gradeGoal) delete publicData.gradeGoal;
+  if (!privacy.gpa) delete publicData.gpa;
 
   return publicData;
 };
 
 const updateMyProfile = async (userId, bodyData, avatarUrl) => {
   const {
-    name, phone, dob, address, semester, departmentId, majorId, gradeGoal, privacySettings
+    name, phone, dob, address, semester, departmentId, majorId, gpa, privacySettings
   } = bodyData;
 
   let mainSkills = bodyData.mainSkills ? JSON.parse(bodyData.mainSkills) : [];
   const finalSkills = await processSkills(mainSkills);
 
   const updateData = {
-    name, phone, dob, address, semester, departmentId, majorId, gradeGoal,
+    name, phone, dob, address, semester, departmentId, majorId, gpa,
     mainSkills: finalSkills
   };
 
@@ -164,7 +164,7 @@ const updateMyProfile = async (userId, bodyData, avatarUrl) => {
     updateData.avatar = avatarUrl;
   }
 
-  const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true, runValidators: true })
+  const updatedUser = await User.findByIdAndUpdate(userId, updateData, { returnDocument: 'after', runValidators: true })
     .populate('departmentId', 'name')
     .populate('majorId', 'name')
     .populate('projectHistory')

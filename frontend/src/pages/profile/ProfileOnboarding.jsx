@@ -35,7 +35,7 @@ const ProfileOnboarding = () => {
     }
     return {
       name: '', phone: '', dob: '', address: '', semester: 1,
-      departmentId: '', majorId: '', mainSkills: [], projectHistory: [], gradeGoal: 0.0
+      departmentId: '', majorId: '', mainSkills: [], projectHistory: [], gpa: 0.0
     };
   });
 
@@ -65,8 +65,16 @@ const ProfileOnboarding = () => {
   // ----------------------------------------
   const handleChange = (e) => {
     const { name, value } = e.target;
+    let finalValue = value;
+    if (name === 'gpa') {
+      const num = parseFloat(value);
+      if (!isNaN(num)) {
+        if (num > 4.0) finalValue = '4.0';
+        if (num < 0.0) finalValue = '0.0';
+      }
+    }
     setFormData(prev => {
-      const updated = { ...prev, [name]: value };
+      const updated = { ...prev, [name]: finalValue };
       // Nếu đổi ngành học thì reset chuyên ngành
       if (name === 'departmentId') {
         updated.majorId = '';
@@ -149,6 +157,18 @@ const ProfileOnboarding = () => {
   };
 
   const handleSubmit = () => {
+    // Validate Bước 4
+    if (formData.gpa === '' || formData.gpa === null || formData.gpa === undefined) {
+      setErrors({ gpa: "Vui lòng nhập GPA" });
+      return;
+    }
+    if (Number(formData.gpa) < 0 || Number(formData.gpa) > 4) {
+      setErrors({ gpa: "GPA phải nằm trong khoảng 0.0 - 4.0" });
+      return;
+    }
+
+    setErrors({});
+    
     // Đóng gói data bằng FormData để gửi file
     const payload = new FormData();
     payload.append('name', formData.name);
@@ -158,7 +178,7 @@ const ProfileOnboarding = () => {
     payload.append('semester', formData.semester);
     payload.append('departmentId', formData.departmentId);
     if (formData.majorId) payload.append('majorId', formData.majorId);
-    payload.append('gradeGoal', formData.gradeGoal);
+    payload.append('gpa', formData.gpa);
 
     // Mảng phức tạp cần stringify khi ném vào FormData
     const skillArray = formData.mainSkills.map(opt => opt.value);
@@ -455,14 +475,20 @@ const ProfileOnboarding = () => {
     <div className="text-center">
       <h4 className="mb-4">Mục tiêu phấn đấu</h4>
       <Form.Group className="mb-5 mx-auto" style={{ maxWidth: '400px' }}>
-        <h1 className="display-4 text-primary fw-bold mb-3">{Number(formData.gradeGoal).toFixed(1)}</h1>
-        <Form.Range
-          name="gradeGoal" min={0.0} max={4.0} step={0.1}
-          value={formData.gradeGoal} onChange={handleChange}
+        <Form.Control
+          type="number"
+          name="gpa"
+          min={0.0}
+          max={4.0}
+          step={0.1}
+          value={formData.gpa}
+          onChange={handleChange}
+          isInvalid={!!errors.gpa}
+          className="text-center fw-bold text-primary fs-3 py-2"
         />
-        <div className="d-flex justify-content-between text-muted small mt-2">
-          <span>0.0</span><span>GPA</span><span>4.0</span>
-        </div>
+        <Form.Control.Feedback type="invalid" className="mt-2 text-center">
+          {errors.gpa}
+        </Form.Control.Feedback>
       </Form.Group>
       <div className="alert alert-info">Hồ sơ của bạn đã sẵn sàng!</div>
     </div>
