@@ -64,13 +64,13 @@ export default function ProfileHeader({
           )}
 
           {/* Meta info hàng ngang */}
-          <div className="d-flex flex-wrap gap-3 align-items-center mt-1">
+          <div className="d-flex flex-wrap gap-4 align-items-center">
 
             {/* Ngành học */}
             {(isOwner || profileData.departmentId) && (
-              <div className="d-flex align-items-center gap-1 text-dark small">
+              <div className="d-flex align-items-center gap-1 text-muted small border-end pe-4">
                 <Building size={15} className="text-secondary flex-shrink-0" />
-                <span className="fw-semibold text-muted">Ngành:</span>
+                <span className="fw-semibold text-dark">Ngành <span className="text-danger">*</span>:</span>
                 {isEditMode ? (
                   <Form.Select
                     size="sm"
@@ -84,7 +84,7 @@ export default function ProfileHeader({
                     ))}
                   </Form.Select>
                 ) : (
-                  <span className="text-dark fw-medium">{currentDeptName}</span>
+                  <span className="text-muted">{currentDeptName}</span>
                 )}
                 {isEditMode && (
                   <Form.Check type="switch" id="switch-dept" checked={!!privacyData.departmentId} onChange={() => togglePrivacy('departmentId')} label="" title={privacyData.departmentId ? "Công khai" : "Riêng tư"} />
@@ -94,9 +94,9 @@ export default function ProfileHeader({
 
             {/* Chuyên ngành */}
             {(isOwner || profileData.majorId) && (
-              <div className="d-flex align-items-center gap-1 text-dark small">
+              <div className="d-flex align-items-center gap-1 text-dark small border-end pe-4">
                 <GraduationCap size={15} className="text-secondary flex-shrink-0" />
-                <span className="fw-semibold text-muted">Chuyên ngành:</span>
+                <span className="fw-semibold text-dark">Chuyên ngành <span className="text-danger">*</span>:</span>
                 {isEditMode ? (
                   <Form.Select
                     size="sm"
@@ -110,7 +110,7 @@ export default function ProfileHeader({
                     ))}
                   </Form.Select>
                 ) : (
-                  <span className="text-dark fw-medium">{currentMajorName}</span>
+                  <span className="text-muted">{currentMajorName}</span>
                 )}
                 {isEditMode && (
                   <Form.Check type="switch" id="switch-major" checked={!!privacyData.majorId} onChange={() => togglePrivacy('majorId')} label="" title={privacyData.majorId ? "Công khai" : "Riêng tư"} />
@@ -122,7 +122,7 @@ export default function ProfileHeader({
             {(isOwner || profileData.semester) && (
               <div className="d-flex align-items-center gap-1 text-dark small">
                 <CalendarDays size={15} className="text-secondary flex-shrink-0" />
-                <span className="fw-semibold text-muted">Kỳ học:</span>
+                <span className="fw-semibold text-dark">Kỳ học  <span className="text-danger">*</span>:</span>
                 {isEditMode ? (
                   <Form.Control
                     size="sm"
@@ -134,7 +134,7 @@ export default function ProfileHeader({
                     style={{ width: '65px' }}
                   />
                 ) : (
-                  <span className="text-dark fw-medium">Kỳ {profileData.semester || '-'}</span>
+                  <span className="text-muted">{profileData.semester || '-'}</span>
                 )}
                 {isEditMode && (
                   <Form.Check type="switch" id="switch-semester" checked={!!privacyData.semester} onChange={() => togglePrivacy('semester')} label="" title={privacyData.semester ? "Công khai" : "Riêng tư"} />

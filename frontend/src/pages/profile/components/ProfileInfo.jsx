@@ -32,7 +32,7 @@ export default function ProfileInfo({
                 {isEditMode ? (
                   <span className="text-muted fw-medium">[{profileData.email}]</span>
                 ) : (
-                  <span className="text-secondary">{profileData.email || 'Đã ẩn'}</span>
+                  <span className="text-muted">{profileData.email || 'Đã ẩn'}</span>
                 )}
               </div>
               {isEditMode && (
@@ -67,7 +67,7 @@ export default function ProfileInfo({
                     style={{ width: '150px', height: '28px', fontSize: '0.85rem' }}
                   />
                 ) : (
-                  <span className="text-secondary">{profileData.phone || 'Đã ẩn'}</span>
+                  <span className="text-muted">{profileData.phone || 'Đã ẩn'}</span>
                 )}
               </div>
               {isEditMode && (
@@ -102,7 +102,7 @@ export default function ProfileInfo({
                     style={{ width: '150px', height: '28px', fontSize: '0.85rem' }}
                   />
                 ) : (
-                  <span className="text-secondary">{profileData.address || 'Đã ẩn'}</span>
+                  <span className="text-muted">{profileData.address || 'Đã ẩn'}</span>
                 )}
               </div>
               {isEditMode && (
@@ -137,7 +137,7 @@ export default function ProfileInfo({
                     style={{ width: '145px', height: '28px', fontSize: '0.85rem' }}
                   />
                 ) : (
-                  <span className="text-secondary">{profileData.dob ? new Date(profileData.dob).toLocaleDateString('vi-VN') : 'Đã ẩn'}</span>
+                  <span className="text-muted">{profileData.dob ? new Date(profileData.dob).toLocaleDateString('vi-VN') : 'Đã ẩn'}</span>
                 )}
               </div>
               {isEditMode && (
@@ -192,7 +192,7 @@ export default function ProfileInfo({
                     )}
                   </div>
                 ) : (
-                  <span className="text-secondary">{profileData.gpa !== undefined && profileData.gpa !== null ? Number(profileData.gpa).toFixed(1) : 'Đã ẩn'}</span>
+                  <span className="text-muted">{profileData.gpa !== undefined && profileData.gpa !== null ? Number(profileData.gpa).toFixed(1) : 'Đã ẩn'}</span>
                 )}
               </div>
               {isEditMode && (
