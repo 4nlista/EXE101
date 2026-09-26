@@ -165,11 +165,17 @@ const acceptInvite = async (applicationId, applicantId) => {
   const project = await Project.findById(application.projectId);
   if (!project) throw new Error('Dự án không tồn tại.');
   
-  if (project.status !== PROJECT_STATUS.OPEN) {
-    throw new Error('Dự án đã đóng tuyển.');
-  }
-  if (project.members.length >= project.maxMembers) {
-    throw new Error('Dự án đã đủ thành viên.');
+  // Tự động thu hồi lời mời nếu dự án không còn ở trạng thái nhận người
+  if (project.status !== PROJECT_STATUS.OPEN || project.members.length >= project.maxMembers) {
+    application.status = APPLICATION_STATUS.REJECTED;
+    application.rejectionCount = (application.rejectionCount || 0) + 1;
+    await application.save();
+    
+    throw new Error(
+      project.status !== PROJECT_STATUS.OPEN 
+        ? 'Lời mời đã hết hạn do dự án không còn trong giai đoạn tuyển thành viên.'
+        : 'Dự án đã đủ thành viên nên lời mời này không còn hiệu lực.'
+    );
   }
 
   // Thêm vào project.members
