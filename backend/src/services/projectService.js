@@ -216,6 +216,9 @@ const getProjectDetail = async (projectId) => {
 const updateProject = async (projectId, ownerId, updateData) => {
   const project = await Project.findOne({ _id: projectId, ownerId });
   if (!project) throw new Error('Không tìm thấy dự án hoặc bạn không có quyền sửa.');
+  if (project.status !== PROJECT_STATUS.OPEN) {
+    throw new Error('Chỉ có thể chỉnh sửa khi dự án đang mở tuyển (OPEN).');
+  }
 
   Object.assign(project, updateData);
   await project.save();
@@ -329,19 +332,28 @@ const approveApplicant = async (projectId, ownerId, applicationId) => {
   project.members.push({ userId: application.applicantId, role: 'Member' });
   application.status = APPLICATION_STATUS.APPROVED;
 
-  // Nếu đủ người -> đóng -> reject tất cả PENDING còn lại
+  // Nếu đủ người -> đóng -> reject tất cả PENDING/INVITED còn lại
   if (project.members.length >= project.maxMembers) {
     project.status = PROJECT_STATUS.CLOSED;
-    const pendingApps = await Application.find({ projectId, status: APPLICATION_STATUS.PENDING });
-    for (const app of pendingApps) {
+    const pendingAndInvitedApps = await Application.find({ 
+      projectId, 
+      status: { $in: [APPLICATION_STATUS.PENDING, APPLICATION_STATUS.INVITED] } 
+    });
+    
+    for (const app of pendingAndInvitedApps) {
       app.status = APPLICATION_STATUS.REJECTED;
       app.rejectionCount += 1;
       await app.save();
+      
+      const content = app.status === APPLICATION_STATUS.PENDING 
+        ? `Dự án "${project.title}" đã tuyển đủ thành viên.` 
+        : `Dự án "${project.title}" đã tuyển đủ thành viên. Lời mời của bạn đã bị hủy.`;
+        
       await Notification.create({
         userId: app.applicantId,
         type: NOTIFICATION_TYPE.REJECTED,
         title: 'Hồ sơ bị từ chối',
-        content: `Dự án "${project.title}" đã tuyển đủ thành viên.`,
+        content,
         referenceId: project._id,
         referenceModel: 'Project'
       });

@@ -63,7 +63,7 @@ export default function MyProjectsTab() {
         fetchProjects();
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Xóa dự án thất bại');
+      toast.error(error?.message || 'Xóa dự án thất bại');
     }
   };
 
@@ -136,15 +136,15 @@ export default function MyProjectsTab() {
                   <StatusBadge
                     variant={
                       project.status === PROJECT_STATUS.OPEN ? 'warning' :
-                      project.status === PROJECT_STATUS.IN_PROGRESS ? 'primary' :
-                      project.status === PROJECT_STATUS.COMPLETED ? 'success' : 
-                      project.status === PROJECT_STATUS.CANCELLED ? 'danger' : 'secondary'
+                        project.status === PROJECT_STATUS.IN_PROGRESS ? 'primary' :
+                          project.status === PROJECT_STATUS.COMPLETED ? 'success' :
+                            project.status === PROJECT_STATUS.CANCELLED ? 'danger' : 'secondary'
                     }
                     text={
                       project.status === PROJECT_STATUS.OPEN ? 'Đang tuyển' :
-                      project.status === PROJECT_STATUS.IN_PROGRESS ? 'Đang thực hiện' :
-                      project.status === PROJECT_STATUS.COMPLETED ? 'Kết thúc' : 
-                      project.status === PROJECT_STATUS.CANCELLED ? 'Đã hủy' : 'Đã đóng'
+                        project.status === PROJECT_STATUS.IN_PROGRESS ? 'Đang thực hiện' :
+                          project.status === PROJECT_STATUS.COMPLETED ? 'Kết thúc' :
+                            project.status === PROJECT_STATUS.CANCELLED ? 'Đã hủy' : 'Đã đóng'
                     }
                   />
                 </div>
@@ -183,7 +183,7 @@ export default function MyProjectsTab() {
         title="Hủy dự án"
         message="Bạn có chắc chắn muốn hủy bài đăng dự án này? Thao tác này không thể hoàn tác và chỉ có thể thực hiện khi số thành viên chưa đạt mức tối thiểu (50%)."
         confirmText="Hủy dự án"
-        variant="danger"
+        variant="text_dark"
       />
     </div>
   );

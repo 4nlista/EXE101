@@ -21,6 +21,7 @@ import { formatDate } from '../../utils/formatDate';
 import StatusBadge from '../../components/StatusBadge';
 import UpdateProjectModal from './UpdateProjectModal';
 import CustomTable from '../../components/CustomTable';
+import ReviewTab from './components/ReviewTab';
 
 const ACTION_TYPES = {
   APPROVE: 'approve', // Chấp nhận đơn đăng ký
@@ -96,7 +97,7 @@ export default function ProjectManagementDetail() {
       setShowConfirm(false);
       fetchData(); // Reload dữ liệu để cập nhật danh sách ứng viên và thành viên
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Có lỗi xảy ra');
+      toast.error(error?.message || 'Có lỗi xảy ra');
     }
   };
 
@@ -260,9 +261,11 @@ export default function ProjectManagementDetail() {
                   Hoàn thành dự án
                 </Button>
               )}
-              <Button variant="primary" className="rounded px-3 shadow-none fw-medium" onClick={() => setShowUpdateModal(true)}>
-                <FaEdit className="me-1" /> Chỉnh sửa
-              </Button>
+              {project.status !== PROJECT_STATUS.CANCELLED && project.status !== PROJECT_STATUS.COMPLETED && (
+                <Button variant="primary" className="rounded px-3 shadow-none fw-medium" onClick={() => setShowUpdateModal(true)}>
+                  <FaEdit className="me-1" /> Chỉnh sửa
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -307,6 +310,13 @@ export default function ProjectManagementDetail() {
               Thành viên dự án
             </Nav.Link>
           </Nav.Item>
+          {project.status === PROJECT_STATUS.COMPLETED && (
+            <Nav.Item>
+              <Nav.Link eventKey="reviews" className={activeTab === 'reviews' ? 'fw-bold text-dark border-bottom border-primary border-3' : 'text-muted'}>
+                Đánh giá thành viên
+              </Nav.Link>
+            </Nav.Item>
+          )}
         </Nav>
 
         {activeTab === 'applicants' && (
@@ -393,7 +403,7 @@ export default function ProjectManagementDetail() {
                       </a>
                     </td>
                     <td className="text-center">
-                      {app.status === APPLICATION_STATUS.PENDING && project.status !== PROJECT_STATUS.CANCELLED && (
+                      {app.status === APPLICATION_STATUS.PENDING && project.status !== PROJECT_STATUS.CANCELLED && project.status !== PROJECT_STATUS.COMPLETED && (
                         <div className="d-flex justify-content-center gap-2">
                           <Button
                             variant="success"
@@ -420,7 +430,7 @@ export default function ProjectManagementDetail() {
                           onClick={() => handleStartChat(app.applicantId._id)}
                         >Nhắn tin</Button>
                       )}
-                      {app.status === APPLICATION_STATUS.REJECTED && members.length < project.maxMembers && project.status !== PROJECT_STATUS.CANCELLED && (
+                      {app.status === APPLICATION_STATUS.REJECTED && members.length < project.maxMembers && project.status !== PROJECT_STATUS.CANCELLED && project.status !== PROJECT_STATUS.COMPLETED && (
                         <Button
                           variant="info"
                           size="sm"
@@ -494,7 +504,7 @@ export default function ProjectManagementDetail() {
                             style={{ fontSize: '13px' }}
                           >Nhắn tin</Button>
                         </div>
-                        {project.status !== PROJECT_STATUS.CANCELLED && (
+                        {project.status !== PROJECT_STATUS.CANCELLED && project.status !== PROJECT_STATUS.COMPLETED && (
                           <Button
                             variant="warning"
                             className="w-100 rounded-pill py-1"
@@ -512,6 +522,10 @@ export default function ProjectManagementDetail() {
               ))
             )}
           </Row>
+        )}
+
+        {activeTab === 'reviews' && project.status === PROJECT_STATUS.COMPLETED && (
+          <ReviewTab projectId={project._id} />
         )}
       </div>
 

@@ -12,10 +12,10 @@ const ConfirmActionModal = ({ show, onHide, onConfirm, title, message, confirmTe
         <p className="mb-0 text-muted">{message}</p>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary text-dark" onClick={onHide} disabled={isLoading}>
+        <Button variant="dark text-white" onClick={onHide} disabled={isLoading}>
           Hủy bỏ
         </Button>
-        <Button variant={`${variant} text-white`} onClick={onConfirm} isLoading={isLoading}>
+        <Button variant={`${variant} text-dark`} onClick={onConfirm} isLoading={isLoading}>
           {confirmText}
         </Button>
       </Modal.Footer>

@@ -11,6 +11,9 @@ import { formatDate } from '../../utils/formatDate';
 import StatusBadge from '../../components/StatusBadge';
 import ProjectDetailModal from '../feed/ProjectDetailModal';
 import CustomTable from '../../components/CustomTable';
+import { PROJECT_STATUS } from '../../constants/projectEnum';
+import Modal from 'react-bootstrap/Modal';
+import ReviewTab from './components/ReviewTab';
 
 const ACTION_TYPES = {
   CANCEL: 'cancel', // Hủy đơn tham gia
@@ -32,6 +35,9 @@ export default function MyApplicationsTab() {
 
   // Project detail modal
   const [selectedProject, setSelectedProject] = useState(null);
+
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewProjectId, setReviewProjectId] = useState(null);
 
   const fetchApplications = async () => {
     try {
@@ -80,7 +86,7 @@ export default function MyApplicationsTab() {
       }
       fetchApplications();
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Có lỗi xảy ra');
+      toast.error(error?.message || 'Có lỗi xảy ra');
     }
   };
 
@@ -151,8 +157,8 @@ export default function MyApplicationsTab() {
           </tr>
         ) : (
           applications.map((app, idx) => (
-            <tr 
-              key={app._id} 
+            <tr
+              key={app._id}
               onClick={() => handleRowClick(app.projectId?._id)}
               style={{ cursor: 'pointer' }}
             >
@@ -214,7 +220,15 @@ export default function MyApplicationsTab() {
                           </Dropdown.Item>
                         </>
                       )}
-                      {app.status !== APPLICATION_STATUS.PENDING && app.status !== APPLICATION_STATUS.INVITED && (
+                      {app.status === APPLICATION_STATUS.APPROVED && app.projectId?.status === PROJECT_STATUS.COMPLETED && (
+                        <Dropdown.Item 
+                          onClick={() => { setReviewProjectId(app.projectId._id); setShowReviewModal(true); }} 
+                          className="text-primary py-1 fw-bold"
+                        >
+                          <FaStar className="me-1" /> Đánh giá đồng đội
+                        </Dropdown.Item>
+                      )}
+                      {app.status !== APPLICATION_STATUS.PENDING && app.status !== APPLICATION_STATUS.INVITED && !(app.status === APPLICATION_STATUS.APPROVED && app.projectId?.status === PROJECT_STATUS.COMPLETED) && (
                         <Dropdown.Item disabled className="py-1">Không có hành động</Dropdown.Item>
                       )}
                     </Dropdown.Menu>
@@ -261,6 +275,16 @@ export default function MyApplicationsTab() {
           project={selectedProject}
         />
       )}
+
+      {/* Modal Đánh giá đồng đội */}
+      <Modal show={showReviewModal} onHide={() => setShowReviewModal(false)} size="lg" centered>
+        <Modal.Header closeButton>
+          <Modal.Title className="h5 fw-bold">Đánh giá đồng đội</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="bg-light">
+          {reviewProjectId && <ReviewTab projectId={reviewProjectId} />}
+        </Modal.Body>
+      </Modal>
     </div>
   );
 }

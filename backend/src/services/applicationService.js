@@ -185,19 +185,27 @@ const acceptInvite = async (applicationId, applicantId) => {
   if (project.members.length >= project.maxMembers) {
     project.status = PROJECT_STATUS.CLOSED;
     
-    // Tự động từ chối các đơn PENDING còn lại
-    const pendingApps = await Application.find({ projectId: project._id, status: APPLICATION_STATUS.PENDING });
-    for (const app of pendingApps) {
+    // Tự động từ chối các đơn PENDING và INVITED còn lại
+    const pendingAndInvitedApps = await Application.find({ 
+      projectId: project._id, 
+      status: { $in: [APPLICATION_STATUS.PENDING, APPLICATION_STATUS.INVITED] } 
+    });
+    
+    for (const app of pendingAndInvitedApps) {
       app.status = APPLICATION_STATUS.REJECTED;
       app.rejectionCount += 1;
       await app.save();
+
+      const content = app.status === APPLICATION_STATUS.PENDING 
+        ? `Dự án "${project.title}" đã tuyển đủ thành viên. Đơn của bạn đã bị từ chối.` 
+        : `Dự án "${project.title}" đã tuyển đủ thành viên. Lời mời của bạn đã bị hủy.`;
 
       // Gửi thông báo từ chối
       await Notification.create({
         userId: app.applicantId,
         type: NOTIFICATION_TYPE.REJECTED,
         title: 'Hồ sơ bị từ chối',
-        content: `Dự án "${project.title}" đã tuyển đủ thành viên. Đơn của bạn đã bị từ chối.`,
+        content,
         referenceId: project._id,
         referenceModel: 'Project'
       });
