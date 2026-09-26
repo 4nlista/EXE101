@@ -7,6 +7,7 @@ import paymentService from '../../services/paymentService';
 import StatusBadge from '../../components/StatusBadge';
 import { useAuth } from '../../contexts/AuthContext';
 import { TRANSACTION_STATUS } from '../../constants/transactionEnum';
+import { toast } from 'react-toastify';
 
 export default function Payment() {
   const { orderId } = useParams();
@@ -108,8 +109,11 @@ export default function Payment() {
 
   const handleMockPayment = async () => {
     try {
+      toast.info('Đang xử lý giả lập thanh toán...');
       await paymentService.mockPayment(orderId);
+      toast.success('Giả lập thành công! Hệ thống đang cập nhật...');
     } catch (error) {
+      toast.error(error?.message || 'Giả lập thanh toán thất bại');
       console.error(error);
     }
   };

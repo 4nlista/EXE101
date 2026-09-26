@@ -1,6 +1,8 @@
 const User = require('../models/User');
 const ProjectHistory = require('../models/ProjectHistory');
 const Skill = require('../models/Skill');
+const Subscription = require('../models/Subscription');
+const { SUBSCRIPTION_STATUS } = require('../constants/subscriptionEnum');
 const Fuse = require('fuse.js');
 
 // Helper xử lý kỹ năng bằng Fuzzy Matching
@@ -110,11 +112,29 @@ const updateOnboardingProfile = async (userId, bodyData, avatarUrl) => {
 };
 
 const getMyProfile = async (userId) => {
-  return await User.findById(userId)
+  const user = await User.findById(userId)
     .populate('departmentId', 'name')
     .populate('majorId', 'name')
     .populate('projectHistory')
     .select('-password -googleId'); // Không trả về mật khẩu
+
+  if (!user) return null;
+
+  const userData = user.toObject();
+
+  // Find active subscription if any
+  if (user.currentPackage !== 'free') {
+    const activeSub = await Subscription.findOne({ 
+      userId: user._id, 
+      status: SUBSCRIPTION_STATUS.ACTIVE 
+    }).sort({ endDate: -1 });
+
+    if (activeSub) {
+      userData.subscriptionEndDate = activeSub.endDate;
+    }
+  }
+
+  return userData;
 };
 
 const getPublicProfile = async (userId) => {

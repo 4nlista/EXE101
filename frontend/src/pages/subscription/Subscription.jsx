@@ -7,6 +7,7 @@ import paymentService from '../../services/paymentService';
 import { useAuth } from '../../contexts/AuthContext';
 import { PACKAGE_TYPE } from '../../constants/subscriptionEnum';
 import { TRANSACTION_STATUS } from '../../constants/transactionEnum';
+import { formatDate, calculateDaysLeft } from '../../utils/formatDate';
 
 // Cấu hình thông tin các gói dịch vụ (Tái sử dụng dữ liệu - Clean Code)
 const SUBSCRIPTION_PACKAGES = [
@@ -164,9 +165,16 @@ export default function Subscription() {
                       {pkg.period && <span className="fs-6 text-muted fw-normal"> {pkg.period}</span>}
                     </div>
                     {isCurrent ? (
-                      <Badge bg="success" className="px-3 py-1 shadow-sm">Gói hiện tại</Badge>
+                      <div className="d-flex flex-column align-items-center">
+                        <Badge bg="success" className="px-3 py-1 shadow-sm mb-1">Gói hiện tại</Badge>
+                        {currentUser?.subscriptionEndDate && !isFree && (
+                          <small className="text-dark" style={{ fontSize: '1.0rem' }}>
+                            {calculateDaysLeft(currentUser.subscriptionEndDate)} ({formatDate(currentUser.subscriptionEndDate).split(' ')[0]})
+                          </small>
+                        )}
+                      </div>
                     ) : (
-                      <div style={{ height: '24px' }}></div>
+                      <div style={{ height: '40px' }}></div>
                     )}
                   </div>
 
