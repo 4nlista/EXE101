@@ -134,6 +134,20 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: Object.values(PACKAGE_TYPE),
       default: PACKAGE_TYPE.FREE
+    },
+
+    // ===== ĐÁNH GIÁ =====
+    // Điểm đánh giá trung bình (tính từ tất cả reviews nhận được)
+    averageRating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5
+    },
+    // Tổng số lượt đánh giá nhận được
+    totalReviewsReceived: {
+      type: Number,
+      default: 0
     }
   },
   { timestamps: true }

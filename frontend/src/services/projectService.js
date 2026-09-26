@@ -59,3 +59,7 @@ export const inviteApplicant = async (projectId, applicationId) => {
 export const kickMember = async (projectId, userId) => {
   return await axiosClient.delete(`/projects/${projectId}/members/${userId}`);
 };
+
+export const updateProjectStatus = async (projectId, status) => {
+  return await axiosClient.patch(`/projects/${projectId}/status`, { status });
+};

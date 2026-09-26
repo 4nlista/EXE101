@@ -64,6 +64,13 @@ router.patch(
   projectController.updateProject
 );
 
+// Route PATCH /api/projects/:projectId/status - Đổi trạng thái dự án
+router.patch(
+  '/:projectId/status',
+  verifyToken,
+  projectController.updateProjectStatus
+);
+
 // Route DELETE /api/projects/:projectId - Xóa dự án
 router.delete(
   '/:projectId',

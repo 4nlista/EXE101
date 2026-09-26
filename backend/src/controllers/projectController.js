@@ -96,6 +96,22 @@ const updateProject = async (req, res, next) => {
   }
 };
 
+// Route PATCH /api/projects/:projectId/status
+const updateProjectStatus = async (req, res, next) => {
+  try {
+    const { projectId } = req.params;
+    const { status } = req.body;
+    const ownerId = req.user.id;
+    
+    if (!status) return res.status(400).json({ success: false, message: 'Status là bắt buộc' });
+    
+    const updatedProject = await projectService.updateProjectStatus(projectId, ownerId, status);
+    res.status(200).json({ success: true, message: 'Cập nhật trạng thái thành công', data: updatedProject });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Route DELETE /api/projects/:projectId
 const deleteProject = async (req, res, next) => {
   try {
@@ -194,5 +210,6 @@ module.exports = {
   rejectApplicant,
   inviteApplicant,
   kickMember,
-  checkProjectLimit
+  checkProjectLimit,
+  updateProjectStatus
 };

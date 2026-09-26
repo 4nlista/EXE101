@@ -162,9 +162,11 @@ export default function MyProjectsTab() {
                       <FaEllipsisV />
                     </Dropdown.Toggle>
                     <Dropdown.Menu className="border-1 shadow-sm rounded-5">
-                      <Dropdown.Item onClick={() => handleDeleteClick(project._id)} className="text-danger">
-                        Hủy dự án
-                      </Dropdown.Item>
+                      {project.status !== PROJECT_STATUS.CANCELLED && (project.members?.length || 0) < (project.maxMembers / 2) && (
+                        <Dropdown.Item onClick={() => handleDeleteClick(project._id)} className="text-danger fw-medium">
+                          Hủy dự án
+                        </Dropdown.Item>
+                      )}
                     </Dropdown.Menu>
                   </Dropdown>
                 </div>
@@ -179,7 +181,7 @@ export default function MyProjectsTab() {
         onHide={() => setShowDeleteModal(false)}
         onConfirm={confirmDelete}
         title="Hủy dự án"
-        message="Bạn có chắc chắn muốn hủy bài đăng dự án này? Thao tác này không thể hoàn tác và chỉ có thể thực hiện khi chưa có thành viên nào được duyệt."
+        message="Bạn có chắc chắn muốn hủy bài đăng dự án này? Thao tác này không thể hoàn tác và chỉ có thể thực hiện khi số thành viên chưa đạt mức tối thiểu (50%)."
         confirmText="Hủy dự án"
         variant="danger"
       />

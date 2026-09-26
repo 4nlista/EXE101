@@ -36,6 +36,7 @@ initSocket(server);
 
 // Khởi chạy các Cron Job ngầm
 require('./cron/subscriptionCron')();
+require('./jobs/autoRatingJob')();
 
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
