@@ -16,5 +16,6 @@ router.use('/applications', require('./applicationRoutes'));
 router.use('/messages', require('./messageRoutes'));
 router.use('/payment', require('./paymentRoutes'));
 router.use('/reviews', require('./reviewRoute'));
+router.use('/notifications', require('./notificationRoutes'));
 
 module.exports = router;

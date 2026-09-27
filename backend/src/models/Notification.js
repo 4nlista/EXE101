@@ -45,6 +45,18 @@ const notificationSchema = new mongoose.Schema(
 // Index: tìm thông báo theo user, trạng thái đọc, sắp xếp mới nhất
 notificationSchema.index({ userId: 1, isRead: 1, createdAt: -1 });
 
+const socket = require('../socket');
+
+// Sau khi tạo hoặc cập nhật thông báo, emit sự kiện real-time
+notificationSchema.post('save', function(doc) {
+  // Gửi sự kiện qua socket (không chặn luồng lưu dữ liệu)
+  try {
+    socket.emitToUser(doc.userId.toString(), 'new_notification', doc);
+  } catch (error) {
+    console.error('Lỗi khi bắn socket notification:', error);
+  }
+});
+
 const Notification = mongoose.model('Notification', notificationSchema);
 
 module.exports = Notification;

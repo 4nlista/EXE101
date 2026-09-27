@@ -20,6 +20,7 @@ import Subscription from '../pages/subscription/Subscription';
 import PaymentResult from '../pages/subscription/PaymentResult';
 import HistoryPayment from '../pages/subscription/HistoryPayment';
 import Payment from '../pages/subscription/Payment';
+import Notifications from '../pages/notifications/Notifications';
 import { ROLE_CODE } from '../constants/roleEnum';
 
 // Route cho Admin
@@ -107,6 +108,9 @@ export default function AppRoutes() {
         <Route path="/payment-result" element={<PaymentResult />} />
         <Route path="/transactions" element={<HistoryPayment />} />
         <Route path="/payment/:orderId" element={<Payment />} />
+        
+        {/* Thông báo */}
+        <Route path="/notifications" element={<Notifications />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

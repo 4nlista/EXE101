@@ -2,13 +2,16 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { Badge } from 'react-bootstrap';
-import { Bell, Settings, LogOut, ChevronDown, User, Home, Briefcase, MessageSquareMore, Sparkles, Crown, ReceiptText } from 'lucide-react';
+import { Bell, Settings, LogOut, ChevronDown, User, Home, Briefcase, MessageSquareMore, Sparkles, Crown, ReceiptText, Sun, Moon } from 'lucide-react';
 import LogoImg from '../assets/images/Logo.png';
+import NotificationDropdown from './NotificationDropdown';
 
 export default function Navbar() {
   const { currentUser, logout } = useAuth();
   const { totalUnreadCount } = useSocket();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [showDrop, setShowDrop] = useState(false);
@@ -60,11 +63,17 @@ export default function Navbar() {
         })}
       </div>
 
-      <div className="layout-nav-right">
-        <button className="nav-icon-btn">
-          <Bell size={18} />
-          <span className="notif-dot" />
+      <div className="layout-nav-right d-flex align-items-center gap-3">
+        <button 
+          className="btn btn-light rounded-circle d-flex align-items-center justify-content-center p-2 shadow-sm border"
+          style={{ width: '40px', height: '40px', border: '1px solid var(--bs-border-color)' }}
+          onClick={toggleTheme}
+          title="Chuyển chế độ giao diện"
+        >
+          {theme === 'light' ? <Moon size={20} className="text-secondary" /> : <Sun size={20} className="text-warning" />}
         </button>
+
+        <NotificationDropdown />
 
         <div className="drop-wrap">
           <button className="user-pill" onClick={() => setShowDrop(!showDrop)}>

@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 import { getUnreadCount } from '../services/messageService';
+import notificationService from '../services/notificationService';
 
 const SOCKET_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8686';
 
@@ -11,6 +12,7 @@ export function SocketProvider({ children }) {
   const { isAuthenticated, currentUser } = useAuth();
   const [socket, setSocket] = useState(null);
   const [totalUnreadCount, setTotalUnreadCount] = useState(0);
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
 
   // Khởi tạo socket và lấy initial unread count khi user đăng nhập
   useEffect(() => {
@@ -21,12 +23,14 @@ export function SocketProvider({ children }) {
       if (token && isAuthenticated && currentUser) {
         // Fetch initial unread count from API
         try {
-          const res = await getUnreadCount();
-          if (res.success) {
-            setTotalUnreadCount(res.data);
-          }
+          const [msgRes, notifRes] = await Promise.all([
+            getUnreadCount(),
+            notificationService.getUnreadCount()
+          ]);
+          if (msgRes.success) setTotalUnreadCount(msgRes.data);
+          if (notifRes.success) setUnreadNotificationCount(notifRes.count);
         } catch (err) {
-          console.error("Lỗi lấy số lượng tin nhắn chưa đọc:", err);
+          console.error("Lỗi lấy số lượng tin nhắn/thông báo:", err);
         }
 
         // Initialize socket
@@ -39,6 +43,11 @@ export function SocketProvider({ children }) {
           if (data && typeof data.totalUnreadCount === 'number') {
             setTotalUnreadCount(data.totalUnreadCount);
           }
+        });
+
+        // Listen for real-time new notifications
+        newSocket.on('new_notification', (data) => {
+          setUnreadNotificationCount(prev => prev + 1);
         });
 
         setSocket(newSocket);
@@ -54,6 +63,7 @@ export function SocketProvider({ children }) {
         setSocket(null);
       }
       setTotalUnreadCount(0);
+      setUnreadNotificationCount(0);
     }
 
     return () => {
@@ -64,7 +74,11 @@ export function SocketProvider({ children }) {
   }, [isAuthenticated, currentUser]);
 
   return (
-    <SocketContext.Provider value={{ socket, totalUnreadCount, setTotalUnreadCount }}>
+    <SocketContext.Provider value={{ 
+      socket, 
+      totalUnreadCount, setTotalUnreadCount,
+      unreadNotificationCount, setUnreadNotificationCount
+    }}>
       {children}
     </SocketContext.Provider>
   );
