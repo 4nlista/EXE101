@@ -5,7 +5,6 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './contexts/AuthContext';
 import { SocketProvider } from './contexts/SocketContext';
-import { ThemeProvider } from './contexts/ThemeContext';
 import App from './App';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -22,12 +21,10 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <AuthProvider>
-            <ThemeProvider>
-              <SocketProvider>
-                <App />
-                <ToastContainer position="top-right" autoClose={3000} pauseOnFocusLoss={false} />
-              </SocketProvider>
-            </ThemeProvider>
+            <SocketProvider>
+              <App />
+              <ToastContainer position="top-right" autoClose={3000} pauseOnFocusLoss={false} />
+            </SocketProvider>
           </AuthProvider>
         </BrowserRouter>
       </QueryClientProvider>
