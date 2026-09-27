@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
+const { verifyToken } = require('../middlewares/authMiddleware');
 
 // [POST] Đăng nhập
 router.post('/login', authController.login);
@@ -22,5 +23,8 @@ router.post('/verify-forgot-otp', authController.verifyForgotOtp);
 
 // [POST] Đặt lại mật khẩu mới
 router.post('/reset-password', authController.resetPassword);
+
+// [PUT] Đổi mật khẩu
+router.put('/change-password', verifyToken, authController.changePassword);
 
 module.exports = router;

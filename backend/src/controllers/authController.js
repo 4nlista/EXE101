@@ -1,5 +1,5 @@
 const authService = require('../services/authService');
-const { loginSchema, registerSchema, verifyOtpSchema, forgotPasswordSchema, verifyForgotOtpSchema, resetPasswordSchema } = require('../validations/authValidation');
+const { loginSchema, registerSchema, verifyOtpSchema, forgotPasswordSchema, verifyForgotOtpSchema, resetPasswordSchema, changePasswordSchema } = require('../validations/authValidation');
 
 /**
  * Controller xử lý API Đăng nhập
@@ -201,6 +201,33 @@ const resetPassword = async (req, res, next) => {
   }
 };
 
+/**
+ * Controller xử lý API Đổi mật khẩu
+ * PUT /api/auth/change-password
+ */
+const changePassword = async (req, res, next) => {
+  try {
+    const { error, value } = changePasswordSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.details[0].message
+      });
+    }
+
+    const { oldPassword, newPassword } = value;
+    const userId = req.user.id; // From verifyToken middleware
+    const result = await authService.changePassword(userId, oldPassword, newPassword);
+
+    res.status(200).json({
+      success: true,
+      message: result.message
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   login,
   register,
@@ -208,5 +235,6 @@ module.exports = {
   loginGoogle,
   forgotPassword,
   verifyForgotOtp,
-  resetPassword
+  resetPassword,
+  changePassword
 };

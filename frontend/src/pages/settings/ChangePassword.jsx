@@ -3,15 +3,22 @@ import { Container, Card, Form, Button as BsButton } from 'react-bootstrap';
 import { Lock, KeyRound, ShieldCheck } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import axiosClient from '../../utils/axiosClient';
+import { useAuth } from '../../contexts/AuthContext';
+import Input from '../../components/Input';
+import Alert from '../../components/Alert';
 
 export default function ChangePassword() {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     oldPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
+  const [errors, setErrors] = useState({});
+  const [formError, setFormError] = useState('');
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -19,26 +26,53 @@ export default function ChangePassword() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formData.newPassword !== formData.confirmPassword) {
-      toast.error('Mật khẩu xác nhận không khớp!');
-      return;
+    setErrors({});
+    setFormError('');
+    
+    let newErrors = {};
+
+    if (!formData.oldPassword) {
+      newErrors.oldPassword = 'Vui lòng nhập mật khẩu hiện tại.';
     }
-    if (formData.newPassword.length < 6) {
-      toast.error('Mật khẩu mới phải có ít nhất 6 ký tự.');
+
+    if (!formData.newPassword) {
+      newErrors.newPassword = 'Vui lòng nhập mật khẩu mới.';
+    } else if (formData.newPassword.length < 6) {
+      newErrors.newPassword = 'Mật khẩu mới phải có ít nhất 6 ký tự.';
+    } else if (formData.newPassword === formData.oldPassword) {
+      newErrors.newPassword = 'Mật khẩu mới phải khác mật khẩu hiện tại!';
+    }
+    
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = 'Vui lòng xác nhận mật khẩu mới.';
+    } else if (formData.newPassword !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Mật khẩu xác nhận không khớp!';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
     setLoading(true);
     try {
-      // Mock API Call - Replace with real API later
-      // await authService.changePassword(formData);
+      const response = await axiosClient.put('/auth/change-password', {
+        oldPassword: formData.oldPassword,
+        newPassword: formData.newPassword,
+        confirmNewPassword: formData.confirmPassword
+      });
+
+      toast.success(response.data.message || 'Đổi mật khẩu thành công! Bạn sẽ bị đăng xuất.');
+      setFormData({ oldPassword: '', newPassword: '', confirmPassword: '' });
+      
+      // Delay 3s and then logout
       setTimeout(() => {
-        toast.success('Đổi mật khẩu thành công!');
-        setLoading(false);
-        setFormData({ oldPassword: '', newPassword: '', confirmPassword: '' });
-      }, 1000);
+        logout();
+        navigate('/');
+      }, 3000);
+      
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại.');
+      setFormError(error.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại.');
       setLoading(false);
     }
   };
@@ -47,63 +81,44 @@ export default function ChangePassword() {
     <Container className="py-5 d-flex justify-content-center">
       <Card className="shadow-sm rounded-2 border-0" style={{ maxWidth: '550px', width: '100%' }}>
         <Card.Body className="p-4 p-md-5">
-          <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-4">
-              <Form.Label className="fw-semibold text-dark">Mật khẩu hiện tại</Form.Label>
-              <div className="position-relative">
-                <div className="position-absolute top-50 start-0 translate-middle-y ps-3">
-                  <KeyRound size={18} className="text-muted" />
-                </div>
-                <Form.Control
-                  type="password"
-                  name="oldPassword"
-                  placeholder="Nhập mật khẩu hiện tại"
-                  className="rounded-2 shadow-none ps-5 py-2"
-                  style={{ border: '1px solid var(--bs-border-color)' }}
-                  value={formData.oldPassword}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </Form.Group>
+          <Form onSubmit={handleSubmit} noValidate>
+            <Alert type="danger" className="mb-4">{formError}</Alert>
+            
+            <Input
+              label="Mật khẩu hiện tại"
+              name="oldPassword"
+              type="password"
+              placeholder="Nhập mật khẩu hiện tại"
+              icon={KeyRound}
+              value={formData.oldPassword}
+              onChange={handleChange}
+              error={errors.oldPassword}
+              required
+            />
 
-            <Form.Group className="mb-4">
-              <Form.Label className="fw-semibold text-dark">Mật khẩu mới</Form.Label>
-              <div className="position-relative">
-                <div className="position-absolute top-50 start-0 translate-middle-y ps-3">
-                  <ShieldCheck size={18} className="text-muted" />
-                </div>
-                <Form.Control
-                  type="password"
-                  name="newPassword"
-                  placeholder="Nhập mật khẩu mới"
-                  className="rounded-2 shadow-none ps-5 py-2"
-                  style={{ border: '1px solid var(--bs-border-color)' }}
-                  value={formData.newPassword}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </Form.Group>
+            <Input
+              label="Mật khẩu mới"
+              name="newPassword"
+              type="password"
+              placeholder="Nhập mật khẩu mới"
+              icon={ShieldCheck}
+              value={formData.newPassword}
+              onChange={handleChange}
+              error={errors.newPassword}
+              required
+            />
 
-            <Form.Group className="mb-4">
-              <Form.Label className="fw-semibold text-dark">Xác nhận mật khẩu mới</Form.Label>
-              <div className="position-relative">
-                <div className="position-absolute top-50 start-0 translate-middle-y ps-3">
-                  <ShieldCheck size={18} className="text-muted" />
-                </div>
-                <Form.Control
-                  type="password"
-                  name="confirmPassword"
-                  placeholder="Nhập lại mật khẩu mới"
-                  className="rounded-2 shadow-none ps-5 py-2"
-                  style={{ border: '1px solid var(--bs-border-color)' }}
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </Form.Group>
+            <Input
+              label="Xác nhận mật khẩu mới"
+              name="confirmPassword"
+              type="password"
+              placeholder="Nhập lại mật khẩu mới"
+              icon={ShieldCheck}
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              error={errors.confirmPassword}
+              required
+            />
 
             <div className="d-flex gap-3 pt-2">
               <BsButton

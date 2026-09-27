@@ -399,6 +399,37 @@ const resetPassword = async (email, newPassword) => {
   return { message: 'Đặt lại mật khẩu thành công. Vui lòng đăng nhập lại.' };
 };
 
+/**
+ * Đổi mật khẩu
+ */
+const changePassword = async (userId, oldPassword, newPassword) => {
+  const user = await User.findById(userId);
+  if (!user) {
+    const error = new Error('Không tìm thấy người dùng');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (!user.password) {
+    const error = new Error('Tài khoản của bạn đăng nhập bằng Google nên không có mật khẩu.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const isMatch = await bcrypt.compare(oldPassword, user.password);
+  if (!isMatch) {
+    const error = new Error('Mật khẩu hiện tại không chính xác');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const salt = await bcrypt.genSalt(10);
+  user.password = await bcrypt.hash(newPassword, salt);
+  await user.save();
+
+  return { message: 'Đổi mật khẩu thành công. Đang đăng xuất...' };
+};
+
 module.exports = {
   loginUser,
   registerUser,
@@ -406,5 +437,6 @@ module.exports = {
   loginGoogle,
   forgotPassword,
   verifyForgotOtp,
-  resetPassword
+  resetPassword,
+  changePassword
 };
