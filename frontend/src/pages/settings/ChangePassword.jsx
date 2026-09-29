@@ -62,7 +62,7 @@ export default function ChangePassword() {
         confirmNewPassword: formData.confirmPassword
       });
 
-      toast.success(response.data.message || 'Đổi mật khẩu thành công! Bạn sẽ bị đăng xuất.');
+      toast.success(response.message || 'Đổi mật khẩu thành công! Bạn sẽ bị đăng xuất.');
       setFormData({ oldPassword: '', newPassword: '', confirmPassword: '' });
       
       // Delay 3s and then logout
@@ -72,7 +72,7 @@ export default function ChangePassword() {
       }, 3000);
       
     } catch (error) {
-      setFormError(error.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại.');
+      setFormError(error.message || 'Có lỗi xảy ra, vui lòng thử lại.');
       setLoading(false);
     }
   };
