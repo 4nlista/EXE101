@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mail, Phone, MapPin, Calendar, Award, User } from 'lucide-react';
+import { Mail, Phone, MapPin, Calendar, Award, User, Star } from 'lucide-react';
 import { Card, Form } from 'react-bootstrap';
 
 export default function ProfileInfo({
@@ -209,6 +209,26 @@ export default function ProfileInfo({
             </div>
           </div>
         )}
+
+        {/* Đánh giá (Luôn công khai, chỉ xem) */}
+        <div className="profile-info-item py-2">
+          <div className="d-flex align-items-center justify-content-between">
+            <div className="d-flex align-items-center gap-1 flex-wrap" style={{ flex: 1, fontSize: '0.85rem' }}>
+              <Star size={14} className="text-secondary flex-shrink-0 me-1" />
+              <span className="fw-bold text-dark me-1">Đánh giá:</span>
+              <span className="text-muted d-flex align-items-center gap-1">
+                {profileData.totalReviewsReceived > 0 ? (
+                  <>
+                    <Star size={14} fill="#f59e0b" color="#f59e0b" />
+                    {profileData.averageRating?.toFixed(1)}
+                  </>
+                ) : (
+                  'Chưa có đánh giá'
+                )}
+              </span>
+            </div>
+          </div>
+        </div>
       </Card.Body>
     </Card>
   );
