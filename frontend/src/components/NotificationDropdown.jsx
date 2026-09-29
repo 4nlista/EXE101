@@ -6,6 +6,7 @@ import { useSocket } from '../contexts/SocketContext';
 import notificationService from '../services/notificationService';
 import { NOTIFICATION_TYPE } from '../constants/notificationEnum';
 import { toast } from 'react-toastify';
+import { getProjectDetail } from '../services/projectService';
 
 const timeAgo = (date) => {
   const seconds = Math.floor((new Date() - new Date(date)) / 1000);
@@ -110,17 +111,37 @@ export default function NotificationDropdown() {
     if (notif.type === NOTIFICATION_TYPE.SUBSCRIPTION) {
       if (notif.content?.toLowerCase().includes('thanh toán')) navigate('/transactions');
       else navigate('/subscription');
-    } else if (notif.type === NOTIFICATION_TYPE.APPLICATION) {
-      // Có người đăng ký vào dự án của mình
+    } else if (notif.type === NOTIFICATION_TYPE.APPLICATION || notif.type === NOTIFICATION_TYPE.INVITATION_ACCEPTED) {
+      // Có người đăng ký vào dự án hoặc chấp nhận lời mời -> Vào thẳng trang quản lý dự án đó
       if (notif.referenceId) navigate(`/manage/${notif.referenceId}`);
     } else if (notif.type === NOTIFICATION_TYPE.APPROVED) {
       // Đơn được duyệt
       navigate('/manage');
-    } else if (notif.type === NOTIFICATION_TYPE.INVITATION) {
-      // Được mời -> Xem chi tiết dự án. (Nếu dự án kết thúc, trang project detail sẽ chịu trách nhiệm báo lỗi).
-      if (notif.referenceId) navigate(`/project/${notif.referenceId}`);
+    } else if (
+      notif.type === NOTIFICATION_TYPE.INVITATION ||
+      notif.type === NOTIFICATION_TYPE.REJECTED ||
+      notif.type === NOTIFICATION_TYPE.MEMBER_KICKED
+    ) {
+      // Đối với Lời mời, Từ chối, Bị kick -> Kiểm tra và mở popup chi tiết dự án
+      if (notif.referenceId) {
+        try {
+          const res = await getProjectDetail(notif.referenceId);
+          const project = res.data;
+          if (!project) {
+            toast.error('Dự án này không còn tồn tại!');
+            return;
+          }
+          // Nếu là INVITATION và dự án đã đóng, báo lỗi (còn Bị từ chối thì cứ cho xem luyến tiếc)
+          if (notif.type === NOTIFICATION_TYPE.INVITATION && (project.status === 'CLOSED' || project.status === 'COMPLETED')) {
+            toast.error('Dự án này đã đủ người hoặc đã kết thúc!');
+            return;
+          }
+          navigate('/feed', { state: { openProjectId: notif.referenceId } });
+        } catch (error) {
+          toast.error('Dự án này không còn tồn tại hoặc đã bị xóa!');
+        }
+      }
     }
-    // Các loại khác (REJECTED, MEMBER_KICKED...): Chỉ click đọc, không điều hướng để tránh lỗi.
   };
 
   const getIcon = (type) => {

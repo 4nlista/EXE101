@@ -8,5 +8,8 @@ export const NOTIFICATION_TYPE = {
   MESSAGE: 'message',                   // Có tin nhắn mới
   REMIND: 'remind',                     // Nhắc nhở (bài đăng còn 3 ngày hết hạn)
   SUBSCRIPTION: 'subscription',         // Liên quan đến gói đăng ký
-  SYSTEM: 'system'                      // Thông báo hệ thống từ Admin
+  SYSTEM: 'system',                     // Thông báo hệ thống từ Admin
+  INVITATION: 'invitation',             // Được mời tham gia dự án
+  INVITATION_ACCEPTED: 'invitation_accepted', // Lời mời được chấp nhận
+  MEMBER_KICKED: 'member_kicked'        // Bị kick khỏi dự án
 };
