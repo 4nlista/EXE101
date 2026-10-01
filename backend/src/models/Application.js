@@ -30,6 +30,10 @@ const applicationSchema = new mongoose.Schema(
       min: 0,
       max: 100
     },
+    // Lý do phù hợp (AI giải thích)
+    matchReason: {
+      type: String
+    },
     // 'pending' | 'approved' | 'rejected'
     status: {
       type: String,

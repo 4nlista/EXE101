@@ -17,5 +17,6 @@ router.use('/messages', require('./messageRoutes'));
 router.use('/payment', require('./paymentRoutes'));
 router.use('/reviews', require('./reviewRoute'));
 router.use('/notifications', require('./notificationRoutes'));
+router.use('/ai', require('./aiRoutes'));
 
 module.exports = router;
