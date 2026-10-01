@@ -14,7 +14,7 @@ const genAI = new GoogleGenerativeAI(apiKey);
 // Hàm helper để test kết nối
 const testAiConnection = async () => {
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-3.8-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-3.5-flash' });
     const result = await model.generateContent('Xin chào, đây là hệ thống UniVerse gọi test. Hãy trả lời ngắn gọn.');
     const response = await result.response;
     return {
@@ -36,23 +36,27 @@ const testAiConnection = async () => {
 const recommendProjectsWithAI = async (userProfile, projects, userPrompt) => {
   try {
     const model = genAI.getGenerativeModel({
-      model: 'gemini-3.8-flash',
+      model: 'gemini-3.5-flash',
       generationConfig: {
         responseMimeType: "application/json",
       }
     });
 
-    const systemPrompt = `Bạn là một chuyên gia tư vấn tuyển dụng dự án sinh viên. 
-Nhiệm vụ của bạn là đọc thông tin hồ sơ của sinh viên và danh sách các dự án đang mở, sau đó phân tích và tìm ra TỐI ĐA 5 dự án phù hợp nhất dựa trên câu hỏi của sinh viên.
-Yếu tố quan trọng nhất để đánh giá là: 'Kỹ năng của sinh viên' (mainSkills) phải khớp với 'Yêu cầu ứng viên' (candidateRequirements) của dự án.
+    const systemPrompt = `Bạn là một chuyên gia tư vấn tuyển dụng dự án sinh viên của hệ thống UniVerse.
+Nhiệm vụ của bạn là trò chuyện với sinh viên. NẾU sinh viên có nhu cầu tìm dự án/team, hãy đọc hồ sơ của họ và danh sách dự án đang mở để tìm ra TỐI ĐA 5 dự án phù hợp nhất (dựa vào 'Kỹ năng sinh viên' so với 'Yêu cầu ứng viên').
+LƯU Ý QUAN TRỌNG: 
+- NẾU câu nói của sinh viên chỉ là chào hỏi (ví dụ: Hello, Xin chào, Chào cơ mà) hoặc tán gẫu thông thường, BẠN CHỈ ĐƯỢC CHÀO LẠI và hỏi xem họ muốn tìm dự án như thế nào. TUYỆT ĐỐI KHÔNG trả về dự án nào (mảng recommendedProjects phải RỖNG).
+- Trường projectTitle PHẢI lấy ĐÚNG từ trường "title" của dự án trong danh sách, KHÔNG ĐƯỢC tự bịa.
 Bạn PHẢI trả về ĐÚNG định dạng JSON như sau:
 {
-  "replyMessage": "Câu chào và tổng quan ngắn gọn (Ví dụ: Chào bạn, mình tìm thấy 3 dự án rất hợp với kỹ năng React của bạn)",
+  "replyMessage": "Câu trả lời của bạn (tự nhiên, thân thiện, giống người thật)",
   "recommendedProjects": [
     {
-      "projectId": "id_của_dự_án",
+      "projectId": "_id của dự án (copy nguyên từ danh sách)",
+      "projectTitle": "title của dự án (copy nguyên từ danh sách)",
       "matchPercent": 90,
-      "reason": "Lý do vì sao phù hợp (ngắn gọn từ 3 đến 4 câu)"
+      "skills": ["Kỹ năng 1", "Kỹ năng 2"],
+      "reason": "Lý do vì sao phù hợp (ngắn gọn 1-2 câu)"
     }
   ]
 }`;
@@ -102,7 +106,7 @@ const extractTextFromPdfUrl = async (pdfUrl) => {
 const matchApplicantWithAI = async (projectRequirements, cvText) => {
   try {
     const model = genAI.getGenerativeModel({
-      model: 'gemini-3.8-flash',
+      model: 'gemini-3.5-flash',
       generationConfig: {
         responseMimeType: "application/json",
       }
