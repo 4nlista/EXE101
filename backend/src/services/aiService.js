@@ -33,7 +33,7 @@ const testAiConnection = async () => {
 // ==========================================
 // TÍNH NĂNG A: ĐỀ XUẤT DỰ ÁN CHO SINH VIÊN
 // ==========================================
-const recommendProjectsWithAI = async (userProfile, projects, userPrompt) => {
+const recommendProjectsWithAI = async (userProfile, projects, userPrompt, chatHistoryText) => {
   try {
     const model = genAI.getGenerativeModel({
       model: 'gemini-3.5-flash',
@@ -71,7 +71,10 @@ ${JSON.stringify(userProfile, null, 2)}
 DANH SÁCH DỰ ÁN ĐANG MỞ:
 ${JSON.stringify(projects, null, 2)}
 
---- CÂU HỎI CỦA SINH VIÊN ---
+--- LỊCH SỬ ĐOẠN CHAT TRƯỚC ĐÓ ---
+${chatHistoryText}
+
+--- CÂU HỎI MỚI NHẤT CỦA SINH VIÊN ---
 "${userPrompt}"
 `;
 
@@ -133,7 +136,7 @@ ${cvText || 'Không trích xuất được hoặc không có CV'}
 
     const result = await model.generateContent(promptText);
     const responseText = result.response.text();
-    
+
     // Parse JSON
     const parsedData = JSON.parse(responseText);
     return { success: true, data: parsedData };
