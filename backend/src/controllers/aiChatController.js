@@ -174,10 +174,37 @@ const sendMessage = async (req, res) => {
   }
 };
 
+const updateSession = async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    const { title } = req.body;
+    
+    if (!title) {
+      return res.status(400).json({ success: false, message: 'Thiếu tiêu đề' });
+    }
+
+    const session = await AiChatSession.findOneAndUpdate(
+      { _id: sessionId, user: req.userId },
+      { title },
+      { new: true }
+    );
+
+    if (!session) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy đoạn chat' });
+    }
+
+    res.status(200).json({ success: true, data: session });
+  } catch (error) {
+    console.error('Lỗi controller updateSession:', error);
+    res.status(500).json({ success: false, message: 'Lỗi server' });
+  }
+};
+
 module.exports = {
   getSessions,
   createSession,
   getSessionById,
   deleteSession,
-  sendMessage
+  sendMessage,
+  updateSession
 };

@@ -15,6 +15,7 @@ router.get('/sessions', verifyToken, aiChatController.getSessions);
 router.post('/sessions', verifyToken, aiChatController.createSession);
 router.get('/sessions/:sessionId', verifyToken, aiChatController.getSessionById);
 router.delete('/sessions/:sessionId', verifyToken, aiChatController.deleteSession);
+router.put('/sessions/:sessionId', verifyToken, aiChatController.updateSession);
 router.post('/sessions/:sessionId/messages', verifyToken, aiChatController.sendMessage);
 
 // Route đề xuất dự án (Dành cho VIP / PREMIUM) - SẼ SỚM BỎ ĐI

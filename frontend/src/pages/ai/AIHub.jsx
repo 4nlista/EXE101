@@ -4,7 +4,7 @@ import Button from '../../components/Button';
 import Alert from '../../components/Alert';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, Gem } from 'lucide-react';
-import { getAiSessions, createAiSession, getAiSessionById, deleteAiSession, sendAiMessage } from '../../services/aiService';
+import { getAiSessions, createAiSession, getAiSessionById, deleteAiSession, updateAiSession, sendAiMessage } from '../../services/aiService';
 import { getProjectDetail } from '../../services/projectService';
 import { useAuth } from '../../contexts/AuthContext';
 import { PACKAGE_TYPE } from '../../constants/subscriptionEnum';
@@ -121,6 +121,21 @@ const AIHub = () => {
     }
   };
 
+  const handleRenameSession = async (e, sessionId, newTitle) => {
+    e.stopPropagation();
+    if (!newTitle.trim()) return;
+
+    try {
+      const res = await updateAiSession(sessionId, newTitle);
+      if (res.data) {
+        setSessions(prev => prev.map(s => s._id === sessionId ? { ...s, title: newTitle } : s));
+      }
+    } catch (error) {
+      console.error('Lỗi khi đổi tên session:', error);
+      alert('Không thể đổi tên đoạn chat này.');
+    }
+  };
+
   const handleSendMessage = async (e, textOverride = null) => {
     if (e) e.preventDefault();
 
@@ -217,6 +232,7 @@ const AIHub = () => {
               onSelectSession={handleSelectSession}
               onCreateNewSession={handleCreateNewSession}
               onDeleteSession={handleDeleteSession}
+              onRenameSession={handleRenameSession}
               setIsSidebarOpen={setIsSidebarOpen}
             />
           </Col>

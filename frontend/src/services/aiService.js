@@ -19,6 +19,10 @@ export const deleteAiSession = async (sessionId) => {
   return await axiosClient.delete(`/ai/sessions/${sessionId}`);
 };
 
+export const updateAiSession = async (sessionId, title) => {
+  return await axiosClient.put(`/ai/sessions/${sessionId}`, { title });
+};
+
 export const sendAiMessage = async (sessionId, text) => {
   return await axiosClient.post(`/ai/sessions/${sessionId}/messages`, { text });
 };
