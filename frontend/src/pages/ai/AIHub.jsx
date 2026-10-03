@@ -4,6 +4,7 @@ import Button from '../../components/Button';
 import Input from '../../components/Input';
 import Alert from '../../components/Alert';
 import { useNavigate } from 'react-router-dom';
+import { Sparkles, Bot, User, Trash2, Send, MessageSquare, Plus, PanelLeftClose, PanelLeftOpen, Zap, Gem } from 'lucide-react';
 import { getAiSessions, createAiSession, getAiSessionById, deleteAiSession, sendAiMessage } from '../../services/aiService';
 import { getProjectDetail } from '../../services/projectService';
 import { useAuth } from '../../contexts/AuthContext';
@@ -28,6 +29,7 @@ const AIHub = () => {
   const [sessions, setSessions] = useState([]);
   const [currentSessionId, setCurrentSessionId] = useState(null);
   const [messages, setMessages] = useState([]);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -215,14 +217,14 @@ const AIHub = () => {
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-3">
         <div>
-          <h2 className="mb-1 fw-bold ai-hub-title">
-            <i className="bi bi-stars"></i> AI Project Matcher
+          <h2 className="mb-1 fw-bold ai-hub-title d-flex align-items-center">
+            <Sparkles className="text-primary me-2" size={28} /> AI Project Matcher
           </h2>
           <p className="text-muted mb-0 small">Tìm kiếm dự án phù hợp với bạn bằng trí tuệ nhân tạo</p>
         </div>
         {isFreePackage && (
-          <Button variant="warning" onClick={() => navigate('/subscription')}>
-            <i className="bi bi-gem me-1"></i> Nâng cấp VIP
+          <Button variant="warning" onClick={() => navigate('/subscription')} className="d-flex align-items-center">
+            <Gem size={18} className="me-2" /> Nâng cấp VIP
           </Button>
         )}
       </div>
@@ -236,9 +238,10 @@ const AIHub = () => {
 
       <Row className="g-3">
         {/* Cột trái: Danh sách cuộc hội thoại */}
-        <Col md={3} className="d-none d-md-block">
-          <Card className="sidebar-card shadow-sm border-0 h-100" style={{ borderRadius: '20px', overflow: 'hidden' }}>
-            <Card.Body className="d-flex flex-column p-0">
+        {isSidebarOpen && (
+          <Col md={3} className="d-none d-md-block">
+            <Card className="sidebar-card shadow-sm border-0 h-100" style={{ minHeight: '75vh', borderRadius: '20px', overflow: 'hidden' }}>
+              <Card.Body className="d-flex flex-column p-0">
               <div className="p-3 border-bottom">
                 <Button 
                   variant="primary" 
@@ -246,7 +249,7 @@ const AIHub = () => {
                   onClick={handleCreateNewSession}
                   disabled={isLoadingSessions}
                 >
-                  <i className="bi bi-plus-lg"></i> Đoạn chat mới
+                  <Plus size={18} /> Đoạn chat mới
                 </Button>
               </div>
               <ListGroup variant="flush" className="sidebar-list overflow-auto flex-grow-1">
@@ -263,15 +266,17 @@ const AIHub = () => {
                       onClick={() => handleSelectSession(session._id)}
                       className={`session-item d-flex justify-content-between align-items-center ${currentSessionId === session._id ? 'bg-primary text-white' : ''}`}
                     >
-                      <div className="text-truncate flex-grow-1" style={{ fontSize: '0.9rem', maxWidth: '85%' }}>
-                        <i className="bi bi-chat-left-text me-2"></i>
-                        {session.title || 'Cuộc hội thoại mới'}
+                      <div className="text-truncate flex-grow-1 d-flex align-items-center" style={{ fontSize: '0.9rem', maxWidth: '85%' }}>
+                        <MessageSquare size={16} className="me-2 flex-shrink-0" />
+                        <span className="text-truncate">{session.title || 'Cuộc hội thoại mới'}</span>
                       </div>
-                      <i 
-                        className={`bi bi-trash3-fill delete-icon ${currentSessionId === session._id ? 'text-white-50' : 'text-danger'}`} 
+                      <Trash2 
+                        size={16}
+                        className={`delete-icon flex-shrink-0 ms-2 ${currentSessionId === session._id ? 'text-white-50' : 'text-danger'}`} 
                         onClick={(e) => handleDeleteSession(e, session._id)}
+                        style={{ cursor: 'pointer' }}
                         title="Xóa đoạn chat"
-                      ></i>
+                      />
                     </ListGroup.Item>
                   ))
                 )}
@@ -279,18 +284,29 @@ const AIHub = () => {
             </Card.Body>
           </Card>
         </Col>
+        )}
 
         {/* Cột phải: Khung Chat chính */}
-        <Col md={9} xs={12}>
+        <Col md={isSidebarOpen ? 9 : 12} xs={12}>
           <Card className="chat-card shadow-lg border-0 h-100" style={{ minHeight: '75vh', borderRadius: '20px', overflow: 'hidden' }}>
-            <Card.Body className="chat-body d-flex flex-column p-0">
+            <Card.Body className="chat-body d-flex flex-column p-0 position-relative">
+              
+              {/* Nút Toggle Sidebar */}
+              <button 
+                className="btn btn-light position-absolute shadow-sm"
+                style={{ top: '15px', left: '15px', zIndex: 10, width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #e0e0e0', backgroundColor: '#fff' }}
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                title={isSidebarOpen ? "Đóng thanh bên" : "Mở thanh bên"}
+              >
+                {isSidebarOpen ? <PanelLeftClose size={20} className="text-secondary" /> : <PanelLeftOpen size={20} className="text-secondary" />}
+              </button>
               
               {/* Vùng tin nhắn */}
               <div className="chat-messages flex-grow-1 overflow-auto p-4">
                 {messages.length === 0 && !isLoading && (
-                  <div className="h-100 d-flex flex-column align-items-center justify-content-center text-center">
-                    <div className="ai-avatar-large mb-3 shadow-sm d-flex align-items-center justify-content-center mx-auto">
-                      <i className="bi bi-robot fs-1 text-white"></i>
+                  <div className="h-100 d-flex flex-column align-items-center justify-content-center text-center pt-5">
+                    <div className="ai-avatar-large mb-3 shadow d-flex align-items-center justify-content-center mx-auto" style={{ width: '80px', height: '80px', backgroundColor: '#6366f1', borderRadius: '50%' }}>
+                      <Bot size={40} className="text-white" />
                     </div>
                     <h5 className="fw-bold text-dark">Chào bạn! Mình là Trợ lý AI của UniVerse</h5>
                     <p className="text-muted w-75 mx-auto">Mình có thể giúp bạn tìm kiếm những dự án phù hợp nhất với kỹ năng và định hướng của bạn. Hãy cho mình biết bạn muốn tìm dự án như thế nào nhé!</p>
@@ -303,8 +319,8 @@ const AIHub = () => {
                     {/* AI Avatar */}
                     {msg.sender === SENDER.AI && (
                       <div className="me-3 mt-1 flex-shrink-0">
-                        <div className="ai-avatar rounded-circle d-flex align-items-center justify-content-center shadow-sm">
-                          <i className="bi bi-robot fs-5 text-white"></i>
+                        <div className="ai-avatar rounded-circle d-flex align-items-center justify-content-center shadow-sm" style={{ width: '35px', height: '35px', backgroundColor: '#6366f1' }}>
+                          <Bot size={20} className="text-white" />
                         </div>
                       </div>
                     )}
@@ -322,8 +338,8 @@ const AIHub = () => {
                             <div key={pIdx} className="ai-project-card flex-shrink-0">
                               {/* Badge % Match */}
                               <div className="text-end mb-2">
-                                <Badge className="match-badge px-3 py-2 rounded-pill">
-                                  <i className="bi bi-stars me-1"></i> {proj.matchPercent}% Phù hợp
+                                <Badge className="match-badge px-3 py-2 rounded-pill bg-success">
+                                  <Sparkles size={14} className="me-1" /> {proj.matchPercent}% Phù hợp
                                 </Badge>
                               </div>
 
@@ -365,8 +381,8 @@ const AIHub = () => {
                     {/* User Avatar */}
                     {msg.sender === SENDER.USER && (
                       <div className="ms-3 mt-1 flex-shrink-0">
-                        <div className="user-avatar rounded-circle d-flex align-items-center justify-content-center shadow-sm">
-                          <i className="bi bi-person-fill fs-5 text-white"></i>
+                        <div className="user-avatar rounded-circle d-flex align-items-center justify-content-center shadow-sm" style={{ width: '35px', height: '35px', backgroundColor: '#cbd5e1' }}>
+                          <User size={20} className="text-white" />
                         </div>
                       </div>
                     )}
@@ -377,8 +393,8 @@ const AIHub = () => {
                 {isLoading && messages.length > 0 && messages[messages.length - 1]?.sender === SENDER.USER && (
                   <div className="d-flex mb-4 justify-content-start">
                     <div className="me-3 mt-1 flex-shrink-0">
-                      <div className="ai-avatar rounded-circle d-flex align-items-center justify-content-center shadow-sm">
-                        <i className="bi bi-robot fs-5 text-white"></i>
+                      <div className="ai-avatar rounded-circle d-flex align-items-center justify-content-center shadow-sm" style={{ width: '35px', height: '35px', backgroundColor: '#6366f1' }}>
+                        <Bot size={20} className="text-white" />
                       </div>
                     </div>
                     <div className="ai-message-bubble p-3 shadow-sm d-flex align-items-center gap-2">
@@ -404,11 +420,11 @@ const AIHub = () => {
                     {QUICK_SUGGESTIONS.map((suggestion, idx) => (
                       <button
                         key={idx}
-                        className="suggestion-chip"
+                        className="suggestion-chip btn btn-outline-primary rounded-pill btn-sm d-flex align-items-center"
                         onClick={() => handleQuickSuggestion(suggestion)}
                         disabled={isLoading}
                       >
-                        <i className="bi bi-lightning-fill me-1"></i> {suggestion}
+                        <Zap size={14} className="me-1 text-warning" /> {suggestion}
                       </button>
                     ))}
                   </div>
@@ -435,12 +451,12 @@ const AIHub = () => {
                       variant="primary"
                       style={{ width: '44px', height: '44px', padding: 0 }}
                     >
-                      <i className="bi bi-send-fill"></i>
+                      <Send size={18} />
                     </Button>
                   </div>
                 </Form>
                 <p className="text-muted text-center mt-2 mb-0" style={{ fontSize: '11px' }}>
-                  Hệ thống ghi nhớ các đoạn chat theo tab. Bạn có thể xem lại hoặc tiếp tục bất cứ lúc nào.
+                  AI có thể mắc lỗi. Vui lòng kiểm tra lại thông tin dự án trước khi ứng tuyển.
                 </p>
               </div>
             </Card.Body>
