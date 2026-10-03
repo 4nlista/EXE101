@@ -1,6 +1,32 @@
 import axiosClient from '../utils/axiosClient';
 
-// Giai đoạn 2: Gọi AI đề xuất dự án (Cho SV gói VIP/Premium)
+// =====================================
+// API MỚI: AI CHAT SESSION (Hướng B)
+// =====================================
+export const getAiSessions = async () => {
+  return await axiosClient.get('/ai/sessions');
+};
+
+export const createAiSession = async () => {
+  return await axiosClient.post('/ai/sessions');
+};
+
+export const getAiSessionById = async (sessionId) => {
+  return await axiosClient.get(`/ai/sessions/${sessionId}`);
+};
+
+export const deleteAiSession = async (sessionId) => {
+  return await axiosClient.delete(`/ai/sessions/${sessionId}`);
+};
+
+export const sendAiMessage = async (sessionId, text) => {
+  return await axiosClient.post(`/ai/sessions/${sessionId}/messages`, { text });
+};
+
+// =====================================
+// CÁC API CŨ (Sẽ loại bỏ tính năng cũ)
+// =====================================
+// Giai đoạn 2: Gọi AI đề xuất dự án (CŨ)
 export const recommendProjects = async (prompt) => {
   return await axiosClient.post('/ai/recommend-projects', { prompt });
 };

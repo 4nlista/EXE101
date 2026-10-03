@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Container, Card, Form, Badge, Spinner } from 'react-bootstrap';
+import { Container, Card, Form, Badge, Spinner, Row, Col, ListGroup } from 'react-bootstrap';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
 import Alert from '../../components/Alert';
 import { useNavigate } from 'react-router-dom';
-import { recommendProjects } from '../../services/aiService';
+import { getAiSessions, createAiSession, getAiSessionById, deleteAiSession, sendAiMessage } from '../../services/aiService';
 import { getProjectDetail } from '../../services/projectService';
 import { useAuth } from '../../contexts/AuthContext';
 import { PACKAGE_TYPE } from '../../constants/subscriptionEnum';
@@ -13,8 +13,8 @@ import './AIHub.css';
 
 // Enum phân biệt tin nhắn AI / User
 const SENDER = {
-  AI: 'ai',
-  USER: 'user'
+  AI: 'AI',
+  USER: 'USER'
 };
 
 // Các câu hỏi gợi ý để user bấm nhanh
@@ -25,23 +25,22 @@ const QUICK_SUGGESTIONS = [
 ];
 
 const AIHub = () => {
-  const [messages, setMessages] = useState([
-    {
-      sender: SENDER.AI,
-      text: 'Chào bạn! Mình là Trợ lý AI của UniVerse\nMình có thể giúp bạn tìm kiếm những dự án phù hợp nhất với kỹ năng và định hướng của bạn.\nHãy cho mình biết bạn muốn tìm dự án như thế nào nhé!',
-      projects: null
-    }
-  ]);
+  const [sessions, setSessions] = useState([]);
+  const [currentSessionId, setCurrentSessionId] = useState(null);
+  const [messages, setMessages] = useState([]);
+  
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingSessions, setIsLoadingSessions] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
+  
   const messagesEndRef = useRef(null);
 
   // State cho Modal xem chi tiết dự án
   const [selectedProject, setSelectedProject] = useState(null);
   const [showProjectModal, setShowProjectModal] = useState(false);
   const [isLoadingProject, setIsLoadingProject] = useState(false);
-
+  
   const { currentUser } = useAuth();
   const navigate = useNavigate();
 
@@ -56,35 +55,117 @@ const AIHub = () => {
     scrollToBottom();
   }, [messages, isLoading]);
 
-  // Gửi tin nhắn cho AI
-  const handleSendMessage = async (e) => {
-    e.preventDefault();
-    if (!inputMessage.trim()) return;
+  // Khởi tạo: Lấy danh sách sessions
+  useEffect(() => {
+    fetchSessions();
+  }, []);
 
-    const userText = inputMessage;
+  const fetchSessions = async (selectSessionId = null) => {
+    try {
+      setIsLoadingSessions(true);
+      const res = await getAiSessions();
+      const sessionData = res.data || [];
+      setSessions(sessionData);
+      
+      if (sessionData.length > 0) {
+        // Chọn session được chỉ định hoặc session đầu tiên
+        const idToSelect = selectSessionId || sessionData[0]._id;
+        handleSelectSession(idToSelect);
+      } else {
+        // Nếu chưa có session nào, tự động tạo mới
+        handleCreateNewSession();
+      }
+    } catch (error) {
+      console.error('Lỗi khi tải danh sách session:', error);
+      setErrorMsg('Không thể tải lịch sử đoạn chat.');
+    } finally {
+      setIsLoadingSessions(false);
+    }
+  };
+
+  const handleSelectSession = async (sessionId) => {
+    setCurrentSessionId(sessionId);
+    setIsLoading(true);
+    setErrorMsg('');
+    try {
+      const res = await getAiSessionById(sessionId);
+      if (res.data) {
+        setMessages(res.data.messages || []);
+      }
+    } catch (error) {
+      console.error('Lỗi khi tải chi tiết session:', error);
+      setErrorMsg('Không thể tải nội dung đoạn chat.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCreateNewSession = async () => {
+    setIsLoading(true);
+    try {
+      const res = await createAiSession();
+      if (res.data) {
+        setSessions(prev => [res.data, ...prev]);
+        setCurrentSessionId(res.data._id);
+        setMessages([]); // Session mới trắng tinh
+      }
+    } catch (error) {
+      console.error('Lỗi khi tạo session mới:', error);
+      setErrorMsg('Không thể tạo đoạn chat mới.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteSession = async (e, sessionId) => {
+    e.stopPropagation(); // Ngăn click vào list group item
+    if (!window.confirm('Bạn có chắc chắn muốn xóa đoạn chat này không?')) return;
+    
+    try {
+      await deleteAiSession(sessionId);
+      // Nếu đang xóa session hiện tại, reload lại danh sách và chọn session khác
+      if (currentSessionId === sessionId) {
+        fetchSessions();
+      } else {
+        setSessions(prev => prev.filter(s => s._id !== sessionId));
+      }
+    } catch (error) {
+      console.error('Lỗi khi xóa session:', error);
+      alert('Không thể xóa đoạn chat này.');
+    }
+  };
+
+  // Gửi tin nhắn cho AI
+  const handleSendMessage = async (e, textOverride = null) => {
+    if (e) e.preventDefault();
+    
+    const userText = textOverride || inputMessage;
+    if (!userText.trim() || !currentSessionId) return;
+
+    // Tạm thời hiển thị tin nhắn của user ngay lập tức để UX mượt
     setMessages(prev => [...prev, { sender: SENDER.USER, text: userText }]);
-    setInputMessage('');
+    if (!textOverride) setInputMessage('');
+    
     setIsLoading(true);
     setErrorMsg('');
 
     try {
-      const response = await recommendProjects(userText);
-      const aiData = response.data;
+      const response = await sendAiMessage(currentSessionId, userText);
+      const aiData = response.data; // Server trả về toàn bộ object aiMessage mới
 
-      setMessages(prev => [
-        ...prev,
-        {
-          sender: SENDER.AI,
-          text: aiData.replyMessage,
-          projects: aiData.recommendedProjects
-        }
-      ]);
+      setMessages(prev => [...prev, aiData]);
+      
+      // Nếu đây là tin nhắn đầu tiên, tự động refresh danh sách session để cập nhật Title
+      if (messages.length === 0) {
+        const res = await getAiSessions();
+        setSessions(res.data || []);
+      }
     } catch (error) {
       console.error('Lỗi khi gọi AI:', error);
       if (error.response?.status === 403) {
-        setErrorMsg('Tính năng này chỉ dành cho tài khoản VIP hoặc PREMIUM. Vui lòng nâng cấp để sử dụng.');
+         setErrorMsg('Tính năng này chỉ dành cho tài khoản VIP hoặc PREMIUM. Vui lòng nâng cấp để sử dụng.');
       } else {
-        setMessages(prev => [
+         setMessages(prev => [
           ...prev,
           {
             sender: SENDER.AI,
@@ -99,27 +180,7 @@ const AIHub = () => {
 
   // Bấm vào câu gợi ý → tự động gửi
   const handleQuickSuggestion = (text) => {
-    setInputMessage(text);
-    // Tự động submit sau khi set text
-    setTimeout(() => {
-      const fakeEvent = { preventDefault: () => { } };
-      setMessages(prev => [...prev, { sender: SENDER.USER, text }]);
-      setIsLoading(true);
-      setErrorMsg('');
-      recommendProjects(text)
-        .then(response => {
-          const aiData = response.data;
-          setMessages(prev => [...prev, { sender: SENDER.AI, text: aiData.replyMessage, projects: aiData.recommendedProjects }]);
-        })
-        .catch(error => {
-          console.error('Lỗi khi gọi AI:', error);
-          setMessages(prev => [...prev, { sender: SENDER.AI, text: 'Xin lỗi, hệ thống AI đang bận. Bạn thử lại sau nhé!' }]);
-        })
-        .finally(() => {
-          setIsLoading(false);
-          setInputMessage('');
-        });
-    }, 100);
+    handleSendMessage(null, text);
   };
 
   // Mở Modal xem chi tiết dự án (gọi API lấy full data)
@@ -131,6 +192,10 @@ const AIHub = () => {
       setShowProjectModal(true);
     } catch (error) {
       console.error('Lỗi khi lấy chi tiết dự án:', error);
+      // Dự án đã bị xóa hoặc private
+      if (error.response?.status === 404) {
+        alert('Dự án này đã bị đóng hoặc không còn tồn tại.');
+      }
     } finally {
       setIsLoadingProject(false);
     }
@@ -142,11 +207,11 @@ const AIHub = () => {
     setSelectedProject(null);
   };
 
-  // Kiểm tra xem mới chỉ có 1 tin chào mở đầu (chưa chat gì)
-  const isFirstMessage = messages.length === 1;
+  // Kiểm tra xem session có trống không
+  const isFirstMessage = messages.length === 0;
 
   return (
-    <Container className="ai-hub-container py-4">
+    <Container fluid className="ai-hub-container py-4 px-md-5">
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-3">
         <div>
@@ -157,170 +222,231 @@ const AIHub = () => {
         </div>
         {isFreePackage && (
           <Button variant="warning" onClick={() => navigate('/subscription')}>
-            <i className="bi bi-gem me-1"></i> Nâng cấp
+            <i className="bi bi-gem me-1"></i> Nâng cấp VIP
           </Button>
         )}
       </div>
 
       {/* Cảnh báo nếu gói Free */}
       {isFreePackage && (
-        <Alert type="warning">
+        <Alert type="warning" className="mb-3">
           <p className="mb-0">Tài khoản của bạn là tài khoản <b>FREE</b>. Tính năng AI Đề xuất dự án yêu cầu gói <b>VIP</b> hoặc <b>PREMIUM</b>.</p>
         </Alert>
       )}
 
-      {/* Khung Chat chính */}
-      <Card className="chat-card shadow-lg border-0" style={{ height: '75vh', borderRadius: '20px', overflow: 'hidden' }}>
-        <Card.Body className="chat-body d-flex flex-column p-0">
-          <div className="chat-messages flex-grow-1 overflow-auto p-4">
-            {messages.map((msg, idx) => (
-              <div key={idx} className={`d-flex mb-4 ${msg.sender === SENDER.USER ? 'justify-content-end' : 'justify-content-start'}`}>
-
-                {/* AI Avatar */}
-                {msg.sender === SENDER.AI && (
-                  <div className="me-3 mt-1 flex-shrink-0">
-                    <div className="ai-avatar rounded-circle d-flex align-items-center justify-content-center shadow-sm">
-                      <i className="bi bi-robot fs-5 text-white"></i>
-                    </div>
-                  </div>
-                )}
-
-                <div style={{ maxWidth: '80%' }}>
-                  {/* Bong bóng tin nhắn */}
-                  <div className={`p-3 shadow-sm ${msg.sender === SENDER.USER ? 'user-message-bubble text-white' : 'ai-message-bubble'}`}>
-                    <div className="message-text" style={{ whiteSpace: 'pre-wrap' }}>{msg.text}</div>
-                  </div>
-
-                  {/* Thẻ Dự án xếp NGANG */}
-                  {msg.projects && msg.projects.length > 0 && (
-                    <div className="mt-3 ai-projects-row d-flex gap-3 overflow-auto pb-2">
-                      {msg.projects.map((proj, pIdx) => (
-                        <div key={pIdx} className="ai-project-card flex-shrink-0">
-                          {/* Badge % Match */}
-                          <div className="text-end mb-2">
-                            <Badge className="match-badge px-3 py-2 rounded-pill">
-                              <i className="bi bi-stars me-1"></i> {proj.matchPercent}% Phù hợp
-                            </Badge>
-                          </div>
-
-                          {/* Tên dự án */}
-                          <h6 className="fw-bold text-dark mb-1 text-truncate" title={proj.projectTitle || proj.projectId}>
-                            {proj.projectTitle || `Dự án ${proj.projectId?.substring(0, 8)}`}
-                          </h6>
-
-                          {/* Kỹ năng yêu cầu */}
-                          {proj.skills && proj.skills.length > 0 && (
-                            <div className="mb-2">
-                              <small className="text-muted fw-semibold">KỸ NĂNG YÊU CẦU</small>
-                              <div className="d-flex flex-wrap gap-1 mt-1">
-                                {proj.skills.slice(0, 3).map((skill, sIdx) => (
-                                  <Badge key={sIdx} bg="" className="skill-badge">{skill}</Badge>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Lý do phù hợp */}
-                          <p className="text-secondary small mb-3 lh-base reason-text">{proj.reason}</p>
-
-                          {/* Nút Xem chi tiết */}
-                          <Button
-                            variant="outline-primary"
-                            className="w-100 rounded-pill view-detail-btn"
-                            onClick={() => handleViewProject(proj.projectId)}
-                            disabled={isLoadingProject}
-                          >
-                            {isLoadingProject ? <Spinner animation="border" size="sm" /> : 'Xem chi tiết'}
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* User Avatar */}
-                {msg.sender === SENDER.USER && (
-                  <div className="ms-3 mt-1 flex-shrink-0">
-                    <div className="user-avatar rounded-circle d-flex align-items-center justify-content-center shadow-sm">
-                      <i className="bi bi-person-fill fs-5 text-white"></i>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-
-            {/* Animation đang chờ AI trả lời */}
-            {isLoading && (
-              <div className="d-flex mb-4 justify-content-start">
-                <div className="me-3 mt-1 flex-shrink-0">
-                  <div className="ai-avatar rounded-circle d-flex align-items-center justify-content-center shadow-sm">
-                    <i className="bi bi-robot fs-5 text-white"></i>
-                  </div>
-                </div>
-                <div className="ai-message-bubble p-3 shadow-sm d-flex align-items-center gap-2">
-                  <Spinner animation="grow" size="sm" style={{ color: '#6366f1' }} />
-                  <Spinner animation="grow" size="sm" style={{ color: '#8b5cf6', animationDelay: '0.2s' }} />
-                  <Spinner animation="grow" size="sm" style={{ color: '#d946ef', animationDelay: '0.4s' }} />
-                </div>
-              </div>
-            )}
-
-            {/* Cảnh báo lỗi quyền */}
-            {errorMsg && (
-              <Alert type="danger" className="mt-2 text-center rounded-3">{errorMsg}</Alert>
-            )}
-
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Câu hỏi gợi ý - chỉ hiện khi mới vào chưa chat */}
-          {isFirstMessage && !isFreePackage && (
-            <div className="px-4 pb-2">
-              <div className="d-flex gap-2 flex-wrap">
-                {QUICK_SUGGESTIONS.map((suggestion, idx) => (
-                  <button
-                    key={idx}
-                    className="suggestion-chip"
-                    onClick={() => handleQuickSuggestion(suggestion)}
-                    disabled={isLoading}
-                  >
-                    <i className="bi bi-lightning-fill me-1"></i> {suggestion}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Ô nhập tin nhắn */}
-          <div className="p-4 bg-white border-top chat-input-container">
-            <Form onSubmit={handleSendMessage}>
-              <div className="d-flex align-items-center gap-3 bg-light rounded-pill p-2 border flex-grow-1 shadow-sm focus-ring-wrapper">
-                <Input
-                  type="text"
-                  placeholder="Hỏi Trợ lý AI..."
-                  value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
-                  disabled={isLoading || isFreePackage}
-                  className="border-0 bg-transparent shadow-none px-4 py-2 flex-grow-1 mb-0 chat-input"
-                  autoComplete="off"
-                />
-                <Button
-                  type="submit"
-                  disabled={isLoading || !inputMessage.trim() || isFreePackage}
-                  className="rounded-circle send-btn d-flex align-items-center justify-content-center"
-                  variant="primary"
-                  style={{ width: '44px', height: '44px', padding: 0 }}
+      <Row className="g-3">
+        {/* Cột trái: Danh sách cuộc hội thoại */}
+        <Col md={3} className="d-none d-md-block">
+          <Card className="sidebar-card shadow-sm border-0 h-100" style={{ borderRadius: '20px', overflow: 'hidden' }}>
+            <Card.Body className="d-flex flex-column p-0">
+              <div className="p-3 border-bottom">
+                <Button 
+                  variant="primary" 
+                  className="w-100 fw-bold d-flex align-items-center justify-content-center gap-2 new-chat-btn"
+                  onClick={handleCreateNewSession}
+                  disabled={isLoadingSessions}
                 >
-                  <i className="bi bi-send-fill"></i>
+                  <i className="bi bi-plus-lg"></i> Đoạn chat mới
                 </Button>
               </div>
-            </Form>
-            <p className="text-muted text-center mt-2 mb-0" style={{ fontSize: '11px' }}>
-              Kết quả do AI tạo ra có thể thay đổi dựa trên cập nhật hồ sơ.
-            </p>
-          </div>
-        </Card.Body>
-      </Card>
+              <ListGroup variant="flush" className="sidebar-list overflow-auto flex-grow-1">
+                {isLoadingSessions ? (
+                  <div className="text-center p-4"><Spinner animation="border" variant="primary" size="sm"/></div>
+                ) : sessions.length === 0 ? (
+                  <div className="text-center p-4 text-muted small">Chưa có lịch sử chat</div>
+                ) : (
+                  sessions.map(session => (
+                    <ListGroup.Item 
+                      key={session._id}
+                      action
+                      active={currentSessionId === session._id}
+                      onClick={() => handleSelectSession(session._id)}
+                      className={`session-item d-flex justify-content-between align-items-center ${currentSessionId === session._id ? 'bg-primary text-white' : ''}`}
+                    >
+                      <div className="text-truncate flex-grow-1" style={{ fontSize: '0.9rem', maxWidth: '85%' }}>
+                        <i className="bi bi-chat-left-text me-2"></i>
+                        {session.title || 'Cuộc hội thoại mới'}
+                      </div>
+                      <i 
+                        className={`bi bi-trash3-fill delete-icon ${currentSessionId === session._id ? 'text-white-50' : 'text-danger'}`} 
+                        onClick={(e) => handleDeleteSession(e, session._id)}
+                        title="Xóa đoạn chat"
+                      ></i>
+                    </ListGroup.Item>
+                  ))
+                )}
+              </ListGroup>
+            </Card.Body>
+          </Card>
+        </Col>
+
+        {/* Cột phải: Khung Chat chính */}
+        <Col md={9} xs={12}>
+          <Card className="chat-card shadow-lg border-0 h-100" style={{ minHeight: '75vh', borderRadius: '20px', overflow: 'hidden' }}>
+            <Card.Body className="chat-body d-flex flex-column p-0">
+              
+              {/* Vùng tin nhắn */}
+              <div className="chat-messages flex-grow-1 overflow-auto p-4">
+                {messages.length === 0 && !isLoading && (
+                  <div className="h-100 d-flex flex-column align-items-center justify-content-center text-center">
+                    <div className="ai-avatar-large mb-3 shadow-sm d-flex align-items-center justify-content-center mx-auto">
+                      <i className="bi bi-robot fs-1 text-white"></i>
+                    </div>
+                    <h5 className="fw-bold text-dark">Chào bạn! Mình là Trợ lý AI của UniVerse</h5>
+                    <p className="text-muted w-75 mx-auto">Mình có thể giúp bạn tìm kiếm những dự án phù hợp nhất với kỹ năng và định hướng của bạn. Hãy cho mình biết bạn muốn tìm dự án như thế nào nhé!</p>
+                  </div>
+                )}
+
+                {messages.map((msg, idx) => (
+                  <div key={idx} className={`d-flex mb-4 ${msg.sender === SENDER.USER ? 'justify-content-end' : 'justify-content-start'}`}>
+                    
+                    {/* AI Avatar */}
+                    {msg.sender === SENDER.AI && (
+                      <div className="me-3 mt-1 flex-shrink-0">
+                        <div className="ai-avatar rounded-circle d-flex align-items-center justify-content-center shadow-sm">
+                          <i className="bi bi-robot fs-5 text-white"></i>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div style={{ maxWidth: '85%' }}>
+                      {/* Bong bóng tin nhắn */}
+                      <div className={`p-3 shadow-sm ${msg.sender === SENDER.USER ? 'user-message-bubble text-white' : 'ai-message-bubble'}`}>
+                        <div className="message-text" style={{ whiteSpace: 'pre-wrap' }}>{msg.text}</div>
+                      </div>
+
+                      {/* Thẻ Dự án xếp NGANG (nếu có) */}
+                      {msg.projects && msg.projects.length > 0 && (
+                        <div className="mt-3 ai-projects-row d-flex gap-3 overflow-auto pb-2">
+                          {msg.projects.map((proj, pIdx) => (
+                            <div key={pIdx} className="ai-project-card flex-shrink-0">
+                              {/* Badge % Match */}
+                              <div className="text-end mb-2">
+                                <Badge className="match-badge px-3 py-2 rounded-pill">
+                                  <i className="bi bi-stars me-1"></i> {proj.matchPercent}% Phù hợp
+                                </Badge>
+                              </div>
+
+                              {/* Tên dự án (lấy từ snapshot) */}
+                              <h6 className="fw-bold text-dark mb-1 text-truncate" title={proj.projectTitle}>
+                                {proj.projectTitle || `Dự án ${proj.projectId?.substring(0, 8)}`}
+                              </h6>
+
+                              {/* Kỹ năng yêu cầu (lấy từ snapshot) */}
+                              {proj.skills && proj.skills.length > 0 && (
+                                <div className="mb-2">
+                                  <small className="text-muted fw-semibold">KỸ NĂNG YÊU CẦU</small>
+                                  <div className="d-flex flex-wrap gap-1 mt-1">
+                                    {proj.skills.slice(0, 3).map((skill, sIdx) => (
+                                      <Badge key={sIdx} bg="" className="skill-badge">{skill}</Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Lý do phù hợp (lấy từ snapshot) */}
+                              <p className="text-secondary small mb-3 lh-base reason-text">{proj.reason}</p>
+
+                              {/* Nút Xem chi tiết */}
+                              <Button
+                                variant="outline-primary"
+                                className="w-100 rounded-pill view-detail-btn"
+                                onClick={() => handleViewProject(proj.projectId)}
+                                disabled={isLoadingProject}
+                              >
+                                {isLoadingProject ? <Spinner animation="border" size="sm" /> : 'Xem chi tiết'}
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* User Avatar */}
+                    {msg.sender === SENDER.USER && (
+                      <div className="ms-3 mt-1 flex-shrink-0">
+                        <div className="user-avatar rounded-circle d-flex align-items-center justify-content-center shadow-sm">
+                          <i className="bi bi-person-fill fs-5 text-white"></i>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+                
+                {/* Animation đang chờ AI trả lời */}
+                {isLoading && messages.length > 0 && messages[messages.length - 1]?.sender === SENDER.USER && (
+                  <div className="d-flex mb-4 justify-content-start">
+                    <div className="me-3 mt-1 flex-shrink-0">
+                      <div className="ai-avatar rounded-circle d-flex align-items-center justify-content-center shadow-sm">
+                        <i className="bi bi-robot fs-5 text-white"></i>
+                      </div>
+                    </div>
+                    <div className="ai-message-bubble p-3 shadow-sm d-flex align-items-center gap-2">
+                      <Spinner animation="grow" size="sm" style={{color: '#6366f1'}} />
+                      <Spinner animation="grow" size="sm" style={{color: '#8b5cf6', animationDelay: '0.2s'}} />
+                      <Spinner animation="grow" size="sm" style={{color: '#d946ef', animationDelay: '0.4s'}} />
+                    </div>
+                  </div>
+                )}
+                
+                {/* Cảnh báo lỗi quyền */}
+                {errorMsg && (
+                  <Alert type="danger" className="mt-2 text-center rounded-3">{errorMsg}</Alert>
+                )}
+                
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Câu hỏi gợi ý - chỉ hiện khi mới vào chưa chat */}
+              {isFirstMessage && !isFreePackage && (
+                <div className="px-4 pb-2">
+                  <div className="d-flex gap-2 flex-wrap justify-content-center">
+                    {QUICK_SUGGESTIONS.map((suggestion, idx) => (
+                      <button
+                        key={idx}
+                        className="suggestion-chip"
+                        onClick={() => handleQuickSuggestion(suggestion)}
+                        disabled={isLoading}
+                      >
+                        <i className="bi bi-lightning-fill me-1"></i> {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Ô nhập tin nhắn */}
+              <div className="p-4 bg-white border-top chat-input-container">
+                <Form onSubmit={handleSendMessage}>
+                  <div className="d-flex align-items-center gap-3 bg-light rounded-pill p-2 border flex-grow-1 shadow-sm focus-ring-wrapper">
+                    <Input
+                      type="text"
+                      placeholder="Hỏi Trợ lý AI..."
+                      value={inputMessage}
+                      onChange={(e) => setInputMessage(e.target.value)}
+                      disabled={isLoading || isFreePackage || !currentSessionId}
+                      className="border-0 bg-transparent shadow-none px-4 py-2 flex-grow-1 mb-0 chat-input"
+                      autoComplete="off"
+                    />
+                    <Button 
+                      type="submit" 
+                      disabled={isLoading || !inputMessage.trim() || isFreePackage || !currentSessionId}
+                      className="rounded-circle send-btn d-flex align-items-center justify-content-center"
+                      variant="primary"
+                      style={{ width: '44px', height: '44px', padding: 0 }}
+                    >
+                      <i className="bi bi-send-fill"></i>
+                    </Button>
+                  </div>
+                </Form>
+                <p className="text-muted text-center mt-2 mb-0" style={{ fontSize: '11px' }}>
+                  Hệ thống ghi nhớ các đoạn chat theo tab. Bạn có thể xem lại hoặc tiếp tục bất cứ lúc nào.
+                </p>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
 
       {/* Modal xem chi tiết dự án - Tái sử dụng component có sẵn */}
       {selectedProject && (

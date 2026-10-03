@@ -1,5 +1,5 @@
 .ai-hub-container {
-  max-width: 960px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
@@ -11,13 +11,86 @@
   background-clip: text;
 }
 
+/* ========== Sidebar ========== */
+.sidebar-card {
+  border: 1px solid rgba(0,0,0,0.04);
+  background: #f8fafc;
+}
+
+.new-chat-btn {
+  border-radius: 12px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border: none;
+  transition: transform 0.2s;
+}
+
+.new-chat-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.sidebar-list {
+  scroll-behavior: smooth;
+}
+
+.sidebar-list::-webkit-scrollbar {
+  width: 4px;
+}
+.sidebar-list::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.3);
+  border-radius: 4px;
+}
+
+.session-item {
+  border: none !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  padding: 14px 16px;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #475569;
+}
+
+.session-item:hover:not(.active) {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.session-item.active {
+  background: linear-gradient(90deg, #6366f1, #8b5cf6) !important;
+  color: #fff !important;
+  font-weight: 500;
+}
+
+.delete-icon {
+  opacity: 0;
+  transition: all 0.2s;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.session-item:hover .delete-icon,
+.session-item.active .delete-icon {
+  opacity: 1;
+}
+
+.delete-icon:hover {
+  background: rgba(255, 0, 0, 0.1);
+  transform: scale(1.1);
+}
+.session-item.active .delete-icon:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+
 /* ========== Chat Card ========== */
 .chat-card {
   border: 1px solid rgba(0,0,0,0.04);
 }
 
 .chat-messages {
-  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
 }
 
 /* ========== Avatars ========== */
@@ -25,6 +98,13 @@
   width: 40px;
   height: 40px;
   min-width: 40px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+}
+
+.ai-avatar-large {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
   background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
 }
 
@@ -38,7 +118,7 @@
 /* ========== Bong bóng tin nhắn ========== */
 .ai-message-bubble {
   border-radius: 4px 20px 20px 20px;
-  background: #ffffff;
+  background: #f1f5f9;
   border: 1px solid #e2e8f0;
   font-size: 14.5px;
   line-height: 1.65;
