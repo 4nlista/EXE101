@@ -14,7 +14,7 @@ const genAI = new GoogleGenerativeAI(apiKey);
 // Hàm helper để test kết nối
 const testAiConnection = async () => {
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-3.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
     const result = await model.generateContent('Xin chào, đây là hệ thống UniVerse gọi test. Hãy trả lời ngắn gọn.');
     const response = await result.response;
     return {
@@ -36,7 +36,7 @@ const testAiConnection = async () => {
 const recommendProjectsWithAI = async (userProfile, projects, userPrompt, chatHistoryText) => {
   try {
     const model = genAI.getGenerativeModel({
-      model: 'gemini-3.5-flash',
+      model: 'gemini-3.6-flash',
       generationConfig: {
         responseMimeType: "application/json",
       }
@@ -79,7 +79,8 @@ ${chatHistoryText}
 `;
 
     const result = await model.generateContent(promptText);
-    const responseText = result.response.text();
+    let responseText = result.response.text();
+    responseText = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
 
     // Parse JSON
     const parsedData = JSON.parse(responseText);
@@ -109,7 +110,7 @@ const extractTextFromPdfUrl = async (pdfUrl) => {
 const matchApplicantWithAI = async (projectRequirements, cvText) => {
   try {
     const model = genAI.getGenerativeModel({
-      model: 'gemini-3.5-flash',
+      model: 'gemini-3.6-flash',
       generationConfig: {
         responseMimeType: "application/json",
       }
@@ -135,7 +136,8 @@ ${cvText || 'Không trích xuất được hoặc không có CV'}
 `;
 
     const result = await model.generateContent(promptText);
-    const responseText = result.response.text();
+    let responseText = result.response.text();
+    responseText = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
 
     // Parse JSON
     const parsedData = JSON.parse(responseText);
