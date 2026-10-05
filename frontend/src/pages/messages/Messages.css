@@ -366,22 +366,23 @@
 }
 
 .messages-emoji-btn {
-  background: transparent;
-  border: none;
-  padding: 4px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  cursor: pointer;
-  color: #64748b;
-  transition: all 0.15s ease;
-  line-height: 1;
+  background: transparent !important;
+  border: none !important;
+  padding: 6px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  color: #64748b !important;
+  transition: all 0.15s ease !important;
+  line-height: 1 !important;
+  box-shadow: none !important;
 }
 
 .messages-emoji-btn:hover {
-  background-color: rgba(0, 0, 0, 0.06);
-  color: #1f2937;
+  background-color: rgba(0, 0, 0, 0.06) !important;
+  color: #1f2937 !important;
 }
 
 .messages-emoji-popover {
@@ -419,28 +420,29 @@
 
 .messages-emoji-tab-btn {
   flex: 1;
-  background: transparent;
-  border: none;
-  font-size: 11.5px;
-  font-weight: 500;
-  padding: 5px 6px;
-  border-radius: 8px;
-  color: #64748b;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  white-space: nowrap;
+  background: transparent !important;
+  border: none !important;
+  font-size: 11.5px !important;
+  font-weight: 500 !important;
+  padding: 5px 6px !important;
+  border-radius: 8px !important;
+  color: #64748b !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  white-space: nowrap !important;
+  box-shadow: none !important;
 }
 
 .messages-emoji-tab-btn:hover {
-  background: #e9ecef;
-  color: #1e293b;
+  background: #e9ecef !important;
+  color: #1e293b !important;
 }
 
 .messages-emoji-tab-btn.active {
-  background: #ffffff;
-  color: var(--orange, #e98224);
-  font-weight: 600;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  background: #ffffff !important;
+  color: var(--orange, #e98224) !important;
+  font-weight: 600 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
 }
 
 .messages-emoji-grid {
@@ -453,21 +455,23 @@
 }
 
 .messages-emoji-item {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  border-radius: 6px;
-  font-size: 18px;
-  height: 32px;
-  cursor: pointer;
-  transition: background-color 0.1s ease, transform 0.1s ease;
-  user-select: none;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 6px !important;
+  font-size: 18px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  cursor: pointer !important;
+  transition: background-color 0.1s ease, transform 0.1s ease !important;
+  user-select: none !important;
+  box-shadow: none !important;
 }
 
 .messages-emoji-item:hover {
-  background-color: #f1f5f9;
+  background-color: #f1f5f9 !important;
   transform: scale(1.22);
 }
 
