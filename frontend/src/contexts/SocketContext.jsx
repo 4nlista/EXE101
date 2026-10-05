@@ -61,6 +61,13 @@ export function SocketProvider({ children }) {
           }
         });
 
+        // Nhận danh sách mốc thời gian hoạt động gần nhất của các user
+        newSocket.on('user_last_seen_list', (data) => {
+          if (data && typeof data === 'object') {
+            setUserLastSeen(prev => ({ ...data, ...prev }));
+          }
+        });
+
         // Lắng nghe sự kiện thay đổi trạng thái online/offline của từng user
         newSocket.on('user_status_changed', (data) => {
           if (!data?.userId) return;

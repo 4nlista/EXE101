@@ -106,19 +106,19 @@ export const formatActivityStatus = (isOnline, lastSeenTime) => {
 
   if (!lastSeenTime) {
     return {
-      text: 'Chưa hoạt động gần đây',
+      text: '',
       isOnline: false
     };
   }
 
   const diffMs = Date.now() - new Date(lastSeenTime).getTime();
   if (isNaN(diffMs) || diffMs < 0) {
-    return { text: 'Không hoạt động', isOnline: false };
+    return { text: '', isOnline: false };
   }
 
   const diffMinutes = Math.floor(diffMs / 60000);
   if (diffMinutes < 1) {
-    return { text: 'Hoạt động vài giây trước', isOnline: false };
+    return { text: 'Hoạt động 1 phút trước', isOnline: false };
   }
   if (diffMinutes < 60) {
     return { text: `Hoạt động ${diffMinutes} phút trước`, isOnline: false };

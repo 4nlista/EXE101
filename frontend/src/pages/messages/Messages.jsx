@@ -400,7 +400,11 @@ export default function Messages() {
   )?.userId;
   const activePartnerId = activePartner?._id?.toString() || activePartner?.toString();
   const isActivePartnerOnline = isUserOnline(activePartnerId);
-  const activePartnerLastSeen = getUserLastSeen(activePartnerId) || activePartner?.updatedAt;
+  const activePartnerLastSeen =
+    getUserLastSeen(activePartnerId) ||
+    activePartner?.lastActiveAt ||
+    activePartner?.updatedAt ||
+    activeConversation?.lastMessage?.sentAt;
   const partnerStatus = formatActivityStatus(isActivePartnerOnline, activePartnerLastSeen);
 
   return (

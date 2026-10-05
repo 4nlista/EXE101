@@ -5,7 +5,7 @@ const { CONVERSATION_TYPE, MESSAGE_STATUS } = require('../constants/messageEnum'
 // 1. Lấy danh sách cuộc trò chuyện của 1 user
 const getUserConversations = async (userId) => {
   let conversations = await Conversation.find({ 'participants.userId': userId })
-    .populate('participants.userId', 'name avatar updatedAt') // Lấy thông tin người chat cùng và thời điểm cập nhật gần nhất
+    .populate('participants.userId', 'name avatar lastActiveAt updatedAt') // Lấy thông tin người chat cùng và thời điểm cập nhật gần nhất
     .sort({ updatedAt: -1 });
 
   // Lọc bỏ những cuộc trò chuyện đã bị xóa mà chưa có tin nhắn mới
@@ -58,7 +58,7 @@ const findOrCreatePersonalConversation = async (currentUserId, targetUserId) => 
       { 'participants.userId': currentUserId },
       { 'participants.userId': targetUserId }
     ]
-  }).populate('participants.userId', 'name avatar updatedAt');
+  }).populate('participants.userId', 'name avatar lastActiveAt updatedAt');
 
   if (!conversation) {
     conversation = new Conversation({
@@ -69,7 +69,7 @@ const findOrCreatePersonalConversation = async (currentUserId, targetUserId) => 
       ]
     });
     await conversation.save();
-    conversation = await Conversation.findById(conversation._id).populate('participants.userId', 'name avatar updatedAt');
+    conversation = await Conversation.findById(conversation._id).populate('participants.userId', 'name avatar lastActiveAt updatedAt');
   }
 
   return conversation;

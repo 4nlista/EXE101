@@ -1,6 +1,7 @@
 import React from 'react';
-import { Col, Dropdown, Badge } from 'react-bootstrap';
+import { Col, Dropdown } from 'react-bootstrap';
 import { Search, SlidersHorizontal, MoreVertical, Trash2 } from 'lucide-react';
+import StatusBadge from '../../../components/StatusBadge';
 import UserAvatar from './UserAvatar';
 import { formatSidebarTime } from '../utils/messageHelpers';
 
@@ -117,9 +118,12 @@ export default function ConversationSidebar({
 
                   <div className="d-flex align-items-center gap-1 mt-1">
                     {unreadCount > 0 && (
-                      <Badge pill bg="danger" style={{ fontSize: '10px', padding: '3px 6px' }}>
-                        {unreadCount}
-                      </Badge>
+                      <StatusBadge
+                        variant="danger"
+                        text={unreadCount}
+                        className="px-2 py-0 border-0 fw-bold"
+                        style={{ fontSize: '10px', minWidth: '18px', height: '18px', justifyContent: 'center' }}
+                      />
                     )}
 
                     <Dropdown>

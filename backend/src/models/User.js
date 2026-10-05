@@ -35,6 +35,11 @@ const userSchema = new mongoose.Schema(
       enum: Object.values(IS_ACTIVE),
       default: IS_ACTIVE.ONLINE
     },
+    // Thời điểm hoạt động gần nhất (online / ngắt kết nối)
+    lastActiveAt: {
+      type: Date,
+      default: Date.now
+    },
     // Đã hoàn thành thiết lập hồ sơ 4 bước chưa
     onboardingCompleted: {
       type: Boolean,

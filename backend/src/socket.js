@@ -48,6 +48,7 @@ const initSocket = (server) => {
 
   io.on('connection', (socket) => {
     const userId = socket.userId.toString();
+    const User = require('./models/User');
 
     // Quản lý nhiều kết nối/tab cho cùng 1 user
     if (!userSockets.has(userId)) {
@@ -55,8 +56,14 @@ const initSocket = (server) => {
     }
     userSockets.get(userId).add(socket.id);
 
+    // Cập nhật mốc thời gian hoạt động vào database
+    User.findByIdAndUpdate(userId, { lastActiveAt: new Date() }).catch(() => {});
+
     // Gửi danh sách các user đang online cho socket vừa kết nối
     socket.emit('online_users_list', Array.from(userSockets.keys()));
+
+    // Gửi bảng thời điểm hoạt động gần nhất của các user trong hệ thống
+    socket.emit('user_last_seen_list', Object.fromEntries(userLastSeen));
 
     // Nếu đây là socket đầu tiên của user (vừa chuyển sang Online) -> thông báo cho mọi người
     if (userSockets.get(userId).size === 1) {
@@ -90,6 +97,9 @@ const initSocket = (server) => {
           userSockets.delete(userId);
           const lastSeen = new Date().toISOString();
           userLastSeen.set(userId, lastSeen);
+
+          // Cập nhật mốc offline vào database
+          User.findByIdAndUpdate(userId, { lastActiveAt: new Date(lastSeen) }).catch(() => {});
 
           // Phát sự kiện user offline cùng thời điểm lastSeen
           io.emit('user_status_changed', {

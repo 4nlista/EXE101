@@ -23,10 +23,12 @@ export default function ChatHeader({
           <div className="messages-header-name">
             {partner?.name || 'Người dùng'}
           </div>
-          <div className={`messages-header-status ${isOnline ? 'online' : 'offline'}`}>
-            <span className={`messages-header-dot ${isOnline ? 'online' : 'offline'}`} />{' '}
-            {activityStatusText}
-          </div>
+          {activityStatusText ? (
+            <div className={`messages-header-status ${isOnline ? 'online' : 'offline'}`}>
+              <span className={`messages-header-dot ${isOnline ? 'online' : 'offline'}`} />{' '}
+              {activityStatusText}
+            </div>
+          ) : null}
         </div>
       </div>
 
