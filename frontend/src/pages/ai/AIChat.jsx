@@ -60,7 +60,7 @@ const AIChat = ({
             <div className={msg.sender === AI_SENDER.USER ? 'w-75 text-end' : 'w-100 text-start'}>
               {/* Bong bóng tin nhắn */}
               <div className={`d-inline-block p-3 rounded-4 text-start shadow-sm ${msg.sender === AI_SENDER.USER ? 'bg-primary text-white' : 'bg-light text-dark'}`}>
-                <div className="text-break">{msg.text}</div>
+                <div className="text-break" style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>{msg.text}</div>
               </div>
 
               {/* Thẻ Dự án xếp NGANG tái sử dụng ProjectCard từ components */}
