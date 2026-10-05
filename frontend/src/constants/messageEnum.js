@@ -10,3 +10,10 @@ export const MESSAGE_TYPE = {
   IMAGE: 'image',     // Tin nhắn hình ảnh
   FILE: 'file'        // Tin nhắn đính kèm file
 };
+
+// Trạng thái tin nhắn
+export const MESSAGE_STATUS = {
+  SENT: 'sent',           // Đã gửi
+  DELIVERED: 'delivered', // Đã nhận
+  READ: 'read'            // Đã xem
+};

@@ -5,7 +5,7 @@ const { CONVERSATION_TYPE, MESSAGE_STATUS } = require('../constants/messageEnum'
 // 1. Lấy danh sách cuộc trò chuyện của 1 user
 const getUserConversations = async (userId) => {
   let conversations = await Conversation.find({ 'participants.userId': userId })
-    .populate('participants.userId', 'name avatar') // Lấy thông tin người chat cùng
+    .populate('participants.userId', 'name avatar updatedAt') // Lấy thông tin người chat cùng và thời điểm cập nhật gần nhất
     .sort({ updatedAt: -1 });
 
   // Lọc bỏ những cuộc trò chuyện đã bị xóa mà chưa có tin nhắn mới
@@ -58,7 +58,7 @@ const findOrCreatePersonalConversation = async (currentUserId, targetUserId) => 
       { 'participants.userId': currentUserId },
       { 'participants.userId': targetUserId }
     ]
-  }).populate('participants.userId', 'name avatar');
+  }).populate('participants.userId', 'name avatar updatedAt');
 
   if (!conversation) {
     conversation = new Conversation({
@@ -69,7 +69,7 @@ const findOrCreatePersonalConversation = async (currentUserId, targetUserId) => 
       ]
     });
     await conversation.save();
-    conversation = await Conversation.findById(conversation._id).populate('participants.userId', 'name avatar');
+    conversation = await Conversation.findById(conversation._id).populate('participants.userId', 'name avatar updatedAt');
   }
 
   return conversation;
@@ -86,12 +86,24 @@ const sendMessage = async (conversationId, senderId, content, type = 'text') => 
     throw new Error('Bạn không có quyền gửi tin nhắn vào cuộc trò chuyện này');
   }
 
+  // Kiểm tra xem đối phương có đang online không để gán trạng thái đã nhận (DELIVERED) hoặc đã gửi (SENT)
+  const { isUserOnline } = require('../socket');
+  let initialStatus = MESSAGE_STATUS.SENT;
+  for (const p of conversation.participants) {
+    if (p.userId.toString() !== senderId.toString()) {
+      if (isUserOnline(p.userId.toString())) {
+        initialStatus = MESSAGE_STATUS.DELIVERED;
+        break;
+      }
+    }
+  }
+
   const message = new Message({
     conversationId,
     senderId,
     content,
     type,
-    status: MESSAGE_STATUS.SENT
+    status: initialStatus
   });
 
   await message.save();

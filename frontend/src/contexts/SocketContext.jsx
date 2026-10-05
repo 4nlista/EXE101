@@ -13,6 +13,10 @@ export function SocketProvider({ children }) {
   const [socket, setSocket] = useState(null);
   const [totalUnreadCount, setTotalUnreadCount] = useState(0);
   const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
+  // Danh sách các user đang online (Set các userId dạng chuỗi)
+  const [onlineUsers, setOnlineUsers] = useState(new Set());
+  // Thời điểm hoạt động gần nhất của từng user { [userId]: ISOString }
+  const [userLastSeen, setUserLastSeen] = useState({});
 
   // Khởi tạo socket và lấy initial unread count khi user đăng nhập
   useEffect(() => {
@@ -50,6 +54,35 @@ export function SocketProvider({ children }) {
           setUnreadNotificationCount(prev => prev + 1);
         });
 
+        // Nhận danh sách tất cả các user đang online hiện tại
+        newSocket.on('online_users_list', (usersList) => {
+          if (Array.isArray(usersList)) {
+            setOnlineUsers(new Set(usersList.map(id => id.toString())));
+          }
+        });
+
+        // Lắng nghe sự kiện thay đổi trạng thái online/offline của từng user
+        newSocket.on('user_status_changed', (data) => {
+          if (!data?.userId) return;
+          const uid = data.userId.toString();
+          setOnlineUsers(prev => {
+            const next = new Set(prev);
+            if (data.isOnline) {
+              next.add(uid);
+            } else {
+              next.delete(uid);
+            }
+            return next;
+          });
+
+          if (data.lastSeen) {
+            setUserLastSeen(prev => ({
+              ...prev,
+              [uid]: data.lastSeen
+            }));
+          }
+        });
+
         setSocket(newSocket);
       }
     };
@@ -64,6 +97,8 @@ export function SocketProvider({ children }) {
       }
       setTotalUnreadCount(0);
       setUnreadNotificationCount(0);
+      setOnlineUsers(new Set());
+      setUserLastSeen({});
     }
 
     return () => {
@@ -73,11 +108,29 @@ export function SocketProvider({ children }) {
     };
   }, [isAuthenticated, currentUser]);
 
+  // Kiểm tra 1 user có online hay không
+  const isUserOnline = (userId) => {
+    if (!userId) return false;
+    const uid = userId?._id ? userId._id.toString() : userId.toString();
+    return onlineUsers.has(uid);
+  };
+
+  // Lấy thời điểm hoạt động gần nhất của user
+  const getUserLastSeen = (userId) => {
+    if (!userId) return null;
+    const uid = userId?._id ? userId._id.toString() : userId.toString();
+    return userLastSeen[uid] || null;
+  };
+
   return (
     <SocketContext.Provider value={{ 
       socket, 
       totalUnreadCount, setTotalUnreadCount,
-      unreadNotificationCount, setUnreadNotificationCount
+      unreadNotificationCount, setUnreadNotificationCount,
+      onlineUsers,
+      userLastSeen,
+      isUserOnline,
+      getUserLastSeen
     }}>
       {children}
     </SocketContext.Provider>
