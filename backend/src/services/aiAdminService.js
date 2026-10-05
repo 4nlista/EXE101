@@ -104,13 +104,13 @@ const adminChatWithAI = async (prompt) => {
         if (response.functionCalls && response.functionCalls().length > 0) {
           const call = response.functionCalls()[0];
           const functionName = call.name;
-          
+
           console.log(`[AI Admin] Đang gọi hàm thống kê: ${functionName}`);
 
           // Chạy hàm tương ứng trong Node.js
           if (functionMapping[functionName]) {
             const apiResponse = await functionMapping[functionName]();
-            
+
             // 3. Gửi kết quả thống kê thực tế ngược lại cho AI để AI nói chuyện
             const secondResult = await chat.sendMessage([{
               functionResponse: {
@@ -118,7 +118,7 @@ const adminChatWithAI = async (prompt) => {
                 response: apiResponse
               }
             }]);
-            
+
             response = secondResult.response;
           }
         }

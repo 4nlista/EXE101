@@ -1,9 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
-import Button from '../../components/Button';
-import Alert from '../../components/Alert';
+import ConfirmActionModal from '../../components/ConfirmActionModal';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Gem } from 'lucide-react';
 import { getAiSessions, createAiSession, getAiSessionById, deleteAiSession, updateAiSession, sendAiMessage } from '../../services/aiService';
 import { getProjectDetail } from '../../services/projectService';
 import { useAuth } from '../../contexts/AuthContext';
@@ -12,6 +10,7 @@ import { AI_SENDER } from '../../constants/aiEnum';
 import ProjectDetailModal from '../feed/ProjectDetailModal';
 import SidebarAI from './SidebarAI';
 import AIChat from './AIChat';
+import './AIHub.css';
 
 const AIHub = () => {
   const [sessions, setSessions] = useState([]);
@@ -29,6 +28,11 @@ const AIHub = () => {
   const [selectedProject, setSelectedProject] = useState(null);
   const [showProjectModal, setShowProjectModal] = useState(false);
   const [isLoadingProject, setIsLoadingProject] = useState(false);
+
+  // State quản lý modal xác nhận xóa session
+  const [sessionToDelete, setSessionToDelete] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeletingSession, setIsDeletingSession] = useState(false);
 
   const { currentUser } = useAuth();
   const navigate = useNavigate();
@@ -104,25 +108,8 @@ const AIHub = () => {
     }
   };
 
-  const handleDeleteSession = async (e, sessionId) => {
-    e.stopPropagation();
-    if (!window.confirm('Bạn có chắc chắn muốn xóa đoạn chat này không?')) return;
-
-    try {
-      await deleteAiSession(sessionId);
-      if (currentSessionId === sessionId) {
-        fetchSessions();
-      } else {
-        setSessions(prev => prev.filter(s => s._id !== sessionId));
-      }
-    } catch (error) {
-      console.error('Lỗi khi xóa session:', error);
-      alert('Không thể xóa đoạn chat này.');
-    }
-  };
-
   const handleRenameSession = async (e, sessionId, newTitle) => {
-    e.stopPropagation();
+    if (e) e.stopPropagation();
     if (!newTitle.trim()) return;
 
     try {
@@ -160,7 +147,6 @@ const AIHub = () => {
       }
     } catch (error) {
       console.error('Lỗi khi gọi AI:', error);
-      // axiosClient.js reject bằng error.response.data nên error không còn thuộc tính response.status
       if (error.message && error.message.includes('nâng cấp')) {
         setErrorMsg('Tính năng này chỉ dành cho tài khoản VIP hoặc PREMIUM. Vui lòng nâng cấp để sử dụng.');
       } else {
@@ -205,62 +191,94 @@ const AIHub = () => {
     setSelectedProject(null);
   };
 
+  const openDeleteModal = (e, sessionId) => {
+    if (e) e.stopPropagation();
+    setSessionToDelete(sessionId);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteSession = async () => {
+    if (!sessionToDelete) return;
+    setIsDeletingSession(true);
+    try {
+      await deleteAiSession(sessionToDelete);
+      if (currentSessionId === sessionToDelete) {
+        fetchSessions();
+      } else {
+        setSessions(prev => prev.filter(s => s._id !== sessionToDelete));
+      }
+      setShowDeleteModal(false);
+      setSessionToDelete(null);
+    } catch (error) {
+      console.error('Lỗi khi xóa session:', error);
+      setErrorMsg('Không thể xóa đoạn chat này.');
+    } finally {
+      setIsDeletingSession(false);
+    }
+  };
+
   const isFirstMessage = messages.length === 0;
+  const currentSession = sessions.find(s => s._id === currentSessionId);
 
   return (
-    <Container fluid className="position-absolute top-0 bottom-0 start-0 end-0 d-flex flex-column p-0 bg-white">
-      {/* Header */}
-      <div className="d-flex justify-content-between align-items-center border-bottom flex-shrink-0">
-        {isFreePackage && (
-          <Button variant="warning" onClick={() => navigate('/subscription')} className="d-flex align-items-center fw-bold">
-            <Gem size={18} className="me-2" /> Nâng cấp VIP
-          </Button>
-        )}
-      </div>
+    <div className="aihub-page-wrapper">
+      <Container fluid className="p-0 aihub-container">
+        <Row className="g-0 h-100 flex-nowrap">
+          {/* Cột Trái (Sidebar): Chiếm đúng 3/12 cột theo chuẩn Bootstrap */}
+          {isSidebarOpen && (
+            <Col md={3} className="aihub-sidebar-col h-100 border-end">
+              <SidebarAI
+                sessions={sessions}
+                currentSessionId={currentSessionId}
+                isLoadingSessions={isLoadingSessions}
+                onSelectSession={handleSelectSession}
+                onCreateNewSession={handleCreateNewSession}
+                onDeleteSession={openDeleteModal}
+                onRenameSession={handleRenameSession}
+                onToggleSidebar={() => setIsSidebarOpen(false)}
+              />
+            </Col>
+          )}
 
-      {isFreePackage && (
-        <Alert type="warning" className="m-3 flex-shrink-0">
-          <p className="mb-0">Tài khoản của bạn là tài khoản <b>FREE</b>. Tính năng AI Đề xuất dự án yêu cầu gói <b>VIP</b> hoặc <b>PREMIUM</b>.</p>
-        </Alert>
-      )}
-
-      {/* Main Layout */}
-      <Row className="g-0 flex-grow-1 overflow-hidden">
-        {isSidebarOpen && (
-          <Col md={3} className="h-100 border-end">
-            <SidebarAI
-              sessions={sessions}
+          {/* Cột Phải (Chat Area): Chiếm đúng 9/12 cột (hoặc 12/12 khi ẩn sidebar) */}
+          <Col md={isSidebarOpen ? 9 : 12} className="aihub-chat-col h-100">
+            <AIChat
+              messages={messages}
+              isLoading={isLoading}
+              inputMessage={inputMessage}
+              setInputMessage={setInputMessage}
+              onSendMessage={handleSendMessage}
+              onQuickSuggestion={handleQuickSuggestion}
+              isFirstMessage={isFirstMessage}
+              isFreePackage={isFreePackage}
               currentSessionId={currentSessionId}
-              isLoadingSessions={isLoadingSessions}
-              onSelectSession={handleSelectSession}
-              onCreateNewSession={handleCreateNewSession}
-              onDeleteSession={handleDeleteSession}
+              currentSession={currentSession}
               onRenameSession={handleRenameSession}
-              setIsSidebarOpen={setIsSidebarOpen}
+              onDeleteSession={openDeleteModal}
+              errorMsg={errorMsg}
+              onViewProject={handleViewProject}
+              isLoadingProject={isLoadingProject}
+              isSidebarOpen={isSidebarOpen}
+              onToggleSidebar={() => setIsSidebarOpen(prev => !prev)}
+              messagesEndRef={messagesEndRef}
             />
           </Col>
-        )}
-        <Col md={isSidebarOpen ? 9 : 12} className="h-100">
-          <AIChat
-            messages={messages}
-            isLoading={isLoading}
-            inputMessage={inputMessage}
-            setInputMessage={setInputMessage}
-            onSendMessage={handleSendMessage}
-            onQuickSuggestion={handleQuickSuggestion}
-            isFirstMessage={isFirstMessage}
-            isFreePackage={isFreePackage}
-            currentSessionId={currentSessionId}
-            errorMsg={errorMsg}
-            onViewProject={handleViewProject}
-            isLoadingProject={isLoadingProject}
-            isSidebarOpen={isSidebarOpen}
-            setIsSidebarOpen={setIsSidebarOpen}
-            messagesEndRef={messagesEndRef}
-          />
-        </Col>
-      </Row>
+        </Row>
+      </Container>
 
+      {/* Modal xác nhận xóa session - Tái sử dụng ConfirmActionModal */}
+      <ConfirmActionModal
+        show={showDeleteModal}
+        onHide={() => setShowDeleteModal(false)}
+        onConfirm={confirmDeleteSession}
+        title="Xóa đoạn trò chuyện"
+        message="Bạn có chắc chắn muốn xóa đoạn trò chuyện này không? Dữ liệu tin nhắn sẽ không thể khôi phục."
+        confirmText="Xóa"
+        variant="danger"
+        isLoading={isDeletingSession}
+      />
+
+      {/* Modal xem chi tiết dự án - Tái sử dụng ProjectDetailModal */}
       {selectedProject && (
         <ProjectDetailModal
           project={selectedProject}
@@ -268,7 +286,7 @@ const AIHub = () => {
           onHide={handleCloseProjectModal}
         />
       )}
-    </Container>
+    </div>
   );
 };
 

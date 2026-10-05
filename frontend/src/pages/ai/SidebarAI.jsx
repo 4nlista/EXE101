@@ -1,7 +1,25 @@
 import React, { useState } from 'react';
-import { ListGroup, Spinner } from 'react-bootstrap';
+import { Spinner } from 'react-bootstrap';
 import Button from '../../components/Button';
-import { Plus, MessageSquare, Trash2, PanelLeftClose, Pencil, Check, X } from 'lucide-react';
+import { Plus, Sparkles, Trash2, Pencil, Check, X, PanelLeftClose } from 'lucide-react';
+
+/**
+ * Định dạng thời gian hiển thị: "10:24", "Hôm qua", "28/09"
+ */
+const formatSessionTime = (dateStr) => {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  const now = new Date();
+  if (d.toDateString() === now.toDateString()) {
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  }
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  if (d.toDateString() === yesterday.toDateString()) {
+    return 'Hôm qua';
+  }
+  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+};
 
 const SidebarAI = ({
   sessions,
@@ -11,6 +29,7 @@ const SidebarAI = ({
   onCreateNewSession,
   onDeleteSession,
   onRenameSession,
+  onToggleSidebar,
   setIsSidebarOpen
 }) => {
   const [editingSessionId, setEditingSessionId] = useState(null);
@@ -19,7 +38,7 @@ const SidebarAI = ({
   const startEditing = (e, session) => {
     e.stopPropagation();
     setEditingSessionId(session._id);
-    setEditingTitle(session.title || 'Cuộc hội thoại mới');
+    setEditingTitle(session.title || 'Cuộc trò chuyện mới');
   };
 
   const handleSaveEdit = (e, sessionId) => {
@@ -34,93 +53,126 @@ const SidebarAI = ({
     e.stopPropagation();
     setEditingSessionId(null);
   };
+
+  const handleToggle = onToggleSidebar || (() => setIsSidebarOpen && setIsSidebarOpen(false));
+
   return (
-    <div className="d-flex flex-column h-100 bg-light">
-      <div className="p-3 border-bottom d-flex align-items-center justify-content-between">
+    <aside className="aihub-sidebar">
+      {/* ── Top Header Sidebar: Nút Tạo mới ── */}
+      <div className="p-3 border-bottom bg-white">
         <Button
-          variant="primary"
-          className="fw-bold w-100 d-flex align-items-center justify-content-center gap-2 me-2 rounded-3"
+          variant="warning"
+          className="w-100 fw-bold text-white d-flex align-items-center justify-content-center gap-2 py-2 rounded-3 shadow-sm border-0"
+          style={{ backgroundColor: 'var(--orange)' }}
           onClick={onCreateNewSession}
           loading={isLoadingSessions}
         >
           <Plus size={18} /> Đoạn chat mới
         </Button>
-        <Button
-          variant="link"
-          className="text-secondary p-0 border-0 shadow-none"
-          onClick={() => setIsSidebarOpen(false)}
-          title="Đóng thanh bên"
-        >
-          <PanelLeftClose size={24} />
-        </Button>
       </div>
-      <ListGroup variant="flush" className="overflow-auto flex-grow-1">
+
+      {/* ── Tiêu đề Cuộc trò chuyện gần đây ── */}
+      <div className="px-3 pt-3 pb-2 aihub-recent-title">
+        Cuộc trò chuyện gần đây
+      </div>
+
+      {/* ── Danh sách các cuộc trò chuyện ── */}
+      <div className="aihub-recent-list px-3 pb-3">
         {isLoadingSessions ? (
-          <div className="text-center p-4"><Spinner animation="border" variant="primary" size="sm" /></div>
+          <div className="text-center p-4">
+            <Spinner animation="border" variant="warning" size="sm" />
+          </div>
         ) : sessions.length === 0 ? (
-          <div className="text-center p-4 text-muted small">Chưa có lịch sử chat</div>
+          <div className="text-center p-4 text-muted small">Chưa có lịch sử trò chuyện</div>
         ) : (
-          sessions.map(session => (
-            <ListGroup.Item
-              key={session._id}
-              as="div"
-              role="button"
-              action
-              active={currentSessionId === session._id}
-              onClick={() => onSelectSession(session._id)}
-              className={`d-flex justify-content-between align-items-center ${currentSessionId === session._id ? 'bg-secondary text-white' : 'bg-transparent text-dark'}`}
-            >
-              {editingSessionId === session._id ? (
-                <div className="d-flex align-items-center flex-grow-1 me-2 w-100" onClick={(e) => e.stopPropagation()}>
-                  <input
-                    type="text"
-                    className="form-control form-control-sm me-1 shadow-none"
-                    value={editingTitle}
-                    onChange={(e) => setEditingTitle(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') handleSaveEdit(e, session._id);
-                      if (e.key === 'Escape') handleCancelEdit(e);
-                    }}
-                    autoFocus
-                  />
-                  <Button variant="link" className="p-1 shadow-none text-success" onClick={(e) => handleSaveEdit(e, session._id)}>
-                    <Check size={16} />
-                  </Button>
-                  <Button variant="link" className="p-1 shadow-none text-danger" onClick={handleCancelEdit}>
-                    <X size={16} />
-                  </Button>
+          sessions.map((session) => {
+            const isActive = currentSessionId === session._id;
+            const isEditing = editingSessionId === session._id;
+            const previewText = session.messages && session.messages.length > 0
+              ? session.messages[session.messages.length - 1]?.text || 'Bắt đầu cuộc trò chuyện...'
+              : 'Bắt đầu cuộc trò chuyện...';
+
+            return (
+              <div
+                key={session._id}
+                className={`aihub-conversation ${isActive ? 'active' : ''}`}
+                onClick={() => onSelectSession(session._id)}
+              >
+                <div className="aihub-conversation-icon">
+                  <Sparkles size={16} />
                 </div>
-              ) : (
-                <>
-                  <div className="text-truncate flex-grow-1 d-flex align-items-center me-2" onDoubleClick={(e) => startEditing(e, session)}>
-                    <MessageSquare size={13} className="me-2 flex-shrink-0" />
-                    <span className="text-truncate">{session.title || 'Cuộc hội thoại mới'}</span>
-                  </div>
-                  <div className="d-flex align-items-center">
+
+                {isEditing ? (
+                  <div
+                    className="d-flex align-items-center flex-grow-1 w-100"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <input
+                      type="text"
+                      className="form-control form-control-sm me-1 shadow-none"
+                      style={{ fontSize: '12px' }}
+                      value={editingTitle}
+                      onChange={(e) => setEditingTitle(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleSaveEdit(e, session._id);
+                        if (e.key === 'Escape') handleCancelEdit(e);
+                      }}
+                      autoFocus
+                    />
                     <Button
                       variant="link"
-                      className={`p-1 shadow-none ${currentSessionId === session._id ? 'text-white' : 'text-secondary'}`}
-                      onClick={(e) => startEditing(e, session)}
-                      title="Đổi tên đoạn chat"
+                      className="p-1 text-success shadow-none border-0"
+                      onClick={(e) => handleSaveEdit(e, session._id)}
                     >
-                      <Pencil size={14} />
+                      <Check size={16} />
                     </Button>
                     <Button
                       variant="link"
-                      className={`p-1 shadow-none ${currentSessionId === session._id ? 'text-white' : 'text-danger'}`}
-                      onClick={(e) => onDeleteSession(e, session._id)}
-                      title="Xóa đoạn chat"
+                      className="p-1 text-danger shadow-none border-0"
+                      onClick={handleCancelEdit}
                     >
-                      <Trash2 size={16} />
+                      <X size={16} />
                     </Button>
                   </div>
-                </>
-              )}
-            </ListGroup.Item>
-          ))
+                ) : (
+                  <>
+                    <div className="aihub-conversation-body">
+                      <div className="aihub-conversation-title" title={session.title || 'Cuộc trò chuyện mới'}>
+                        {session.title || 'Cuộc trò chuyện mới'}
+                      </div>
+                      <div className="aihub-conversation-preview">{previewText}</div>
+                    </div>
+                    <div className="aihub-conversation-time">
+                      {formatSessionTime(session.updatedAt || session.createdAt)}
+                    </div>
+
+                    {/* Các nút thao tác đổi tên và xóa */}
+                    <div className="aihub-conversation-actions">
+                      <Button
+                        variant="link"
+                        className="text-secondary p-1 border-0 shadow-none"
+                        onClick={(e) => startEditing(e, session)}
+                        title="Đổi tên đoạn chat"
+                      >
+                        <Pencil size={14} />
+                      </Button>
+                      <Button
+                        variant="link"
+                        className="text-danger p-1 border-0 shadow-none"
+                        onClick={(e) => onDeleteSession(e, session._id)}
+                        title="Xóa đoạn chat"
+                      >
+                        <Trash2 size={14} />
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </div>
+            );
+          })
         )}
-      </ListGroup>
-    </div>
+      </div>
+    </aside>
   );
 };
 
