@@ -162,9 +162,9 @@ const AIChat = ({
                     {msg.text}
                   </div>
 
-                  {/* Thẻ Dự án xếp NGANG tái sử dụng ProjectCard từ components */}
+                  {/* Danh sách thẻ Dự án chia đều cột linh hoạt theo số lượng dự án giống ảnh mẫu */}
                   {msg.projects && msg.projects.length > 0 && (
-                    <Row className="flex-nowrap overflow-auto mt-3 pb-2 px-1 g-3">
+                    <Row className="mt-3 pb-2 g-3">
                       {msg.projects.map((proj, pIdx) => {
                         const projectData = (typeof proj.projectId === 'object' && proj.projectId !== null)
                           ? proj.projectId
@@ -175,8 +175,15 @@ const AIChat = ({
                             candidateRequirements: proj.skills?.join(', ')
                           };
 
+                        // Chia đều cột theo tổng số dự án:
+                        // 1 dự án -> col 12 (full)
+                        // 2 dự án -> col 6 (mỗi card 50%)
+                        // 3 dự án -> col 4 (mỗi card 33.33%)
+                        // 4+ dự án -> col 6 hoặc col 4
+                        const colMd = msg.projects.length === 1 ? 12 : msg.projects.length === 2 ? 6 : 4;
+
                         return (
-                          <Col xs={11} sm={8} md={6} lg={5} key={pIdx} style={{ minWidth: '320px' }}>
+                          <Col xs={12} md={colMd} key={pIdx}>
                             <ProjectCard
                               project={projectData}
                               matchPercent={proj.matchPercent}
