@@ -1,8 +1,9 @@
 import React from 'react';
-import { Form, Badge, Spinner, Card, Row, Col } from 'react-bootstrap';
+import { Form, Badge, Spinner, Row, Col } from 'react-bootstrap';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
 import Alert from '../../components/Alert';
+import ProjectCard from '../../components/ProjectCard';
 import { Sparkles, Send, Zap, PanelLeftOpen } from 'lucide-react';
 import { AI_SENDER } from '../../constants/aiEnum';
 
@@ -62,44 +63,30 @@ const AIChat = ({
                 <div className="text-break">{msg.text}</div>
               </div>
 
-              {/* Thẻ Dự án xếp NGANG (nếu có) */}
+              {/* Thẻ Dự án xếp NGANG tái sử dụng ProjectCard từ components */}
               {msg.projects && msg.projects.length > 0 && (
-                <Row className="flex-nowrap overflow-auto mt-3 pb-3 px-2">
-                  {msg.projects.map((proj, pIdx) => (
-                    <Col xs={11} sm={8} md={6} lg={5} key={pIdx}>
-                      <Card className="shadow-sm border-0 h-100">
-                        <Card.Body className="d-flex flex-column">
-                          <div className="text-end mb-2">
-                            <Badge bg="success" className="px-3 py-2 rounded-pill">
-                              <Sparkles size={14} className="me-1" /> {proj.matchPercent}% Phù hợp
-                            </Badge>
-                          </div>
-                          <h6 className="fw-bold text-dark mb-1 text-truncate" title={proj.projectTitle}>
-                            {proj.projectTitle || `Dự án ${proj.projectId?.substring(0, 8)}`}
-                          </h6>
-                          {proj.skills && proj.skills.length > 0 && (
-                            <div className="mb-2">
-                              <small className="text-muted fw-semibold">KỸ NĂNG YÊU CẦU</small>
-                              <div className="d-flex flex-wrap gap-1 mt-1">
-                                {proj.skills.slice(0, 3).map((skill, sIdx) => (
-                                  <Badge key={sIdx} bg="secondary" className="fw-normal">{skill}</Badge>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          <p className="text-secondary small mb-3 flex-grow-1">{proj.reason}</p>
-                          <Button
-                            variant="outline-primary"
-                            className="w-100 rounded-pill mt-auto fw-bold"
-                            onClick={() => onViewProject(proj.projectId)}
-                            loading={isLoadingProject}
-                          >
-                            Xem chi tiết
-                          </Button>
-                        </Card.Body>
-                      </Card>
-                    </Col>
-                  ))}
+                <Row className="flex-nowrap overflow-auto mt-3 pb-3 px-2 g-3">
+                  {msg.projects.map((proj, pIdx) => {
+                    const projectData = (typeof proj.projectId === 'object' && proj.projectId !== null)
+                      ? proj.projectId
+                      : {
+                          _id: proj.projectId,
+                          title: proj.projectTitle || `Dự án ${proj.projectId?.substring?.(0, 8) || ''}`,
+                          description: proj.reason,
+                          candidateRequirements: proj.skills?.join(', ')
+                        };
+
+                    return (
+                      <Col xs={11} sm={8} md={6} lg={5} key={pIdx} style={{ minWidth: '320px' }}>
+                        <ProjectCard
+                          project={projectData}
+                          matchPercent={proj.matchPercent}
+                          aiReason={proj.reason}
+                          onViewDetail={() => onViewProject(projectData._id || proj.projectId || projectData)}
+                        />
+                      </Col>
+                    );
+                  })}
                 </Row>
               )}
             </div>

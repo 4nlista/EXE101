@@ -125,6 +125,8 @@ export default function ProjectManagementDetail() {
         return <StatusBadge variant="danger" text="Từ chối" />;
       case APPLICATION_STATUS.INVITED:
         return <StatusBadge variant="primary" text="Được mời" />;
+      case APPLICATION_STATUS.EXPIRED:
+        return <StatusBadge variant="secondary" text="Đã hết hạn" />;
       default:
         return null;
     }
@@ -330,6 +332,7 @@ export default function ProjectManagementDetail() {
               <option value={APPLICATION_STATUS.PENDING}>Đang xử lý</option>
               <option value={APPLICATION_STATUS.APPROVED}>Đã duyệt</option>
               <option value={APPLICATION_STATUS.REJECTED}>Từ chối</option>
+              <option value={APPLICATION_STATUS.EXPIRED}>Đã hết hạn</option>
             </Form.Select>
             <Button variant="secondary text-dark" size="sm" className="d-flex align-items-center gap-1 rounded px-3" onClick={exportToCSV}>
               <FaDownload /> Export
@@ -439,6 +442,9 @@ export default function ProjectManagementDetail() {
                             setShowConfirm(true);
                           }}
                         >Mời tham gia</Button>
+                      )}
+                      {app.status === APPLICATION_STATUS.EXPIRED && (
+                        <span className="text-muted small">Đã hết hạn</span>
                       )}
                     </td>
                   </tr>

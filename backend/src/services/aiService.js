@@ -11,15 +11,68 @@ if (!apiKey) {
 // Khởi tạo SDK
 const genAI = new GoogleGenerativeAI(apiKey);
 
+// Danh sách các mô hình Gemini theo thứ tự ưu tiên (Model Fallback)
+// Ưu tiên gemini-2.5-flash (tốc độ nhanh, ổn định cao), dự phòng gemini-3.6-flash, gemini-3.5-flash, gemini-flash-latest
+const GEMINI_MODELS = [
+  'gemini-2.5-flash',
+  'gemini-3.6-flash',
+  'gemini-3.5-flash',
+  'gemini-flash-latest'
+];
+
+/**
+ * Hàm helper gọi Gemini với cơ chế tự động chuyển đổi mô hình dự phòng (Fallback)
+ * và tự động thử lại khi gặp lỗi 503 (Service Unavailable / Quá tải) hoặc 429
+ * @param {string} promptText - Toàn bộ nội dung prompt
+ * @param {object} customConfig - Cấu hình generationConfig (như responseMimeType: "application/json")
+ * @returns {Promise<string>} Nội dung text trả về từ AI
+ */
+const generateContentWithFallback = async (promptText, customConfig = {}) => {
+  let lastError = null;
+
+  for (const modelName of GEMINI_MODELS) {
+    // Thử tối đa 2 lần cho mỗi model trước khi chuyển sang model dự phòng kế tiếp
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const model = genAI.getGenerativeModel({
+          model: modelName,
+          generationConfig: {
+            ...customConfig
+          }
+        });
+
+        const result = await model.generateContent(promptText);
+        const response = await result.response;
+        return response.text();
+      } catch (error) {
+        lastError = error;
+        const status = error?.status;
+        const isTemporary = status === 503 || status === 429 || error?.message?.includes('503') || error?.message?.includes('high demand');
+
+        console.warn(`[AI Warning] Model ${modelName} lần ${attempt} gặp lỗi (${status || error.message?.substring(0, 60)}).`);
+
+        if (isTemporary && attempt < 2) {
+          // Tạm dừng 1 giây để vượt qua đợt nghẽn mạng ngắn hạn của Google
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+        } else {
+          // Chuyển sang model dự phòng kế tiếp
+          break;
+        }
+      }
+    }
+  }
+
+  // Ném lỗi cuối cùng nếu tất cả các model đều thất bại
+  throw lastError;
+};
+
 // Hàm helper để test kết nối
 const testAiConnection = async () => {
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
-    const result = await model.generateContent('Xin chào, đây là hệ thống UniVerse gọi test. Hãy trả lời ngắn gọn.');
-    const response = await result.response;
+    const text = await generateContentWithFallback('Xin chào, đây là hệ thống UniVerse gọi test. Hãy trả lời ngắn gọn.');
     return {
       success: true,
-      message: response.text()
+      message: text
     };
   } catch (error) {
     console.error('Lỗi khi gọi test AI:', error);
@@ -35,13 +88,6 @@ const testAiConnection = async () => {
 // ==========================================
 const recommendProjectsWithAI = async (userProfile, projects, userPrompt, chatHistoryText) => {
   try {
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-3.6-flash',
-      generationConfig: {
-        responseMimeType: "application/json",
-      }
-    });
-
     const systemPrompt = `Bạn là một chuyên gia tư vấn tuyển dụng dự án sinh viên của hệ thống UniVerse.
 Nhiệm vụ của bạn là trò chuyện với sinh viên. NẾU sinh viên có nhu cầu tìm dự án/team, hãy đọc hồ sơ của họ và danh sách dự án đang mở để tìm ra TỐI ĐA 5 dự án phù hợp nhất (dựa vào 'Kỹ năng sinh viên' so với 'Yêu cầu ứng viên').
 LƯU Ý QUAN TRỌNG: 
@@ -78,16 +124,18 @@ ${chatHistoryText}
 "${userPrompt}"
 `;
 
-    const result = await model.generateContent(promptText);
-    let responseText = result.response.text();
+    let responseText = await generateContentWithFallback(promptText, {
+      responseMimeType: "application/json"
+    });
+
     responseText = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
 
     // Parse JSON
     const parsedData = JSON.parse(responseText);
     return { success: true, data: parsedData };
   } catch (error) {
-    console.error('Lỗi khi gọi AI Recommend:', error);
-    return { success: false, message: 'Lỗi khi gọi AI. Vui lòng thử lại sau.' };
+    console.error('Lỗi khi gọi AI Recommend sau khi đã thử qua các model dự phòng:', error);
+    return { success: false, message: 'Hệ thống AI hiện đang quá tải. Bạn vui lòng thử lại sau ít phút nhé!' };
   }
 };
 
@@ -109,13 +157,6 @@ const extractTextFromPdfUrl = async (pdfUrl) => {
 
 const matchApplicantWithAI = async (projectRequirements, cvText) => {
   try {
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-3.6-flash',
-      generationConfig: {
-        responseMimeType: "application/json",
-      }
-    });
-
     const systemPrompt = `Bạn là một chuyên gia tuyển dụng nhân sự (HR).
 Nhiệm vụ của bạn là đánh giá độ phù hợp của 1 ứng viên dựa trên nội dung CV của họ so với Yêu cầu của dự án.
 Bạn PHẢI trả về ĐÚNG định dạng JSON như sau:
@@ -135,15 +176,17 @@ NỘI DUNG CV CỦA ỨNG VIÊN (Đã được trích xuất):
 ${cvText || 'Không trích xuất được hoặc không có CV'}
 `;
 
-    const result = await model.generateContent(promptText);
-    let responseText = result.response.text();
+    let responseText = await generateContentWithFallback(promptText, {
+      responseMimeType: "application/json"
+    });
+
     responseText = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
 
     // Parse JSON
     const parsedData = JSON.parse(responseText);
     return { success: true, data: parsedData };
   } catch (error) {
-    console.error('Lỗi khi gọi AI Match:', error);
+    console.error('Lỗi khi gọi AI Match sau khi đã thử qua các model dự phòng:', error);
     return { success: false, message: 'Lỗi hệ thống khi phân tích CV' };
   }
 };

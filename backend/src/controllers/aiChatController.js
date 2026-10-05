@@ -43,7 +43,15 @@ const createSession = async (req, res) => {
 // @access  Private
 const getSessionById = async (req, res) => {
   try {
-    const session = await AiChatSession.findOne({ _id: req.params.sessionId, userId: req.user.id });
+    const session = await AiChatSession.findOne({ _id: req.params.sessionId, userId: req.user.id })
+      .populate({
+        path: 'messages.projects.projectId',
+        populate: [
+          { path: 'ownerId', select: 'name avatar departmentId', populate: { path: 'departmentId', select: 'name' } },
+          { path: 'departmentIds', select: 'name' }
+        ]
+      });
+
     if (!session) {
       return res.status(404).json({ success: false, message: 'Không tìm thấy phiên chat' });
     }
@@ -117,7 +125,10 @@ const sendMessage = async (req, res) => {
     const projects = await Project.find({
       status: 'open',
       deadline: { $gt: new Date() }
-    }).select('title description candidateRequirements gradeTarget maxMembers deadline members departmentIds').populate('departmentIds', 'name');
+    })
+      .select('title description candidateRequirements gradeTarget maxMembers deadline members departmentIds ownerId createdAt')
+      .populate('departmentIds', 'name')
+      .populate({ path: 'ownerId', select: 'name avatar departmentId', populate: { path: 'departmentId', select: 'name' } });
 
     const cleanProjects = projects.map(p => ({
       _id: p._id,
@@ -161,9 +172,20 @@ const sendMessage = async (req, res) => {
       session.messages.push(aiMessage);
       await session.save();
 
+      // Populate thông tin chi tiết của dự án để trả về cho Frontend hiển thị thẻ ProjectCard đầy đủ
+      await session.populate({
+        path: 'messages.projects.projectId',
+        populate: [
+          { path: 'ownerId', select: 'name avatar departmentId', populate: { path: 'departmentId', select: 'name' } },
+          { path: 'departmentIds', select: 'name' }
+        ]
+      });
+
+      const lastAiMessage = session.messages[session.messages.length - 1];
+
       return res.status(200).json({
         success: true,
-        data: aiMessage
+        data: lastAiMessage
       });
     } else {
       return res.status(500).json({ success: false, message: aiResult.message });

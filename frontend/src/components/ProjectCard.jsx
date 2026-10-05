@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { Card, Badge } from 'react-bootstrap';
-import { Heart, Clock, Users, BookOpen } from 'lucide-react';
+import { Heart, Clock, Users, BookOpen, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Button from './Button';
 import { formatCreatedDate, calculateDaysLeft } from '../utils/formatDate';
 
-export default function ProjectCard({ project, onViewDetail }) {
+export default function ProjectCard({ project, onViewDetail, matchPercent, aiReason }) {
   const [isSaved, setIsSaved] = useState(false); // Toggle tạm thời cho UI
   const navigate = useNavigate();
+
+  if (!project) return null;
 
   const handleSaveToggle = (e) => {
     e.stopPropagation(); // Tránh bị click vào card
@@ -17,6 +19,7 @@ export default function ProjectCard({ project, onViewDetail }) {
   return (
     <Card
       className="h-100 shadow-sm border-1"
+      onClick={() => onViewDetail && onViewDetail()}
       style={{
         transition: 'transform 0.2s, box-shadow 0.2s',
         cursor: 'pointer',
@@ -33,6 +36,16 @@ export default function ProjectCard({ project, onViewDetail }) {
       }}
     >
       <Card.Body className="d-flex flex-column p-4">
+        {/* Huy hiệu Match % khi được gợi ý từ AI */}
+        {matchPercent && (
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <Badge bg="success" className="px-3 py-1 rounded-pill fw-semibold d-flex align-items-center gap-1 shadow-sm">
+              <Sparkles size={12} />
+              <span style={{ fontSize: '0.75rem' }}>{matchPercent}% Phù hợp</span>
+            </Badge>
+          </div>
+        )}
+
         {/* Hàng 1: Thời gian (Ngày đăng + Thời gian còn lại) đặt sát mép 2 bên */}
         <div className="d-flex justify-content-between align-items-center mb-3">
           {project.createdAt && (
@@ -41,14 +54,16 @@ export default function ProjectCard({ project, onViewDetail }) {
               <span style={{ fontSize: '0.7rem' }}>{formatCreatedDate(project.createdAt)}</span>
             </Badge>
           )}
-          <Badge pill bg="primary" className="d-flex align-items-center py-1 fw-normal text-white">
-            <Clock size={12} />
-            <span style={{ fontSize: '0.7rem' }}>{calculateDaysLeft(project.deadline)}</span>
-          </Badge>
+          {project.deadline && (
+            <Badge pill bg="primary" className="d-flex align-items-center py-1 fw-normal text-white">
+              <Clock size={12} />
+              <span style={{ fontSize: '0.7rem' }}>{calculateDaysLeft(project.deadline)}</span>
+            </Badge>
+          )}
         </div>
 
         {/* Hàng 2: Tiêu đề dự án */}
-        <Card.Title className="fw-bold mb-2 text-dark" style={{ fontSize: '1.0rem', lineHeight: '1.0' }}>
+        <Card.Title className="fw-bold mb-2 text-dark" style={{ fontSize: '1.0rem', lineHeight: '1.2' }}>
           {project.title}
         </Card.Title>
 
@@ -76,11 +91,20 @@ export default function ProjectCard({ project, onViewDetail }) {
           {project.description}
         </Card.Text>
 
+        {/* Lý do AI gợi ý (nếu có) */}
+        {aiReason && (
+          <div className="bg-light p-2 rounded-3 mb-2 border text-muted small" style={{ fontSize: '0.78rem' }}>
+            <span className="fw-semibold text-dark">Gợi ý AI:</span> {aiReason}
+          </div>
+        )}
+
         {/* Hàng 4: Số lượng tuyển */}
-        <div className="mb-3 text-dark fw-medium small d-flex align-items-center text-muted">
-          <Users size={14} className="me-2 text-secondary" />
-          <span>Số lượng tuyển: <span style={{ color: '#ea580c' }}>{project.maxMembers} ứng viên</span></span>
-        </div>
+        {project.maxMembers !== undefined && (
+          <div className="mb-3 text-dark fw-medium small d-flex align-items-center text-muted">
+            <Users size={14} className="me-2 text-secondary" />
+            <span>Số lượng tuyển: <span style={{ color: '#ea580c' }}>{project.maxMembers} ứng viên</span></span>
+          </div>
+        )}
 
         {/* Khối thông tin*/}
         <div className="mt-auto">

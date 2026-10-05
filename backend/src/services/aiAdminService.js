@@ -81,48 +81,68 @@ const functionMapping = {
 // HÀM XỬ LÝ CHÍNH
 // ==========================================
 
+const ADMIN_MODELS = ['gemini-2.5-flash', 'gemini-3.5-flash', 'gemini-3.6-flash', 'gemini-flash-latest'];
+
 const adminChatWithAI = async (prompt) => {
-  try {
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-3.5-flash',
-      tools: tools
-    });
+  let lastError = null;
 
-    const chat = model.startChat();
+  for (const modelName of ADMIN_MODELS) {
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const model = genAI.getGenerativeModel({
+          model: modelName,
+          tools: tools
+        });
 
-    // 1. Gửi tin nhắn của Admin cho AI (AI sẽ quyết định xem có cần gọi hàm không)
-    const result = await chat.sendMessage(prompt);
-    let response = result.response;
+        const chat = model.startChat();
 
-    // 2. Nếu AI yêu cầu gọi hàm (Function Calling)
-    if (response.functionCalls && response.functionCalls().length > 0) {
-      const call = response.functionCalls()[0];
-      const functionName = call.name;
-      
-      console.log(`[AI Admin] Đang gọi hàm thống kê: ${functionName}`);
+        // 1. Gửi tin nhắn của Admin cho AI (AI sẽ quyết định xem có cần gọi hàm không)
+        const result = await chat.sendMessage(prompt);
+        let response = result.response;
 
-      // Chạy hàm tương ứng trong Node.js
-      if (functionMapping[functionName]) {
-        const apiResponse = await functionMapping[functionName]();
-        
-        // 3. Gửi kết quả thống kê thực tế ngược lại cho AI để AI nói chuyện
-        const secondResult = await chat.sendMessage([{
-          functionResponse: {
-            name: functionName,
-            response: apiResponse
+        // 2. Nếu AI yêu cầu gọi hàm (Function Calling)
+        if (response.functionCalls && response.functionCalls().length > 0) {
+          const call = response.functionCalls()[0];
+          const functionName = call.name;
+          
+          console.log(`[AI Admin] Đang gọi hàm thống kê: ${functionName}`);
+
+          // Chạy hàm tương ứng trong Node.js
+          if (functionMapping[functionName]) {
+            const apiResponse = await functionMapping[functionName]();
+            
+            // 3. Gửi kết quả thống kê thực tế ngược lại cho AI để AI nói chuyện
+            const secondResult = await chat.sendMessage([{
+              functionResponse: {
+                name: functionName,
+                response: apiResponse
+              }
+            }]);
+            
+            response = secondResult.response;
           }
-        }]);
-        
-        response = secondResult.response;
+        }
+
+        // Trả về câu văn trả lời cuối cùng của AI
+        return { success: true, data: response.text() };
+      } catch (error) {
+        lastError = error;
+        const status = error?.status;
+        const isTemporary = status === 503 || status === 429 || error?.message?.includes('503') || error?.message?.includes('high demand');
+
+        console.warn(`[AI Admin Warning] Model ${modelName} lần ${attempt} gặp lỗi (${status || error.message?.substring(0, 60)}).`);
+
+        if (isTemporary && attempt < 2) {
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+        } else {
+          break;
+        }
       }
     }
-
-    // Trả về câu văn trả lời cuối cùng của AI
-    return { success: true, data: response.text() };
-  } catch (error) {
-    console.error('Lỗi khi gọi AI Admin Chat:', error);
-    return { success: false, message: 'Hệ thống AI Admin đang gặp sự cố.' };
   }
+
+  console.error('Lỗi khi gọi AI Admin Chat sau khi thử các model dự phòng:', lastError);
+  return { success: false, message: 'Hệ thống AI Admin đang quá tải. Vui lòng thử lại sau.' };
 };
 
 module.exports = {

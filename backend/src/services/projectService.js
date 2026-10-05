@@ -6,11 +6,15 @@ const { PROJECT_STATUS } = require('../constants/projectEnum');
 const { NOTIFICATION_TYPE } = require('../constants/notificationEnum');
 const User = require('../models/User');
 const { PACKAGE_TYPE } = require('../constants/subscriptionEnum');
+const { checkAndUpdateExpiredProjects } = require('../jobs/expireProjectJob');
 
 /**
  * Lấy danh sách dự án với phân trang và bộ lọc
  */
 const getProjects = async (query) => {
+  // Quét cập nhật tự động các dự án quá hạn
+  await checkAndUpdateExpiredProjects();
+
   const { page = 1, limit = 10, search, departmentId, status, minGrade, maxGrade, sort = 'newest' } = query;
   const skip = (page - 1) * limit;
 
@@ -152,12 +156,18 @@ const createProject = async (projectData, ownerId) => {
 };
 
 const getMyProjects = async (ownerId, query) => {
-  const { search, sort = 'newest', page = 1, limit = 10 } = query;
+  // Quét cập nhật tự động các dự án quá hạn
+  await checkAndUpdateExpiredProjects();
+
+  const { search, status, sort = 'newest', page = 1, limit = 10 } = query;
   const skip = (page - 1) * limit;
 
   let filter = { ownerId };
   if (search) {
     filter.title = { $regex: search, $options: 'i' };
+  }
+  if (status) {
+    filter.status = status;
   }
 
   const sortOrder = sort === 'oldest' ? { createdAt: 1 } : { createdAt: -1 };
@@ -285,6 +295,9 @@ const deleteProject = async (projectId, ownerId) => {
 };
 
 const getProjectApplicants = async (projectId, ownerId, query) => {
+  // Quét cập nhật tự động các dự án quá hạn
+  await checkAndUpdateExpiredProjects();
+
   const project = await Project.findOne({ _id: projectId, ownerId })
     .populate({
       path: 'members.userId',
@@ -322,6 +335,9 @@ const approveApplicant = async (projectId, ownerId, applicationId) => {
   if (!project) throw new Error('Không tìm thấy dự án.');
   if (project.status === PROJECT_STATUS.CANCELLED) throw new Error('Không thể thao tác trên dự án đã hủy.');
   if (project.status !== PROJECT_STATUS.OPEN) throw new Error('Dự án đã đóng tuyển.');
+  if (project.deadline && new Date(project.deadline) < new Date()) {
+    throw new Error('Dự án đã hết hạn ứng tuyển.');
+  }
   if (project.members.length >= project.maxMembers) throw new Error('Dự án đã đủ thành viên.');
 
   const application = await Application.findOne({ _id: applicationId, projectId });

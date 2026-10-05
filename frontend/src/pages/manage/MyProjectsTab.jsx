@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import StatsCards from './StatsCards';
 import ConfirmActionModal from '../../components/ConfirmActionModal';
 import Button from '../../components/Button';
+import Pagination from '../../components/Pagination';
 import { getMyProjects, getMyProjectStats, deleteProject } from '../../services/projectService';
 import { PROJECT_STATUS } from '../../constants/projectEnum';
 import StatusBadge from '../../components/StatusBadge';
@@ -15,11 +16,17 @@ export default function MyProjectsTab() {
   const [stats, setStats] = useState(null);
   const [projects, setProjects] = useState([]);
   const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const navigate = useNavigate();
 
+  const ITEMS_PER_PAGE = 5;
+
+  // Lấy thống kê các dự án của tôi
   const fetchStats = async () => {
     try {
       const res = await getMyProjectStats();
@@ -29,12 +36,14 @@ export default function MyProjectsTab() {
     }
   };
 
+  // Tải danh sách dự án theo trang (Server-side Pagination)
   const fetchProjects = async () => {
     try {
       setLoading(true);
-      const res = await getMyProjects({ search, limit: 20 });
+      const res = await getMyProjects({ search, status: statusFilter, page, limit: ITEMS_PER_PAGE });
       if (res.success) {
-        setProjects(res.data.projects);
+        setProjects(res.data.projects || []);
+        setTotalPages(res.data.totalPages || 1);
       }
     } catch (error) {
       toast.error('Lỗi khi tải danh sách dự án');
@@ -45,8 +54,11 @@ export default function MyProjectsTab() {
 
   useEffect(() => {
     fetchStats();
+  }, []);
+
+  useEffect(() => {
     fetchProjects();
-  }, [search]);
+  }, [search, statusFilter, page]);
 
   const handleDeleteClick = (id) => {
     setSelectedProjectId(id);
@@ -71,18 +83,38 @@ export default function MyProjectsTab() {
     <div>
       <StatsCards stats={stats} />
 
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h5 className="fw-bold mb-0">Danh sách dự án</h5>
-        <div className="d-flex gap-2" style={{ width: '300px' }}>
-          <InputGroup>
-            <InputGroup.Text className="bg-white border-end-0">
-              <FaSearch className="text-muted" />
+      <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <h5 className="fw-bold mb-0 text-dark">Danh sách dự án</h5>
+        <div className="d-flex flex-wrap gap-3 align-items-center justify-content-end" style={{ maxWidth: '520px' }}>
+          <Form.Select
+            value={statusFilter}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setPage(1);
+            }}
+            className="shadow-none border rounded-pill"
+            style={{ width: '180px' }}
+          >
+            <option value="">Tất cả trạng thái</option>
+            <option value={PROJECT_STATUS.OPEN}>Đang tuyển</option>
+            <option value={PROJECT_STATUS.IN_PROGRESS}>Đang thực hiện</option>
+            <option value={PROJECT_STATUS.COMPLETED}>Kết thúc</option>
+            <option value={PROJECT_STATUS.CLOSED}>Đã đóng</option>
+            <option value={PROJECT_STATUS.CANCELLED}>Đã hủy</option>
+          </Form.Select>
+
+          <InputGroup style={{ width: '250px' }}>
+            <InputGroup.Text className="bg-white border-end-0 rounded-start-pill text-muted px-3">
+              <FaSearch />
             </InputGroup.Text>
             <Form.Control
-              placeholder="Tìm kiếm dự án của bạn..."
-              className="border-start-0 ps-0 shadow-none"
+              placeholder="Tìm kiếm dự án..."
+              className="border-start-0 shadow-none rounded-end-pill ps-0"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
             />
           </InputGroup>
         </div>
@@ -99,8 +131,8 @@ export default function MyProjectsTab() {
           projects.map(project => (
             <Card key={project._id} className="border-0 shadow-sm rounded-4">
               <Card.Body className="d-flex align-items-center py-3">
-                <div className="bg-light rounded-3 d-flex align-items-center justify-content-center me-3" style={{ width: '48px', height: '48px' }}>
-                  <FaLaptopCode size={24} className="text-primary" />
+                <div className="bg-light rounded-3 d-flex align-items-center justify-content-center me-3 border" style={{ width: '48px', height: '48px' }}>
+                  <FaLaptopCode size={24} className="text-secondary" />
                 </div>
 
                 <div className="flex-grow-1" style={{ minWidth: '0' }}>
@@ -175,6 +207,15 @@ export default function MyProjectsTab() {
           ))
         )}
       </div>
+
+      {/* Phân trang server-side */}
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        onPageChange={(newPage) => setPage(newPage)}
+        disabled={loading}
+        className="mt-4"
+      />
 
       <ConfirmActionModal
         show={showDeleteModal}

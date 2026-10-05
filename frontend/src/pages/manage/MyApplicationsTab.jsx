@@ -11,6 +11,7 @@ import { formatDate } from '../../utils/formatDate';
 import StatusBadge from '../../components/StatusBadge';
 import ProjectDetailModal from '../feed/ProjectDetailModal';
 import CustomTable from '../../components/CustomTable';
+import Pagination from '../../components/Pagination';
 import { PROJECT_STATUS } from '../../constants/projectEnum';
 import Modal from 'react-bootstrap/Modal';
 import ReviewTab from './components/ReviewTab';
@@ -25,7 +26,11 @@ export default function MyApplicationsTab() {
   const [applications, setApplications] = useState([]);
   const [statusFilter, setStatusFilter] = useState('');
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
+
+  const ITEMS_PER_PAGE = 5;
 
   // Modals state
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -39,12 +44,14 @@ export default function MyApplicationsTab() {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewProjectId, setReviewProjectId] = useState(null);
 
+  // Tải danh sách hồ sơ ứng tuyển theo trang (Server-side Pagination)
   const fetchApplications = async () => {
     try {
       setLoading(true);
-      const res = await getMyApplications({ status: statusFilter, search, limit: 20 });
+      const res = await getMyApplications({ status: statusFilter, search, page, limit: ITEMS_PER_PAGE });
       if (res.success) {
-        setApplications(res.data.applications);
+        setApplications(res.data.applications || []);
+        setTotalPages(res.data.totalPages || 1);
       }
     } catch (error) {
       toast.error('Lỗi khi tải hồ sơ đã nộp');
@@ -66,7 +73,7 @@ export default function MyApplicationsTab() {
 
   useEffect(() => {
     fetchApplications();
-  }, [statusFilter, search]);
+  }, [statusFilter, search, page]);
 
   // hàm xử lý hành động với applicationId
   const handleAction = async (action, appId) => {
@@ -100,6 +107,8 @@ export default function MyApplicationsTab() {
         return <StatusBadge variant="danger" text="Đã từ chối" />;
       case APPLICATION_STATUS.INVITED:
         return <StatusBadge variant="primary" text="Được mời" />;
+      case APPLICATION_STATUS.EXPIRED:
+        return <StatusBadge variant="secondary" text="Đã hết hạn" />;
       default:
         return null;
     }
@@ -113,7 +122,10 @@ export default function MyApplicationsTab() {
         <div className="d-flex flex-wrap gap-3 align-items-center flex-grow-1 justify-content-end" style={{ maxWidth: '600px' }}>
           <Form.Select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setPage(1);
+            }}
             className="shadow-none border rounded-pill"
             style={{ width: '180px' }}
           >
@@ -122,6 +134,7 @@ export default function MyApplicationsTab() {
             <option value={APPLICATION_STATUS.APPROVED}>Đã duyệt</option>
             <option value={APPLICATION_STATUS.REJECTED}>Đã từ chối</option>
             <option value={APPLICATION_STATUS.INVITED}>Được mời</option>
+            <option value={APPLICATION_STATUS.EXPIRED}>Đã hết hạn</option>
           </Form.Select>
 
           <InputGroup style={{ width: '250px' }}>
@@ -131,7 +144,10 @@ export default function MyApplicationsTab() {
             <Form.Control
               placeholder="Tìm kiếm dự án..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
               className="border-start-0 shadow-none rounded-end-pill ps-0"
             />
           </InputGroup>
@@ -165,7 +181,7 @@ export default function MyApplicationsTab() {
               <td className="text-center" onClick={(e) => e.stopPropagation()}>
                 <div className="d-flex align-items-center justify-content-center gap-2">
                   <Form.Check type="checkbox" />
-                  <span className="text-muted">{idx + 1}</span>
+                  <span className="text-muted">{(page - 1) * ITEMS_PER_PAGE + idx + 1}</span>
                 </div>
               </td>
               <td>
@@ -239,6 +255,16 @@ export default function MyApplicationsTab() {
           ))
         )}
       </CustomTable>
+
+      {/* Phân trang server-side */}
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        onPageChange={(newPage) => setPage(newPage)}
+        disabled={loading}
+        className="mt-4"
+      />
+
       <ConfirmActionModal
         show={showCancelModal}
         onHide={() => setShowCancelModal(false)}

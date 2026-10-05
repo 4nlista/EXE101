@@ -181,7 +181,10 @@ const AIHub = () => {
     handleSendMessage(null, text);
   };
 
-  const handleViewProject = async (projectId) => {
+  const handleViewProject = async (projectOrId) => {
+    const projectId = typeof projectOrId === 'object' ? projectOrId?._id : projectOrId;
+    if (!projectId) return;
+
     setIsLoadingProject(true);
     try {
       const response = await getProjectDetail(projectId);
