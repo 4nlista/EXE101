@@ -186,8 +186,8 @@ export default function ProjectManagementDetail() {
       <div className="bg-white rounded-4 shadow-sm border p-4 mb-4">
         <div className="d-flex justify-content-between align-items-start mb-4">
           <div className="d-flex gap-3">
-            <div className="bg-light rounded-3 d-flex align-items-center justify-content-center" style={{ width: '64px', height: '64px' }}>
-              <FaRegFileAlt size={32} className="text-primary" />
+            <div className="bg-light rounded-3 d-flex align-items-center justify-content-center border" style={{ width: '64px', height: '64px' }}>
+              <FaRegFileAlt size={32} className="text-secondary" />
             </div>
             <div>
               <div className="d-flex align-items-center gap-2 mb-2">

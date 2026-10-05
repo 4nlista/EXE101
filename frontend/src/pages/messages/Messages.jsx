@@ -300,14 +300,14 @@ export default function Messages() {
   };
 
   const renderMessageStatus = (status) => {
-    if (status === 'read') return <span className="text-info ms-1" title="Đã xem"><FaCheckDouble size={12} /></span>;
+    if (status === 'read') return <span className="text-secondary ms-1" title="Đã xem"><FaCheckDouble size={12} /></span>;
     if (status === 'delivered') return <span className="text-secondary ms-1" title="Đã nhận"><FaCheckDouble size={12} /></span>;
     return <span className="text-secondary ms-1" title="Đã gửi"><FaCheck size={12} /></span>;
   };
 
   return (
-    <Container className="py-4" style={{ height: 'calc(100vh - 80px)' }}>
-      <Row className="h-100 bg-white rounded-4 shadow-sm border overflow-hidden">
+    <div className="h-100 p-3 overflow-hidden d-flex flex-column" style={{ maxWidth: '1440px', margin: '0 auto', width: '100%' }}>
+      <Row className="h-100 g-0 bg-white rounded-3 shadow-sm border overflow-hidden">
         {/* Sidebar */}
         <Col md={4} className="border-end p-0 d-flex flex-column h-100">
           <div className="p-3 border-bottom bg-light">
@@ -497,6 +497,6 @@ export default function Messages() {
           )}
         </Col>
       </Row>
-    </Container>
+    </div>
   );
 }

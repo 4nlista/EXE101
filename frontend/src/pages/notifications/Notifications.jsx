@@ -126,23 +126,23 @@ export default function Notifications() {
   const getIcon = (type) => {
     switch (type) {
       case NOTIFICATION_TYPE.SUBSCRIPTION:
-        return <div className="d-flex align-items-center justify-content-center bg-warning bg-opacity-25 rounded-2" style={{ width: '100%', height: '100%' }}><Zap size={20} className="text-warning" /></div>;
+        return <div className="d-flex align-items-center justify-content-center bg-light rounded-2 border" style={{ width: '100%', height: '100%' }}><Zap size={18} className="text-secondary" /></div>;
       case NOTIFICATION_TYPE.APPLICATION:
       case NOTIFICATION_TYPE.INVITATION:
       case NOTIFICATION_TYPE.INVITATION_ACCEPTED:
-        return <div className="d-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-2" style={{ width: '100%', height: '100%' }}><User size={20} className="text-primary" /></div>;
+        return <div className="d-flex align-items-center justify-content-center bg-light rounded-2 border" style={{ width: '100%', height: '100%' }}><User size={18} className="text-secondary" /></div>;
       case NOTIFICATION_TYPE.APPROVED:
-        return <div className="d-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-2" style={{ width: '100%', height: '100%' }}><CheckCircle2 size={20} className="text-success" /></div>;
+        return <div className="d-flex align-items-center justify-content-center bg-light rounded-2 border" style={{ width: '100%', height: '100%' }}><CheckCircle2 size={18} className="text-secondary" /></div>;
       case NOTIFICATION_TYPE.REJECTED:
       case NOTIFICATION_TYPE.MEMBER_KICKED:
-        return <div className="d-flex align-items-center justify-content-center bg-danger bg-opacity-10 rounded-2" style={{ width: '100%', height: '100%' }}><FileText size={20} className="text-danger" /></div>;
+        return <div className="d-flex align-items-center justify-content-center bg-light rounded-2 border" style={{ width: '100%', height: '100%' }}><FileText size={18} className="text-secondary" /></div>;
       default:
-        return <div className="d-flex align-items-center justify-content-center bg-secondary bg-opacity-10 rounded-2" style={{ width: '100%', height: '100%' }}><Bell size={20} className="text-secondary" /></div>;
+        return <div className="d-flex align-items-center justify-content-center bg-light rounded-2 border" style={{ width: '100%', height: '100%' }}><Bell size={18} className="text-secondary" /></div>;
     }
   };
 
   return (
-    <Container className="py-4">
+    <Container className="py-4" style={{ maxWidth: '1200px' }}>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div className="d-flex align-items-center gap-3">
           <BsButton 
@@ -153,11 +153,11 @@ export default function Notifications() {
             <ArrowLeft size={22} className="text-dark" />
           </BsButton>
           <h2 className="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
-            <Bell size={28} className="text-primary" />
+            <Bell size={26} className="text-dark" />
             Thông báo
           </h2>
         </div>
-        <BsButton variant="light" onClick={handleMarkAllRead} className="d-flex align-items-center gap-2 text-primary shadow-sm border-0 fw-medium">
+        <BsButton variant="light" onClick={handleMarkAllRead} className="d-flex align-items-center gap-2 text-dark shadow-sm border fw-medium">
           <Check size={18} /> Đánh dấu tất cả đã đọc
         </BsButton>
       </div>

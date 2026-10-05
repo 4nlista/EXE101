@@ -146,14 +146,14 @@ export default function NotificationDropdown() {
 
   const getIcon = (type) => {
     switch(type) {
-      case NOTIFICATION_TYPE.SUBSCRIPTION: return <CrownIcon />;
+      case NOTIFICATION_TYPE.SUBSCRIPTION: return <Zap size={18} className="text-secondary" />;
       case NOTIFICATION_TYPE.APPLICATION:
       case NOTIFICATION_TYPE.INVITATION:
-      case NOTIFICATION_TYPE.INVITATION_ACCEPTED: return <User size={20} className="text-primary" />;
-      case NOTIFICATION_TYPE.APPROVED: return <CheckCircle2 size={20} className="text-success" />;
+      case NOTIFICATION_TYPE.INVITATION_ACCEPTED: return <User size={18} className="text-secondary" />;
+      case NOTIFICATION_TYPE.APPROVED: return <CheckCircle2 size={18} className="text-secondary" />;
       case NOTIFICATION_TYPE.REJECTED:
-      case NOTIFICATION_TYPE.MEMBER_KICKED: return <FileText size={20} className="text-danger" />;
-      default: return <Bell size={20} className="text-secondary" />;
+      case NOTIFICATION_TYPE.MEMBER_KICKED: return <FileText size={18} className="text-secondary" />;
+      default: return <Bell size={18} className="text-secondary" />;
     }
   };
 

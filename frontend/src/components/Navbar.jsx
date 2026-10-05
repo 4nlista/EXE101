@@ -33,7 +33,7 @@ export default function Navbar() {
         <div className="layout-logo-text fw-bold text-dark fs-5">UniVerse AI</div>
       </Link>
 
-      <div className="layout-nav-links" style={{ position: 'absolute', left: '40%', transform: 'translateX(-50%)' }}>
+      <div className="layout-nav-links" style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
         {navs.map(n => {
           const isActive = location.pathname.startsWith(n.path);
           const Icon = n.icon;
@@ -78,7 +78,7 @@ export default function Navbar() {
               </div>
               <div style={{ padding: '6px 0' }}>
                 <button className="drop-item" onClick={() => { navigate('/profile'); setShowDrop(false); }}><User size={16} /> Hồ sơ cá nhân</button>
-                <button className="drop-item" onClick={() => { navigate('/subscription'); setShowDrop(false); }}><Crown size={16} className="text-warning" /> Nâng cấp tài khoản</button>
+                <button className="drop-item" onClick={() => { navigate('/subscription'); setShowDrop(false); }}><Crown size={16} className="text-secondary" /> Nâng cấp tài khoản</button>
                 <button className="drop-item" onClick={() => { navigate('/transactions'); setShowDrop(false); }}><ReceiptText size={16} /> Lịch sử thanh toán</button>
                 <button className="drop-item" onClick={() => { navigate('/change-password'); setShowDrop(false); }}><Settings size={16} /> Đổi mật khẩu</button>
                 <div className="drop-sep" />

@@ -78,7 +78,7 @@ export default function ProjectCard({ project, onViewDetail }) {
 
         {/* Hàng 4: Số lượng tuyển */}
         <div className="mb-3 text-dark fw-medium small d-flex align-items-center text-muted">
-          <Users size={14} className="me-2 text-primary" />
+          <Users size={14} className="me-2 text-secondary" />
           <span>Số lượng tuyển: <span style={{ color: '#ea580c' }}>{project.maxMembers} ứng viên</span></span>
         </div>
 
