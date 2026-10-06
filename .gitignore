@@ -9,6 +9,8 @@ dist-ssr/
 *.json
 !package.json
 !package-lock.json
+!vercel.json
+!**/vercel.json
 
 # Bỏ qua các file ảnh (Đã comment lại để deploy web)
 # *.jpg
