@@ -230,7 +230,7 @@ export default function ProjectManagementDetail() {
 
             <div className="d-flex justify-content-end gap-2">
               {project.status === PROJECT_STATUS.OPEN && members.length < (project.maxMembers / 2) && (
-                <Button variant="dark" className="rounded px-3 text-white shadow-none" onClick={() => {
+                <Button variant="dark" className="rounded px-3 text-dark shadow-none" onClick={() => {
                   setConfirmAction({ type: ACTION_TYPES.CHANGE_STATUS, name: 'hủy dự án này', newStatus: PROJECT_STATUS.CANCELLED });
                   setShowConfirm(true);
                 }}>
