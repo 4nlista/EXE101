@@ -130,33 +130,45 @@ export default function MyProjectsTab() {
         ) : (
           projects.map(project => (
             <Card key={project._id} className="border-0 shadow-sm rounded-4">
-              <Card.Body className="d-flex align-items-center py-3">
-                <div className="bg-light rounded-3 d-flex align-items-center justify-content-center me-3 border" style={{ width: '48px', height: '48px' }}>
-                  <FaLaptopCode size={24} className="text-secondary" />
-                </div>
-
-                <div className="flex-grow-1" style={{ minWidth: '0' }}>
-                  <h6 className="fw-bold mb-1 text-truncate">{project.title}</h6>
-                  <div className="d-flex align-items-center gap-2 text-muted" style={{ fontSize: '13px' }}>
-                    <span>•</span>
-                    <span className="text-truncate">{project.departmentIds?.map(d => d.name).join(' · ')}</span>
-
+              <Card.Body className="d-flex align-items-center py-2 px-3 gap-3">
+                {/* Cột 1: Icon + Tên dự án + Ngành học (Chiếm phần còn lại và co giãn linh hoạt, tự ba chấm nếu quá dài) */}
+                <div className="d-flex align-items-center gap-3" style={{ flex: '1 1 0', minWidth: '0' }}>
+                  <div
+                    className="bg-light rounded-3 d-flex align-items-center justify-content-center border flex-shrink-0"
+                    style={{ width: '40px', height: '40px' }}
+                  >
+                    <FaLaptopCode size={20} className="text-secondary" />
+                  </div>
+                  <div style={{ minWidth: '0', flex: '1 1 0' }}>
+                    <h6 className="fw-bold mb-0 text-truncate" style={{ fontSize: '14px' }} title={project.title}>
+                      {project.title}
+                    </h6>
+                    <div className="d-flex align-items-center gap-1 text-muted text-truncate mt-1" style={{ fontSize: '12px' }}>
+                      <span>•</span>
+                      <span className="text-truncate">
+                        {project.departmentIds?.map(d => d.name).join(' · ')}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="mx-5">
-                  <div className="text-dark mb-1 fw-bold" style={{ fontSize: '12px' }}>Hạn ứng tuyển</div>
-                  <div className="text-muted" style={{ fontSize: '13px' }}>
+                {/* Cột 2: Hạn ứng tuyển (Fix cứng 150px, thẳng hàng 100%) */}
+                <div style={{ width: '150px', flex: '0 0 150px' }} className="flex-shrink-0">
+                  <div className="text-dark mb-0 fw-bold text-truncate" style={{ fontSize: '12px' }}>
+                    Hạn ứng tuyển
+                  </div>
+                  <div className="text-muted text-truncate mt-1" style={{ fontSize: '12.5px' }}>
                     {formatDate(project.deadline)}
                   </div>
                 </div>
 
-                <div className="mx-4" style={{ width: '150px' }}>
-                  <div className="d-flex justify-content-between mb-1" style={{ fontSize: '13px' }}>
+                {/* Cột 3: Thành viên + Progress bar (Fix cứng 130px) */}
+                <div style={{ width: '130px', flex: '0 0 130px' }} className="flex-shrink-0">
+                  <div className="d-flex justify-content-between mb-1" style={{ fontSize: '12px' }}>
                     <span className="text-muted">Thành viên</span>
                     <span className="fw-semibold">{project.members?.length || 0}/{project.maxMembers}</span>
                   </div>
-                  <div className="progress" style={{ height: '6px' }}>
+                  <div className="progress" style={{ height: '5px' }}>
                     <div
                       className="progress-bar bg-success"
                       style={{ width: `${Math.min(100, ((project.members?.length || 0) / project.maxMembers) * 100)}%` }}
@@ -164,7 +176,8 @@ export default function MyProjectsTab() {
                   </div>
                 </div>
 
-                <div className="mx-4 text-center" style={{ width: '120px' }}>
+                {/* Cột 4: Trạng thái (Fix cứng 130px, căn giữa) */}
+                <div style={{ width: '130px', flex: '0 0 130px' }} className="d-flex justify-content-center flex-shrink-0">
                   <StatusBadge
                     variant={
                       project.status === PROJECT_STATUS.OPEN ? 'warning' :
@@ -181,17 +194,19 @@ export default function MyProjectsTab() {
                   />
                 </div>
 
-                <div className="ms-2 d-flex align-items-center gap-2">
+                {/* Cột 5: Nút Quản lý & Dropdown (Fix cứng 120px, căn phải) */}
+                <div style={{ width: '120px', flex: '0 0 120px' }} className="d-flex align-items-center justify-content-end gap-2 flex-shrink-0">
                   <Button
                     variant="secondary text-dark border-2"
-                    className="rounded-pill px-3"
+                    className="rounded-pill px-3 py-1"
+                    style={{ fontSize: '13px' }}
                     onClick={() => navigate(`/manage/${project._id}`)}
                   >
                     Quản lý
                   </Button>
                   <Dropdown align="end">
                     <Dropdown.Toggle as="div" className="btn btn-link text-muted p-1" style={{ cursor: 'pointer' }}>
-                      <FaEllipsisV />
+                      <FaEllipsisV size={14} />
                     </Dropdown.Toggle>
                     <Dropdown.Menu className="border-1 shadow-sm rounded-5">
                       {project.status !== PROJECT_STATUS.CANCELLED && (project.members?.length || 0) < (project.maxMembers / 2) && (
