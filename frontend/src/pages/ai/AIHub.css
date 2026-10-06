@@ -276,15 +276,43 @@
   max-width: min(800px, 85%);
 }
 
+/* Khối bao bọc tin nhắn AI (icon + bubble) */
 .aihub-ai-message-wrap {
   display: flex;
   gap: 12px;
+  align-items: flex-start;
+}
+
+/* 1. Chỉ có văn bản (không có card): co dãn tự nhiên theo câu chữ */
+.aihub-ai-message-wrap.text-only {
   width: fit-content;
+  max-width: min(780px, 85%);
+}
+
+.aihub-ai-message-wrap.text-only .aihub-message.ai {
+  width: fit-content;
+}
+
+/* 2. Có đúng 1 dự án: giới hạn cố định tối đa 640px cho cả khối */
+.aihub-ai-message-wrap.single-project {
+  width: 100%;
+  max-width: 640px;
+}
+
+.aihub-ai-message-wrap.single-project .aihub-message.ai {
+  width: 100%;
   max-width: 100%;
 }
 
-.aihub-ai-message-wrap.wide {
+/* 3. Có từ 2 dự án trở lên: bung rộng 100% để hiển thị đều 2-3 cột card */
+.aihub-ai-message-wrap.multiple-projects {
   width: 100%;
+  max-width: 100%;
+}
+
+.aihub-ai-message-wrap.multiple-projects .aihub-message.ai {
+  width: 100%;
+  max-width: 100%;
 }
 
 .aihub-message.ai {
@@ -294,24 +322,6 @@
   box-shadow: 0 2px 8px rgba(25, 35, 45, 0.03);
   color: var(--text);
   padding: 16px 20px;
-}
-
-/* Khi chỉ có chữ (không có card): co dãn tự nhiên theo độ dài câu */
-.aihub-message.ai.text-only {
-  width: fit-content;
-  max-width: min(780px, 88%);
-}
-
-/* Khi có 1 dự án: bám gọn gàng theo kích thước chuẩn của 1 Card (~640px), không kéo bẹt ra cả màn hình */
-.aihub-message.ai.has-single-project {
-  width: 100%;
-  max-width: min(640px, 100%);
-}
-
-/* Khi có 2 hoặc 3 dự án: mở rộng tối đa để chứa đều 2-3 cột card */
-.aihub-message.ai.has-multiple-projects {
-  width: 100%;
-  max-width: 100%;
 }
 
 .aihub-mini-ai {

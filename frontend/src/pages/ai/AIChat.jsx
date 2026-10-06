@@ -158,12 +158,18 @@ const AIChat = ({
                 const hasMultipleProjects = msg.projects && msg.projects.length >= 2;
                 const hasSingleProject = msg.projects && msg.projects.length === 1;
 
+                const layoutClass = hasMultipleProjects 
+                  ? 'multiple-projects' 
+                  : hasSingleProject 
+                    ? 'single-project' 
+                    : 'text-only';
+
                 return (
-                  <div className={`aihub-ai-message-wrap ${hasMultipleProjects ? 'wide' : ''}`}>
+                  <div className={`aihub-ai-message-wrap ${layoutClass}`}>
                     <div className="aihub-mini-ai">
                       <Sparkles size={16} />
                     </div>
-                    <div className={`aihub-message ai ${hasMultipleProjects ? 'has-multiple-projects' : hasSingleProject ? 'has-single-project' : 'text-only'}`}>
+                    <div className={`aihub-message ai ${layoutClass}`}>
                       <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
                         {msg.text}
                       </div>
@@ -207,11 +213,11 @@ const AIChat = ({
         {/* Trạng thái đang tải tin nhắn AI */}
         {isLoading && (
           <div className="aihub-message-row">
-            <div className="aihub-ai-message-wrap">
+            <div className="aihub-ai-message-wrap text-only">
               <div className="aihub-mini-ai">
                 <Sparkles size={16} />
               </div>
-              <div className="aihub-message ai d-flex align-items-center gap-2 py-3" style={{ width: 'auto' }}>
+              <div className="aihub-message ai d-flex align-items-center gap-2 py-3 text-only" style={{ width: 'auto' }}>
                 <Spinner animation="grow" size="sm" style={{ color: 'var(--orange)' }} />
                 <Spinner animation="grow" size="sm" style={{ color: 'var(--orange)' }} />
                 <Spinner animation="grow" size="sm" style={{ color: 'var(--orange)' }} />
