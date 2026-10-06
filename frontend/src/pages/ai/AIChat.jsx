@@ -153,50 +153,53 @@ const AIChat = ({
                 {msg.text}
               </div>
             ) : (
-              <div className="aihub-ai-message-wrap">
-                <div className="aihub-mini-ai">
-                  <Sparkles size={16} />
-                </div>
-                <div className="aihub-message ai">
-                  <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
-                    {msg.text}
+              (() => {
+                const hasProjects = msg.projects && msg.projects.length > 0;
+                const hasMultipleProjects = msg.projects && msg.projects.length >= 2;
+                const hasSingleProject = msg.projects && msg.projects.length === 1;
+
+                return (
+                  <div className={`aihub-ai-message-wrap ${hasMultipleProjects ? 'wide' : ''}`}>
+                    <div className="aihub-mini-ai">
+                      <Sparkles size={16} />
+                    </div>
+                    <div className={`aihub-message ai ${hasMultipleProjects ? 'has-multiple-projects' : hasSingleProject ? 'has-single-project' : 'text-only'}`}>
+                      <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
+                        {msg.text}
+                      </div>
+
+                      {/* Danh sách thẻ Dự án: 1 dự án co gọn vừa vặn, 2-3 dự án dàn đều cột linh hoạt */}
+                      {hasProjects && (
+                        <Row className="mt-3 pb-2 g-3">
+                          {msg.projects.map((proj, pIdx) => {
+                            const projectData = (typeof proj.projectId === 'object' && proj.projectId !== null)
+                              ? proj.projectId
+                              : {
+                                _id: proj.projectId,
+                                title: proj.projectTitle || `Dự án ${proj.projectId?.substring?.(0, 8) || ''}`,
+                                description: proj.reason,
+                                candidateRequirements: proj.skills?.join(', ')
+                              };
+
+                            const colMd = hasSingleProject ? 12 : msg.projects.length === 2 ? 6 : 4;
+
+                            return (
+                              <Col xs={12} md={colMd} key={pIdx}>
+                                <ProjectCard
+                                  project={projectData}
+                                  matchPercent={proj.matchPercent}
+                                  aiReason={proj.reason}
+                                  onViewDetail={() => onViewProject(projectData._id || proj.projectId || projectData)}
+                                />
+                              </Col>
+                            );
+                          })}
+                        </Row>
+                      )}
+                    </div>
                   </div>
-
-                  {/* Danh sách thẻ Dự án chia đều cột linh hoạt theo số lượng dự án giống ảnh mẫu */}
-                  {msg.projects && msg.projects.length > 0 && (
-                    <Row className="mt-3 pb-2 g-3">
-                      {msg.projects.map((proj, pIdx) => {
-                        const projectData = (typeof proj.projectId === 'object' && proj.projectId !== null)
-                          ? proj.projectId
-                          : {
-                            _id: proj.projectId,
-                            title: proj.projectTitle || `Dự án ${proj.projectId?.substring?.(0, 8) || ''}`,
-                            description: proj.reason,
-                            candidateRequirements: proj.skills?.join(', ')
-                          };
-
-                        // Chia đều cột theo tổng số dự án:
-                        // 1 dự án -> col 12 (full)
-                        // 2 dự án -> col 6 (mỗi card 50%)
-                        // 3 dự án -> col 4 (mỗi card 33.33%)
-                        // 4+ dự án -> col 6 hoặc col 4
-                        const colMd = msg.projects.length === 1 ? 12 : msg.projects.length === 2 ? 6 : 4;
-
-                        return (
-                          <Col xs={12} md={colMd} key={pIdx}>
-                            <ProjectCard
-                              project={projectData}
-                              matchPercent={proj.matchPercent}
-                              aiReason={proj.reason}
-                              onViewDetail={() => onViewProject(projectData._id || proj.projectId || projectData)}
-                            />
-                          </Col>
-                        );
-                      })}
-                    </Row>
-                  )}
-                </div>
-              </div>
+                );
+              })()
             )}
           </div>
         ))}

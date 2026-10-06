@@ -276,19 +276,40 @@
   max-width: min(800px, 85%);
 }
 
+.aihub-ai-message-wrap {
+  display: flex;
+  gap: 12px;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.aihub-ai-message-wrap.wide {
+  width: 100%;
+}
+
 .aihub-message.ai {
   background: #ffffff;
   border: 1px solid var(--border);
   border-bottom-left-radius: 4px;
   box-shadow: 0 2px 8px rgba(25, 35, 45, 0.03);
   color: var(--text);
-  width: 100%;
   padding: 16px 20px;
 }
 
-.aihub-ai-message-wrap {
-  display: flex;
-  gap: 12px;
+/* Khi chỉ có chữ (không có card): co dãn tự nhiên theo độ dài câu */
+.aihub-message.ai.text-only {
+  width: fit-content;
+  max-width: min(780px, 88%);
+}
+
+/* Khi có 1 dự án: bám gọn gàng theo kích thước chuẩn của 1 Card (~640px), không kéo bẹt ra cả màn hình */
+.aihub-message.ai.has-single-project {
+  width: 100%;
+  max-width: min(640px, 100%);
+}
+
+/* Khi có 2 hoặc 3 dự án: mở rộng tối đa để chứa đều 2-3 cột card */
+.aihub-message.ai.has-multiple-projects {
   width: 100%;
   max-width: 100%;
 }
