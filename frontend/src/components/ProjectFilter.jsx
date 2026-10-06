@@ -3,6 +3,7 @@ import { Form } from 'react-bootstrap';
 import { useQuery } from '@tanstack/react-query';
 import { masterDataService } from '../services/masterDataService';
 import Button from './Button';
+import { Heart } from 'lucide-react';
 
 export default function ProjectFilter({ filters, setFilters }) {
   // Lấy danh sách ngành (Department)
@@ -42,6 +43,7 @@ export default function ProjectFilter({ filters, setFilters }) {
       minGrade: '',
       maxGrade: '',
       deadline: '',
+      onlyLiked: false,
       page: 1
     };
     setLocalFilters(resetState);
@@ -53,6 +55,22 @@ export default function ProjectFilter({ filters, setFilters }) {
       <h6 className="mb-4 fw-bold text-secondary text-uppercase">Bộ lọc</h6>
 
       <Form>
+        {/* Bộ lọc dự án yêu thích */}
+        <Form.Group className="mb-4 p-2 rounded bg-light border">
+          <Form.Check
+            type="switch"
+            id="onlyLikedSwitch"
+            label={
+              <span className="fw-semibold text-dark d-inline-flex align-items-center gap-1">
+                Đã thả tim <Heart size={14} fill="#dc3545" className="text-danger" />
+              </span>
+            }
+            checked={Boolean(localFilters.onlyLiked)}
+            onChange={(e) => setLocalFilters(prev => ({ ...prev, onlyLiked: e.target.checked }))}
+            className="fw-medium"
+          />
+        </Form.Group>
+
         <Form.Group className="mb-4">
           <Form.Label className="fw-bold">Ngành học<span className="text-danger ms-1">*</span></Form.Label>
           <Form.Select

@@ -53,4 +53,22 @@ const isUser = (req, res, next) => {
   }
 };
 
-module.exports = { verifyToken, isAdmin, isUser };
+/**
+ * Middleware tùy chọn: Giải mã token nếu có trong Authorization header, không ném lỗi nếu không có
+ */
+const optionalVerifyToken = (req, res, next) => {
+  try {
+    const authHeader = req.header('Authorization');
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'universe-secret-key');
+      req.user = decoded;
+    }
+  } catch (error) {
+    // Không chặn request nếu token không hợp lệ hoặc hết hạn
+  }
+  next();
+};
+
+module.exports = { verifyToken, optionalVerifyToken, isAdmin, isUser };
+

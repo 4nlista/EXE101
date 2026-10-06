@@ -63,3 +63,12 @@ export const kickMember = async (projectId, userId) => {
 export const updateProjectStatus = async (projectId, status) => {
   return await axiosClient.patch(`/projects/${projectId}/status`, { status });
 };
+
+export const toggleLikeProject = async (projectId) => {
+  return await axiosClient.post(`/projects/${projectId}/like`);
+};
+
+export const getMyLikedProjectIds = async () => {
+  return await axiosClient.get('/projects/my-likes/ids');
+};
+

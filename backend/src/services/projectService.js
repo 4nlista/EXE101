@@ -1,4 +1,5 @@
 const Project = require('../models/Project');
+const Like = require('../models/Like');
 const Application = require('../models/Application');
 const Notification = require('../models/Notification');
 const { APPLICATION_STATUS } = require('../constants/applicationEnum');
@@ -11,11 +12,11 @@ const { checkAndUpdateExpiredProjects } = require('../jobs/expireProjectJob');
 /**
  * Lấy danh sách dự án với phân trang và bộ lọc
  */
-const getProjects = async (query) => {
+const getProjects = async (query, userId = null) => {
   // Quét cập nhật tự động các dự án quá hạn
   await checkAndUpdateExpiredProjects();
 
-  const { page = 1, limit = 10, search, departmentId, status, minGrade, maxGrade, sort = 'newest' } = query;
+  const { page = 1, limit = 10, search, departmentId, status, minGrade, maxGrade, sort = 'newest', onlyLiked } = query;
   const skip = (page - 1) * limit;
 
   // Xây dựng query filter
@@ -52,12 +53,29 @@ const getProjects = async (query) => {
     };
   } else {
     // Mặc định luôn ẩn các dự án đã quá hạn nếu không truyền deadline cụ thể
-    // Giả định: Các dự án không set deadline hoặc có deadline ở tương lai mới hiện
     filter.$or = [
       { deadline: { $gte: new Date() } },
       { deadline: { $exists: false } },
       { deadline: null }
     ];
+  }
+
+  // Lọc theo các dự án đã thả tim / yêu thích
+  if (onlyLiked === 'true' || onlyLiked === true) {
+    if (!userId) {
+      return {
+        projects: [],
+        pagination: {
+          total: 0,
+          page: parseInt(page),
+          limit: parseInt(limit),
+          totalPages: 0
+        }
+      };
+    }
+    const userLikes = await Like.find({ userId }).select('projectId');
+    const likedProjectIds = userLikes.map(l => l.projectId);
+    filter._id = { $in: likedProjectIds };
   }
 
   // Xác định thứ tự sắp xếp
@@ -77,8 +95,27 @@ const getProjects = async (query) => {
 
   const total = await Project.countDocuments(filter);
 
+  // Đính kèm trạng thái isLiked cho từng dự án nếu user đã đăng nhập
+  let projectsWithLike = projects;
+  if (userId && projects.length > 0) {
+    const projectIds = projects.map(p => p._id);
+    const likes = await Like.find({ userId, projectId: { $in: projectIds } }).select('projectId');
+    const likedSet = new Set(likes.map(l => l.projectId.toString()));
+    projectsWithLike = projects.map(p => {
+      const pObj = p.toObject();
+      pObj.isLiked = likedSet.has(p._id.toString());
+      return pObj;
+    });
+  } else {
+    projectsWithLike = projects.map(p => {
+      const pObj = p.toObject();
+      pObj.isLiked = false;
+      return pObj;
+    });
+  }
+
   return {
-    projects,
+    projects: projectsWithLike,
     pagination: {
       total,
       page: parseInt(page),
@@ -478,6 +515,29 @@ const kickMember = async (projectId, ownerId, userId) => {
   return true;
 };
 
+// Thả tim hoặc bỏ thả tim bài đăng dự án
+const toggleLikeProject = async (projectId, userId) => {
+  const project = await Project.findById(projectId);
+  if (!project) {
+    throw new Error('Không tìm thấy dự án.');
+  }
+
+  const existingLike = await Like.findOne({ projectId, userId });
+  if (existingLike) {
+    await Like.deleteOne({ _id: existingLike._id });
+    return { isLiked: false, message: 'Đã bỏ thả tim dự án.' };
+  } else {
+    await Like.create({ projectId, userId });
+    return { isLiked: true, message: 'Đã lưu dự án vào danh sách yêu thích.' };
+  }
+};
+
+// Lấy danh sách ID các bài đăng dự án người dùng đã thả tim
+const getMyLikedProjectIds = async (userId) => {
+  const likes = await Like.find({ userId }).select('projectId');
+  return likes.map(l => l.projectId.toString());
+};
+
 module.exports = {
   getProjects,
   createProject,
@@ -492,5 +552,8 @@ module.exports = {
   inviteApplicant,
   kickMember,
   checkLimit,
-  updateProjectStatus
+  updateProjectStatus,
+  toggleLikeProject,
+  getMyLikedProjectIds
 };
+

@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom';
 import Button from '../../components/Button';
 import Modal from '../../components/Modal';
 import Alert from '../../components/Alert';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getProjects, getProjectDetail } from '../../services/projectService';
 import ProjectCard from '../../components/ProjectCard';
 import ProjectFilter from '../../components/ProjectFilter';
@@ -14,6 +14,7 @@ import Input from '../../components/Input';
 import { Search } from 'lucide-react';
 
 export default function ProjectFeed() {
+  const queryClient = useQueryClient();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
   const [filters, setFilters] = useState({
@@ -25,7 +26,8 @@ export default function ProjectFeed() {
     minGrade: '',
     maxGrade: '',
     deadline: '',
-    sort: 'newest'
+    sort: 'newest',
+    onlyLiked: false
   });
 
   const location = useLocation();
@@ -141,6 +143,11 @@ export default function ProjectFeed() {
                       <ProjectCard
                         project={project}
                         onViewDetail={() => setSelectedProject(project)}
+                        onLikeChange={() => {
+                          if (filters.onlyLiked) {
+                            queryClient.invalidateQueries(['projects']);
+                          }
+                        }}
                       />
                     </Col>
                   ))}

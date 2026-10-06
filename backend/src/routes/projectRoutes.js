@@ -2,11 +2,11 @@ const express = require('express');
 const router = express.Router();
 const projectController = require('../controllers/projectController');
 const applicationController = require('../controllers/applicationController');
-const { verifyToken } = require('../middlewares/authMiddleware');
+const { verifyToken, optionalVerifyToken } = require('../middlewares/authMiddleware');
 const uploadCloudCV = require('../utils/uploadCloudCV');
 
-// Route GET /api/projects
-router.get('/', projectController.getProjects);
+// Route GET /api/projects (Công khai, nhưng nếu có token sẽ kèm thông tin isLiked)
+router.get('/', optionalVerifyToken, projectController.getProjects);
 
 // Route POST /api/projects - Tạo dự án mới
 router.post(
@@ -49,6 +49,20 @@ router.get(
   '/check-limit',
   verifyToken,
   projectController.checkProjectLimit
+);
+
+// Route GET /api/projects/my-likes/ids - Lấy danh sách ID các dự án đã thả tim
+router.get(
+  '/my-likes/ids',
+  verifyToken,
+  projectController.getMyLikedProjectIds
+);
+
+// Route POST /api/projects/:projectId/like - Thả tim / Bỏ thả tim dự án
+router.post(
+  '/:projectId/like',
+  verifyToken,
+  projectController.toggleLike
 );
 
 // Route GET /api/projects/:projectId - Lấy chi tiết dự án

@@ -4,7 +4,8 @@ const { createProjectSchema } = require('../validations/projectValidation');
 // Lấy danh sách các projects hiển thị lên /feed
 const getProjects = async (req, res, next) => {
   try {
-    const result = await projectService.getProjects(req.query);
+    const userId = req.user?.id || null;
+    const result = await projectService.getProjects(req.query, userId);
     res.status(200).json({
       success: true,
       data: result
@@ -197,6 +198,35 @@ const checkProjectLimit = async (req, res, next) => {
   }
 };
 
+// [POST] /api/projects/:projectId/like - Thả tim / Bỏ thả tim dự án
+const toggleLike = async (req, res, next) => {
+  try {
+    const { projectId } = req.params;
+    const userId = req.user.id;
+    const result = await projectService.toggleLikeProject(projectId, userId);
+    return res.status(200).json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// [GET] /api/projects/my-likes/ids - Lấy danh sách ID các bài đăng đã thả tim
+const getMyLikedProjectIds = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const likedIds = await projectService.getMyLikedProjectIds(userId);
+    return res.status(200).json({
+      success: true,
+      data: likedIds
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getProjects,
   createProject,
@@ -211,5 +241,8 @@ module.exports = {
   inviteApplicant,
   kickMember,
   checkProjectLimit,
-  updateProjectStatus
+  updateProjectStatus,
+  toggleLike,
+  getMyLikedProjectIds
 };
+

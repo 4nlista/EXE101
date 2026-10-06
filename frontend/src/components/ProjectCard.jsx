@@ -1,27 +1,58 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, Badge } from 'react-bootstrap';
 import { Heart, Clock, Users, BookOpen, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Button from './Button';
 import { formatCreatedDate, calculateDaysLeft } from '../utils/formatDate';
+import { toggleLikeProject } from '../services/projectService';
 
 export default function ProjectCard({
   project,
   onViewDetail,
+  onLikeChange,
   matchPercent,
   aiReason,
   aiReasonBg = '#fcf5ddff', // Màu nền khối Gợi ý AI (VD: '#f8f9fa', '#fff7ed', '#f1f5f9'...)
   aiReasonColor = '#1f2937', // Màu chữ khối Gợi ý AI
   cardBg = '#ffffff' // Màu nền của toàn bộ Card
 }) {
-  const [isSaved, setIsSaved] = useState(false); // Toggle tạm thời cho UI
+  const [isSaved, setIsSaved] = useState(Boolean(project?.isLiked));
+  const [loadingLike, setLoadingLike] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setIsSaved(Boolean(project?.isLiked));
+  }, [project?.isLiked]);
 
   if (!project) return null;
 
-  const handleSaveToggle = (e) => {
+  // Thả tim hoặc bỏ thả tim dự án
+  const handleSaveToggle = async (e) => {
     e.stopPropagation(); // Tránh bị click vào card
-    setIsSaved(!isSaved);
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Vui lòng đăng nhập để lưu dự án vào danh sách yêu thích.');
+      return;
+    }
+
+    if (loadingLike) return;
+
+    const nextState = !isSaved;
+    setIsSaved(nextState);
+    setLoadingLike(true);
+
+    try {
+      await toggleLikeProject(project._id);
+      if (onLikeChange) {
+        onLikeChange(project._id, nextState);
+      }
+    } catch (err) {
+      // Revert lại nếu có lỗi
+      setIsSaved(!nextState);
+      console.error('Lỗi khi thả tim dự án:', err);
+    } finally {
+      setLoadingLike(false);
+    }
   };
 
   return (
@@ -75,12 +106,14 @@ export default function ProjectCard({
           {project.title}
         </Card.Title>
 
-        {/* Ngành */}
-        {project.ownerId?.departmentId?.name && (
+        {/* Ngành tuyển dụng của dự án */}
+        {(project.departmentIds?.[0]?.name || project.ownerId?.departmentId?.name) && (
           <div className="mb-2">
             <Badge bg="light" text="secondary" className="d-flex align-items-center d-inline-flex px-2 py-1 border fw-normal rounded-2 text-truncate" style={{ maxWidth: '100%' }}>
               <BookOpen size={11} className="me-1 flex-shrink-0" />
-              <span className="text-truncate" style={{ fontSize: '0.72rem' }}>{project.ownerId.departmentId.name}</span>
+              <span className="text-truncate" style={{ fontSize: '0.72rem' }}>
+                {project.departmentIds?.[0]?.name || project.ownerId?.departmentId?.name}
+              </span>
             </Badge>
           </div>
         )}
