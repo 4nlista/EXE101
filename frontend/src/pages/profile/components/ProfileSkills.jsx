@@ -1,5 +1,6 @@
 import React from 'react';
 import { Card, Badge, Form } from 'react-bootstrap';
+import { Star } from 'lucide-react';
 import CreatableSelect from 'react-select/creatable';
 import { useSkills } from '../../../hooks/useMasterData';
 
@@ -34,7 +35,10 @@ export default function ProfileSkills({
     <Card className="profile-card border-0 shadow-sm">
       <Card.Body className="p-3">
         <div className="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
-          <h5 className="fw-bold text-dark mb-0 fs-6">Kỹ năng chuyên môn</h5>
+          <h6 className="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+            <Star size={18} className="text-secondary" />
+            Kỹ năng chuyên môn
+          </h6>
           {isEditMode && (
             <Form.Check
               type="switch"
@@ -66,7 +70,7 @@ export default function ProfileSkills({
           <div className="d-flex flex-wrap gap-2">
             {profileData.mainSkills && profileData.mainSkills.length > 0 ? (
               profileData.mainSkills.map((skill, idx) => (
-                <Badge key={idx} bg="light" text="dark" className="border px-3 py-2 fw-medium rounded-pill" style={{ fontSize: '0.85rem' }}>
+                <Badge key={idx} bg="light" text="dark" className="border border-secondary px-2 py-1 fw-medium rounded-pill" style={{ fontSize: '0.8rem' }}>
                   {skill}
                 </Badge>
               ))

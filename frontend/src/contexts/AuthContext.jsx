@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import * as authService from '../services/authService';
+import { profileService } from '../services/profileService';
 
 const AuthContext = createContext(null);
 
@@ -18,6 +19,8 @@ export function AuthProvider({ children }) {
     if (savedToken && savedUser) {
       setCurrentUser(JSON.parse(savedUser));
       setIsAuthenticated(true);
+      // Fetch latest profile from server to ensure data (like subscription end date) is up to date
+      fetchMyProfile(savedToken);
     }
   }, []);
 
@@ -134,6 +137,24 @@ export function AuthProvider({ children }) {
   const openSetup  = () => setShowSetup(true);
   const closeSetup = () => setShowSetup(false);
 
+  // ---- Fetch latest profile ----
+  const fetchMyProfile = async (tokenOverride = null) => {
+    try {
+      // Use profileService which relies on axiosClient interceptor to inject token
+      const res = await profileService.getMyProfile();
+      if (res.success && res.data) {
+        setCurrentUser(res.data);
+        if (localStorage.getItem('universe_user')) {
+          localStorage.setItem('universe_user', JSON.stringify(res.data));
+        } else if (sessionStorage.getItem('universe_user')) {
+          sessionStorage.setItem('universe_user', JSON.stringify(res.data));
+        }
+      }
+    } catch (error) {
+      console.error('Lỗi khi fetch profile mới', error);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -146,6 +167,7 @@ export function AuthProvider({ children }) {
         verifyOtp,
         logout,
         completeProfile,
+        fetchMyProfile,
         openSetup,
         closeSetup,
       }}

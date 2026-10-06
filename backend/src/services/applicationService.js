@@ -4,6 +4,7 @@ const Notification = require('../models/Notification');
 const { APPLICATION_STATUS } = require('../constants/applicationEnum');
 const { PROJECT_STATUS } = require('../constants/projectEnum');
 const { NOTIFICATION_TYPE } = require('../constants/notificationEnum');
+const { checkAndUpdateExpiredProjects } = require('../jobs/expireProjectJob');
 
 /**
  * Xử lý logic nộp hồ sơ ứng tuyển
@@ -19,9 +20,13 @@ const createApplication = async (projectId, applicantId, cvFileUrl, note) => {
     throw new Error('Dự án không tồn tại.');
   }
 
-  // 2. Kiểm tra dự án có đang mở tuyển không
+  // 2. Kiểm tra dự án có đang mở tuyển không hoặc đã quá hạn
   if (project.status !== PROJECT_STATUS.OPEN) {
     throw new Error('Dự án này đã đóng tuyển thành viên.');
+  }
+
+  if (project.deadline && new Date(project.deadline) < new Date()) {
+    throw new Error('Dự án này đã hết hạn nhận hồ sơ ứng tuyển.');
   }
 
   // 3. Kiểm tra owner không được tự ứng tuyển vào dự án của mình
@@ -103,6 +108,9 @@ const checkApplicationStatus = async (projectId, applicantId) => {
 };
 
 const getMyApplications = async (applicantId, query) => {
+  // Quét và cập nhật tự động các dự án/hồ sơ đã hết hạn trước khi query
+  await checkAndUpdateExpiredProjects();
+
   const { status, search, page = 1, limit = 10 } = query;
   const skip = (page - 1) * limit;
 
@@ -165,11 +173,17 @@ const acceptInvite = async (applicationId, applicantId) => {
   const project = await Project.findById(application.projectId);
   if (!project) throw new Error('Dự án không tồn tại.');
   
-  if (project.status !== PROJECT_STATUS.OPEN) {
-    throw new Error('Dự án đã đóng tuyển.');
-  }
-  if (project.members.length >= project.maxMembers) {
-    throw new Error('Dự án đã đủ thành viên.');
+  // Tự động thu hồi lời mời nếu dự án không còn ở trạng thái nhận người
+  if (project.status !== PROJECT_STATUS.OPEN || project.members.length >= project.maxMembers) {
+    application.status = APPLICATION_STATUS.REJECTED;
+    application.rejectionCount = (application.rejectionCount || 0) + 1;
+    await application.save();
+    
+    throw new Error(
+      project.status !== PROJECT_STATUS.OPEN 
+        ? 'Lời mời đã hết hạn do dự án không còn trong giai đoạn tuyển thành viên.'
+        : 'Dự án đã đủ thành viên nên lời mời này không còn hiệu lực.'
+    );
   }
 
   // Thêm vào project.members
@@ -185,19 +199,27 @@ const acceptInvite = async (applicationId, applicantId) => {
   if (project.members.length >= project.maxMembers) {
     project.status = PROJECT_STATUS.CLOSED;
     
-    // Tự động từ chối các đơn PENDING còn lại
-    const pendingApps = await Application.find({ projectId: project._id, status: APPLICATION_STATUS.PENDING });
-    for (const app of pendingApps) {
+    // Tự động từ chối các đơn PENDING và INVITED còn lại
+    const pendingAndInvitedApps = await Application.find({ 
+      projectId: project._id, 
+      status: { $in: [APPLICATION_STATUS.PENDING, APPLICATION_STATUS.INVITED] } 
+    });
+    
+    for (const app of pendingAndInvitedApps) {
       app.status = APPLICATION_STATUS.REJECTED;
       app.rejectionCount += 1;
       await app.save();
+
+      const content = app.status === APPLICATION_STATUS.PENDING 
+        ? `Dự án "${project.title}" đã tuyển đủ thành viên. Đơn của bạn đã bị từ chối.` 
+        : `Dự án "${project.title}" đã tuyển đủ thành viên. Lời mời của bạn đã bị hủy.`;
 
       // Gửi thông báo từ chối
       await Notification.create({
         userId: app.applicantId,
         type: NOTIFICATION_TYPE.REJECTED,
         title: 'Hồ sơ bị từ chối',
-        content: `Dự án "${project.title}" đã tuyển đủ thành viên. Đơn của bạn đã bị từ chối.`,
+        content,
         referenceId: project._id,
         referenceModel: 'Project'
       });

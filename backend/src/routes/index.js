@@ -14,5 +14,9 @@ router.use('/projects', require('./projectRoutes'));
 router.use('/project-history', require('./projectHistoryRoutes'));
 router.use('/applications', require('./applicationRoutes'));
 router.use('/messages', require('./messageRoutes'));
+router.use('/payment', require('./paymentRoutes'));
+router.use('/reviews', require('./reviewRoute'));
+router.use('/notifications', require('./notificationRoutes'));
+router.use('/ai', require('./aiRoutes'));
 
 module.exports = router;

@@ -1,0 +1,666 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>UniVerse AI — Chatbot Mockup</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0,0"
+        rel="stylesheet">
+    <style>
+        :root {
+            --orange: #e98224;
+            --orange-dark: #d86e0d;
+            --orange-soft: #fff1e3;
+            --orange-border: #ffd9ba;
+            --bg: #f7f8fa;
+            --text: #18212b;
+            --muted: #77818c;
+            --border: #e4e8ed;
+            --sidebar: 280px;
+            --topbar: 64px
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            font-family: "Segoe UI", Inter, Arial, sans-serif;
+            color: var(--text);
+            background: var(--bg);
+            overflow: hidden
+        }
+
+        button,
+        input,
+        textarea {
+            font: inherit
+        }
+
+        .app {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column
+        }
+
+        .topbar {
+            height: var(--topbar);
+            flex: 0 0 var(--topbar);
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 28px;
+            position: relative;
+            z-index: 2
+        }
+
+        .brand {
+            width: 270px;
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            font-size: 18px;
+            font-weight: 700
+        }
+
+        .brand-mark {
+            width: 30px;
+            height: 30px;
+            border-radius: 9px;
+            background: linear-gradient(135deg, #ff9b32, #e86f00);
+            color: #fff;
+            display: grid;
+            place-items: center;
+            font-weight: 800
+        }
+
+        .main-nav {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            height: 100%;
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .nav-item {
+            height: 100%;
+            min-width: 100px;
+            padding: 0 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 1px;
+            color: #7d8791;
+            font-size: 12px;
+            position: relative
+        }
+
+        .nav-item .material-symbols-outlined {
+            font-size: 23px
+        }
+
+        .nav-item.active {
+            color: var(--text);
+            font-weight: 600
+        }
+
+        .nav-item.active:after {
+            content: "";
+            position: absolute;
+            left: 20px;
+            right: 20px;
+            bottom: 0;
+            height: 3px;
+            background: var(--orange);
+            border-radius: 3px 3px 0 0
+        }
+
+        .top-actions {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 18px
+        }
+
+        .icon-button {
+            width: 34px;
+            height: 34px;
+            border: 0;
+            background: transparent;
+            border-radius: 50%;
+            color: #68737e;
+            display: grid;
+            place-items: center;
+            cursor: pointer
+        }
+
+        .icon-button:hover {
+            background: #f2f4f6
+        }
+
+        .profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            padding: 4px 9px 4px 5px
+        }
+
+        .avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            color: var(--orange-dark);
+            background: var(--orange-soft);
+            font-size: 13px;
+            font-weight: 700
+        }
+
+        .workspace {
+            min-height: 0;
+            flex: 1;
+            display: grid;
+            grid-template-columns: var(--sidebar) 1fr
+        }
+
+        .sidebar {
+            background: #fff;
+            border-right: 1px solid var(--border);
+            padding: 18px 16px;
+            display: flex;
+            flex-direction: column;
+            min-width: 0
+        }
+
+        .new-chat {
+            height: 44px;
+            border: 0;
+            border-radius: 9px;
+            background: var(--orange);
+            color: #fff;
+            font-weight: 650;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(233, 130, 36, .16)
+        }
+
+        .new-chat:hover {
+            background: var(--orange-dark)
+        }
+
+        .recent-title {
+            margin: 22px 8px 10px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #5f6973;
+            text-transform: uppercase;
+            letter-spacing: .03em
+        }
+
+        .recent-list {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            overflow: auto
+        }
+
+        .conversation {
+            min-height: 62px;
+            padding: 9px 10px;
+            border: 1px solid transparent;
+            border-radius: 9px;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            cursor: pointer
+        }
+
+        .conversation:hover {
+            background: #f7f8fa
+        }
+
+        .conversation.active {
+            background: var(--orange-soft);
+            border-color: var(--orange-border)
+        }
+
+        .conversation-icon {
+            width: 30px;
+            height: 30px;
+            flex: 0 0 30px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: #f0f2f4;
+            color: #69747e
+        }
+
+        .conversation.active .conversation-icon {
+            background: #fff;
+            color: var(--orange)
+        }
+
+        .conversation-body {
+            min-width: 0;
+            flex: 1
+        }
+
+        .conversation-title {
+            font-size: 13px;
+            font-weight: 650;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        .conversation-preview {
+            margin-top: 3px;
+            color: var(--muted);
+            font-size: 11px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        .conversation-time {
+            color: #9aa2a9;
+            font-size: 10px;
+            white-space: nowrap
+        }
+
+        .chat-area {
+            min-width: 0;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            background: #fafbfc
+        }
+
+        .chat-header {
+            height: 70px;
+            flex: 0 0 70px;
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            padding: 0 26px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between
+        }
+
+        .chat-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 11px
+        }
+
+        .ai-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 11px;
+            background: var(--orange-soft);
+            color: var(--orange);
+            display: grid;
+            place-items: center
+        }
+
+        .chat-title {
+            font-size: 15px;
+            font-weight: 700
+        }
+
+        .chat-subtitle {
+            margin-top: 2px;
+            color: var(--muted);
+            font-size: 11px
+        }
+
+        .chat-header-actions {
+            display: flex;
+            gap: 3px
+        }
+
+        .messages {
+            flex: 1;
+            min-height: 0;
+            overflow: auto;
+            padding: 28px 38px 18px
+        }
+
+        .message-row {
+            display: flex;
+            margin-bottom: 20px
+        }
+
+        .message-row.user {
+            justify-content: flex-end
+        }
+
+        .message {
+            max-width: min(720px, 72%);
+            padding: 13px 16px;
+            border-radius: 13px;
+            font-size: 13px;
+            line-height: 1.55
+        }
+
+        .message.user {
+            background: var(--orange);
+            color: #fff;
+            border-bottom-right-radius: 4px
+        }
+
+        .message.ai {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 2px 8px rgba(25, 35, 45, .03)
+        }
+
+        .ai-message-wrap {
+            display: flex;
+            gap: 10px;
+            max-width: 820px
+        }
+
+        .mini-ai {
+            width: 28px;
+            height: 28px;
+            flex: 0 0 28px;
+            border-radius: 50%;
+            background: var(--orange);
+            color: #fff;
+            display: grid;
+            place-items: center;
+            margin-top: 4px
+        }
+
+        .architecture {
+            margin-top: 13px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px
+        }
+
+        .architecture-card {
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            padding: 12px;
+            background: #fbfcfd
+        }
+
+        .architecture-card .material-symbols-outlined {
+            color: var(--orange);
+            font-size: 20px
+        }
+
+        .architecture-card-title {
+            margin-top: 5px;
+            font-weight: 700;
+            font-size: 11px
+        }
+
+        .architecture-card-sub {
+            color: var(--muted);
+            font-size: 10px;
+            margin-top: 2px
+        }
+
+        .code-block {
+            margin-top: 13px;
+            padding: 12px 14px;
+            border-radius: 8px;
+            background: #f5f6f8;
+            border: 1px solid #e7e9ec;
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 11px;
+            line-height: 1.55;
+            color: #3e4852;
+            white-space: pre
+        }
+
+        .composer-wrap {
+            padding: 10px 28px 18px;
+            background: #fafbfc
+        }
+
+        .composer {
+            min-height: 54px;
+            border: 1px solid #dfe4e8;
+            border-radius: 14px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            padding: 7px 7px 7px 15px;
+            box-shadow: 0 4px 14px rgba(30, 40, 50, .04)
+        }
+
+        .prompt {
+            flex: 1;
+            min-width: 0;
+            border: 0;
+            outline: 0;
+            resize: none;
+            height: 38px;
+            padding: 10px 0;
+            color: var(--text);
+            font-size: 13px;
+            background: transparent
+        }
+
+        .prompt::placeholder {
+            color: #9aa3ab
+        }
+
+        .send {
+            width: 40px;
+            height: 40px;
+            flex: 0 0 40px;
+            border: 0;
+            border-radius: 50%;
+            background: var(--orange);
+            color: #fff;
+            display: grid;
+            place-items: center;
+            cursor: pointer
+        }
+
+        .send:hover {
+            background: var(--orange-dark)
+        }
+
+        .suggestions {
+            padding: 7px 3px 0;
+            display: flex;
+            gap: 7px;
+            overflow: hidden
+        }
+
+        .suggestion {
+            border: 1px solid #e3e7eb;
+            background: #fff;
+            color: #6f7983;
+            border-radius: 16px;
+            padding: 5px 10px;
+            font-size: 10px;
+            white-space: nowrap;
+            cursor: pointer
+        }
+
+        .suggestion:hover {
+            border-color: var(--orange-border);
+            color: var(--orange-dark)
+        }
+
+        @media(max-width:1100px) {
+            :root {
+                --sidebar: 230px
+            }
+
+            .main-nav {
+                display: none
+            }
+
+            .message {
+                max-width: 80%
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <header class="topbar">
+            <div class="brand">
+                <div class="brand-mark">U</div><span>UniVerse AI</span>
+            </div>
+            <nav class="main-nav">
+                <div class="nav-item"><span class="material-symbols-outlined">home</span><span>Bảng tin</span></div>
+                <div class="nav-item"><span class="material-symbols-outlined">business_center</span><span>Dự án</span>
+                </div>
+                <div class="nav-item"><span class="material-symbols-outlined">chat</span><span>Tin nhắn</span></div>
+                <div class="nav-item active"><span class="material-symbols-outlined">auto_awesome</span><span>AI
+                        Hub</span></div>
+            </nav>
+            <div class="top-actions"><button class="icon-button"><span
+                        class="material-symbols-outlined">notifications</span></button>
+                <div class="profile">
+                    <div class="avatar">T</div><span class="material-symbols-outlined"
+                        style="font-size:18px">expand_more</span>
+                </div>
+            </div>
+        </header>
+        <main class="workspace">
+            <aside class="sidebar"><button class="new-chat"><span class="material-symbols-outlined">add</span>Đoạn chat
+                    mới</button>
+                <div class="recent-title">Cuộc trò chuyện gần đây</div>
+                <div class="recent-list">
+                    <div class="conversation active">
+                        <div class="conversation-icon"><span class="material-symbols-outlined"
+                                style="font-size:18px">auto_awesome</span></div>
+                        <div class="conversation-body">
+                            <div class="conversation-title">Hỗ trợ phát triển dự án</div>
+                            <div class="conversation-preview">Bạn có thể giải thích kiến trúc MVC...</div>
+                        </div>
+                        <div class="conversation-time">10:24</div>
+                    </div>
+                    <div class="conversation">
+                        <div class="conversation-icon"><span class="material-symbols-outlined"
+                                style="font-size:18px">school</span></div>
+                        <div class="conversation-body">
+                            <div class="conversation-title">Tìm hiểu công nghệ</div>
+                            <div class="conversation-preview">React và Vue khác nhau như thế nào?</div>
+                        </div>
+                        <div class="conversation-time">09:15</div>
+                    </div>
+                    <div class="conversation">
+                        <div class="conversation-icon"><span class="material-symbols-outlined"
+                                style="font-size:18px">description</span></div>
+                        <div class="conversation-body">
+                            <div class="conversation-title">Tài liệu học tập</div>
+                            <div class="conversation-preview">Tóm tắt nội dung file .md này...</div>
+                        </div>
+                        <div class="conversation-time">Hôm qua</div>
+                    </div>
+                    <div class="conversation">
+                        <div class="conversation-icon"><span class="material-symbols-outlined"
+                                style="font-size:18px">code</span></div>
+                        <div class="conversation-body">
+                            <div class="conversation-title">Lập trình & Debug</div>
+                            <div class="conversation-preview">Lỗi này có nghĩa gì và cách khắc phục?</div>
+                        </div>
+                        <div class="conversation-time">28/09</div>
+                    </div>
+                    <div class="conversation">
+                        <div class="conversation-icon"><span class="material-symbols-outlined"
+                                style="font-size:18px">lightbulb</span></div>
+                        <div class="conversation-body">
+                            <div class="conversation-title">Ý tưởng & Sáng tạo</div>
+                            <div class="conversation-preview">Gợi ý giúp tôi xây dựng tính năng mới...</div>
+                        </div>
+                        <div class="conversation-time">27/09</div>
+                    </div>
+                </div>
+            </aside>
+            <section class="chat-area">
+                <div class="chat-header">
+                    <div class="chat-title-wrap">
+                        <div class="ai-icon"><span class="material-symbols-outlined">auto_awesome</span></div>
+                        <div>
+                            <div class="chat-title">Hỗ trợ phát triển dự án</div>
+                            <div class="chat-subtitle">Trợ lý AI hỗ trợ phân tích, thiết kế và tư vấn dự án</div>
+                        </div>
+                    </div>
+                    <div class="chat-header-actions"><button class="icon-button"><span
+                                class="material-symbols-outlined">edit</span></button><button class="icon-button"><span
+                                class="material-symbols-outlined">content_copy</span></button><button
+                            class="icon-button"><span class="material-symbols-outlined">more_vert</span></button></div>
+                </div>
+                <div class="messages">
+                    <div class="message-row user">
+                        <div class="message user">Cho mình 1 dự án web quản lý phòng trọ đơn giản, gồm các chức năng cơ
+                            bản như quản lý phòng, khách thuê, hợp đồng, hóa đơn. Sử dụng ReactJS và NodeJS. Bạn có thể
+                            gợi ý kiến trúc và cấu trúc thư mục phù hợp không?</div>
+                    </div>
+                    <div class="message-row">
+                        <div class="ai-message-wrap">
+                            <div class="mini-ai"><span class="material-symbols-outlined"
+                                    style="font-size:17px">auto_awesome</span></div>
+                            <div class="message ai">Dưới đây là gợi ý kiến trúc và cấu trúc thư mục cho dự án quản lý
+                                phòng trọ với ReactJS (frontend) và NodeJS (backend) theo hướng đơn giản, dễ hiểu, phù
+                                hợp với quy mô dự án học tập.<br><br><strong>1. Kiến trúc tổng quan</strong>
+                                <div class="architecture">
+                                    <div class="architecture-card"><span class="material-symbols-outlined">web</span>
+                                        <div class="architecture-card-title">Frontend</div>
+                                        <div class="architecture-card-sub">ReactJS + Vite</div>
+                                    </div>
+                                    <div class="architecture-card"><span class="material-symbols-outlined">api</span>
+                                        <div class="architecture-card-title">REST API</div>
+                                        <div class="architecture-card-sub">NodeJS + Express</div>
+                                    </div>
+                                    <div class="architecture-card"><span
+                                            class="material-symbols-outlined">database</span>
+                                        <div class="architecture-card-title">Database</div>
+                                        <div class="architecture-card-sub">MongoDB</div>
+                                    </div>
+                                </div><br><strong>2. Cấu trúc thư mục</strong>
+                                <div class="code-block">project-room-management/
+                                    ├── frontend/ # ReactJS + Vite
+                                    ├── backend/ # NodeJS + Express
+                                    ├── docs/ # Tài liệu dự án
+                                    └── .gitignore</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="composer-wrap">
+                    <div class="composer"><textarea class="prompt" placeholder="Nhập câu hỏi của bạn..."
+                            rows="1"></textarea><button class="send"><span
+                                class="material-symbols-outlined">send</span></button></div>
+                    <div class="suggestions"><button class="suggestion">Giải thích kiến trúc MVC</button><button
+                            class="suggestion">Tạo sơ đồ ERD</button><button class="suggestion">Viết code
+                            NodeJS</button></div>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+
+</html>

@@ -4,11 +4,17 @@ const Notification = require('../models/Notification');
 const { APPLICATION_STATUS } = require('../constants/applicationEnum');
 const { PROJECT_STATUS } = require('../constants/projectEnum');
 const { NOTIFICATION_TYPE } = require('../constants/notificationEnum');
+const User = require('../models/User');
+const { PACKAGE_TYPE } = require('../constants/subscriptionEnum');
+const { checkAndUpdateExpiredProjects } = require('../jobs/expireProjectJob');
 
 /**
  * Lấy danh sách dự án với phân trang và bộ lọc
  */
 const getProjects = async (query) => {
+  // Quét cập nhật tự động các dự án quá hạn
+  await checkAndUpdateExpiredProjects();
+
   const { page = 1, limit = 10, search, departmentId, status, minGrade, maxGrade, sort = 'newest' } = query;
   const skip = (page - 1) * limit;
 
@@ -25,6 +31,9 @@ const getProjects = async (query) => {
 
   if (status) {
     filter.status = status;
+  } else {
+    // Luôn luôn chỉ lấy các dự án Đang tuyển (OPEN) ở Feed trừ khi filter cụ thể
+    filter.status = PROJECT_STATUS.OPEN;
   }
 
   if (minGrade || maxGrade) {
@@ -79,6 +88,36 @@ const getProjects = async (query) => {
   };
 };
 
+const checkLimit = async (ownerId) => {
+  const user = await User.findById(ownerId);
+  if (!user) throw new Error('Không tìm thấy người dùng');
+
+  const currentPackage = user.currentPackage || PACKAGE_TYPE.FREE;
+
+  if (currentPackage === PACKAGE_TYPE.PREMIUM) {
+    return { isAllowed: true, message: 'Gói PREMIUM không giới hạn' };
+  }
+
+  const startOfMonth = new Date();
+  startOfMonth.setDate(1);
+  startOfMonth.setHours(0, 0, 0, 0);
+
+  const projectCount = await Project.countDocuments({
+    ownerId,
+    createdAt: { $gte: startOfMonth }
+  });
+
+  if (currentPackage === PACKAGE_TYPE.FREE && projectCount >= 3) {
+    return { isAllowed: false, message: 'Bạn đã đạt giới hạn đăng 3 dự án/tháng của gói Cơ bản. Vui lòng nâng cấp.' };
+  }
+
+  if (currentPackage === PACKAGE_TYPE.VIP && projectCount >= 10) {
+    return { isAllowed: false, message: 'Bạn đã đạt giới hạn đăng 10 dự án/tháng của gói VIP. Vui lòng nâng cấp.' };
+  }
+
+  return { isAllowed: true, message: 'Thỏa mãn điều kiện' };
+};
+
 /**
  * Tạo bài đăng dự án mới
  */
@@ -92,6 +131,14 @@ const createProject = async (projectData, ownerId) => {
     maxMembers,
     deadline
   } = projectData;
+
+  // 1. Kiểm tra giới hạn tạo dự án trong tháng dựa trên Gói đăng ký
+  const limitCheck = await checkLimit(ownerId);
+  if (!limitCheck.isAllowed) {
+    const err = new Error(limitCheck.message);
+    err.statusCode = 403;
+    throw err;
+  }
 
   const newProject = new Project({
     ownerId,
@@ -109,12 +156,18 @@ const createProject = async (projectData, ownerId) => {
 };
 
 const getMyProjects = async (ownerId, query) => {
-  const { search, sort = 'newest', page = 1, limit = 10 } = query;
+  // Quét cập nhật tự động các dự án quá hạn
+  await checkAndUpdateExpiredProjects();
+
+  const { search, status, sort = 'newest', page = 1, limit = 10 } = query;
   const skip = (page - 1) * limit;
 
   let filter = { ownerId };
   if (search) {
     filter.title = { $regex: search, $options: 'i' };
+  }
+  if (status) {
+    filter.status = status;
   }
 
   const sortOrder = sort === 'oldest' ? { createdAt: 1 } : { createdAt: -1 };
@@ -137,9 +190,11 @@ const getMyProjects = async (ownerId, query) => {
 };
 
 const getMyProjectStats = async (ownerId) => {
-  const [openCount, closedCount] = await Promise.all([
+  const [openCount, closedCount, inProgressCount, completedCount] = await Promise.all([
     Project.countDocuments({ ownerId, status: PROJECT_STATUS.OPEN }),
-    Project.countDocuments({ ownerId, status: PROJECT_STATUS.CLOSED })
+    Project.countDocuments({ ownerId, status: PROJECT_STATUS.CLOSED }),
+    Project.countDocuments({ ownerId, status: PROJECT_STATUS.IN_PROGRESS }),
+    Project.countDocuments({ ownerId, status: PROJECT_STATUS.COMPLETED })
   ]);
 
   const projects = await Project.find({ ownerId }).select('_id');
@@ -153,6 +208,8 @@ const getMyProjectStats = async (ownerId) => {
   return {
     openProjects: openCount,
     closedProjects: closedCount,
+    inProgressProjects: inProgressCount,
+    completedProjects: completedCount,
     pendingApplications: pendingCount
   };
 };
@@ -169,23 +226,78 @@ const getProjectDetail = async (projectId) => {
 const updateProject = async (projectId, ownerId, updateData) => {
   const project = await Project.findOne({ _id: projectId, ownerId });
   if (!project) throw new Error('Không tìm thấy dự án hoặc bạn không có quyền sửa.');
+  if (project.status !== PROJECT_STATUS.OPEN) {
+    throw new Error('Chỉ có thể chỉnh sửa khi dự án đang mở tuyển (OPEN).');
+  }
 
   Object.assign(project, updateData);
   await project.save();
   return project;
 };
 
+const updateProjectStatus = async (projectId, ownerId, status) => {
+  const project = await Project.findOne({ _id: projectId, ownerId });
+  if (!project) throw new Error('Không tìm thấy dự án hoặc bạn không có quyền thao tác.');
+
+  const validStatuses = Object.values(PROJECT_STATUS);
+  if (!validStatuses.includes(status)) throw new Error('Trạng thái không hợp lệ');
+
+  // Business Logic Rules
+  if (status === PROJECT_STATUS.COMPLETED) {
+    if (project.status !== PROJECT_STATUS.IN_PROGRESS) {
+      throw new Error('Chỉ dự án đang thực hiện (IN_PROGRESS) mới có thể Hoàn thành');
+    }
+    const now = new Date();
+    project.completedAt = now;
+    project.reviewDeadline = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // +7 days
+  }
+
+  if (status === PROJECT_STATUS.IN_PROGRESS) {
+    if (project.status !== PROJECT_STATUS.CLOSED) {
+      throw new Error('Chỉ dự án đã đóng tuyển (CLOSED) mới có thể Bắt đầu');
+    }
+  }
+  
+  if (status === PROJECT_STATUS.CANCELLED) {
+    if (project.status === PROJECT_STATUS.COMPLETED || project.status === PROJECT_STATUS.IN_PROGRESS) {
+       throw new Error('Không thể huỷ dự án đang thực hiện hoặc đã hoàn thành');
+    }
+    const maxMembers = project.maxMembers || 0;
+    const currentMembers = project.members.length;
+    if (maxMembers > 0 && currentMembers >= (maxMembers / 2)) {
+      throw new Error(`Không thể hủy dự án khi số thành viên đã đạt từ 50% trở lên (${currentMembers}/${maxMembers})`);
+    }
+  }
+
+  project.status = status;
+  await project.save();
+  return project;
+};
+
 const deleteProject = async (projectId, ownerId) => {
   const project = await Project.findOne({ _id: projectId, ownerId });
-  if (!project) throw new Error('Không tìm thấy dự án hoặc bạn không có quyền xóa.');
+  if (!project) throw new Error('Không tìm thấy dự án hoặc bạn không có quyền hủy.');
 
-  // Xóa tất cả applications liên quan
+  const maxMembers = project.maxMembers || 0;
+  const currentMembers = project.members.length;
+  if (maxMembers > 0 && currentMembers >= (maxMembers / 2)) {
+    throw new Error(`Không thể hủy dự án khi số thành viên đã đạt từ 50% trở lên (${currentMembers}/${maxMembers})`);
+  }
+
+  // Hủy các đơn nộp (nếu có)
   await Application.deleteMany({ projectId });
-  await project.deleteOne();
+  
+  // Chuyển trạng thái thành CANCELLED thay vì xóa vật lý
+  project.status = PROJECT_STATUS.CANCELLED;
+  await project.save();
+  
   return true;
 };
 
 const getProjectApplicants = async (projectId, ownerId, query) => {
+  // Quét cập nhật tự động các dự án quá hạn
+  await checkAndUpdateExpiredProjects();
+
   const project = await Project.findOne({ _id: projectId, ownerId })
     .populate({
       path: 'members.userId',
@@ -221,7 +333,11 @@ const getProjectApplicants = async (projectId, ownerId, query) => {
 const approveApplicant = async (projectId, ownerId, applicationId) => {
   const project = await Project.findOne({ _id: projectId, ownerId });
   if (!project) throw new Error('Không tìm thấy dự án.');
+  if (project.status === PROJECT_STATUS.CANCELLED) throw new Error('Không thể thao tác trên dự án đã hủy.');
   if (project.status !== PROJECT_STATUS.OPEN) throw new Error('Dự án đã đóng tuyển.');
+  if (project.deadline && new Date(project.deadline) < new Date()) {
+    throw new Error('Dự án đã hết hạn ứng tuyển.');
+  }
   if (project.members.length >= project.maxMembers) throw new Error('Dự án đã đủ thành viên.');
 
   const application = await Application.findOne({ _id: applicationId, projectId });
@@ -232,19 +348,28 @@ const approveApplicant = async (projectId, ownerId, applicationId) => {
   project.members.push({ userId: application.applicantId, role: 'Member' });
   application.status = APPLICATION_STATUS.APPROVED;
 
-  // Nếu đủ người -> đóng -> reject tất cả PENDING còn lại
+  // Nếu đủ người -> đóng -> reject tất cả PENDING/INVITED còn lại
   if (project.members.length >= project.maxMembers) {
     project.status = PROJECT_STATUS.CLOSED;
-    const pendingApps = await Application.find({ projectId, status: APPLICATION_STATUS.PENDING });
-    for (const app of pendingApps) {
+    const pendingAndInvitedApps = await Application.find({ 
+      projectId, 
+      status: { $in: [APPLICATION_STATUS.PENDING, APPLICATION_STATUS.INVITED] } 
+    });
+    
+    for (const app of pendingAndInvitedApps) {
       app.status = APPLICATION_STATUS.REJECTED;
       app.rejectionCount += 1;
       await app.save();
+      
+      const content = app.status === APPLICATION_STATUS.PENDING 
+        ? `Dự án "${project.title}" đã tuyển đủ thành viên.` 
+        : `Dự án "${project.title}" đã tuyển đủ thành viên. Lời mời của bạn đã bị hủy.`;
+        
       await Notification.create({
         userId: app.applicantId,
         type: NOTIFICATION_TYPE.REJECTED,
         title: 'Hồ sơ bị từ chối',
-        content: `Dự án "${project.title}" đã tuyển đủ thành viên.`,
+        content,
         referenceId: project._id,
         referenceModel: 'Project'
       });
@@ -268,6 +393,7 @@ const approveApplicant = async (projectId, ownerId, applicationId) => {
 const rejectApplicant = async (projectId, ownerId, applicationId) => {
   const project = await Project.findOne({ _id: projectId, ownerId });
   if (!project) throw new Error('Không tìm thấy dự án.');
+  if (project.status === PROJECT_STATUS.CANCELLED) throw new Error('Không thể thao tác trên dự án đã hủy.');
 
   const application = await Application.findOne({ _id: applicationId, projectId });
   if (!application) throw new Error('Không tìm thấy đơn.');
@@ -292,6 +418,7 @@ const rejectApplicant = async (projectId, ownerId, applicationId) => {
 const inviteApplicant = async (projectId, ownerId, applicationId) => {
   const project = await Project.findOne({ _id: projectId, ownerId });
   if (!project) throw new Error('Không tìm thấy dự án.');
+  if (project.status === PROJECT_STATUS.CANCELLED) throw new Error('Không thể thao tác trên dự án đã hủy.');
   if (project.members.length >= project.maxMembers) throw new Error('Dự án đã đủ người.');
 
   const application = await Application.findOne({ _id: applicationId, projectId });
@@ -316,6 +443,7 @@ const inviteApplicant = async (projectId, ownerId, applicationId) => {
 const kickMember = async (projectId, ownerId, userId) => {
   const project = await Project.findOne({ _id: projectId, ownerId });
   if (!project) throw new Error('Không tìm thấy dự án.');
+  if (project.status === PROJECT_STATUS.CANCELLED) throw new Error('Không thể thao tác trên dự án đã hủy.');
 
   const initialLength = project.members.length;
   project.members = project.members.filter(m => m.userId.toString() !== userId.toString());
@@ -360,5 +488,7 @@ module.exports = {
   approveApplicant,
   rejectApplicant,
   inviteApplicant,
-  kickMember
+  kickMember,
+  checkLimit,
+  updateProjectStatus
 };

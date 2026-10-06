@@ -1,18 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Badge, Dropdown, Form, InputGroup, Row, Col } from 'react-bootstrap';
-import { FaSearch, FaEllipsisV, FaRegClock, FaCheckCircle, FaTimesCircle, FaStar } from 'react-icons/fa';
+import { Card, Badge, Dropdown, Form, InputGroup, Row, Col, Table } from 'react-bootstrap';
+import { FaSearch, FaEllipsisV, FaRegClock, FaCheckCircle, FaTimesCircle, FaStar, FaEye } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import ConfirmActionModal from '../../components/ConfirmActionModal';
 import Button from '../../components/Button';
 import { getMyApplications, cancelApplication, acceptInvite, declineInvite } from '../../services/applicationService';
+import { getProjectDetail } from '../../services/projectService';
 import { APPLICATION_STATUS } from '../../constants/applicationEnum';
 import { formatDate } from '../../utils/formatDate';
+import StatusBadge from '../../components/StatusBadge';
+import ProjectDetailModal from '../feed/ProjectDetailModal';
+import CustomTable from '../../components/CustomTable';
+import Pagination from '../../components/Pagination';
+import { PROJECT_STATUS } from '../../constants/projectEnum';
+import Modal from 'react-bootstrap/Modal';
+import ReviewTab from './components/ReviewTab';
+
+const ACTION_TYPES = {
+  CANCEL: 'cancel', // Hủy đơn tham gia
+  ACCEPT: 'accept', // Chấp nhận đơn tham gia
+  DECLINE: 'decline'  // từ chối - thành viên bấm từ chối lời mời của chủ dự án
+};
 
 export default function MyApplicationsTab() {
   const [applications, setApplications] = useState([]);
   const [statusFilter, setStatusFilter] = useState('');
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
+
+  const ITEMS_PER_PAGE = 5;
 
   // Modals state
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -20,12 +38,20 @@ export default function MyApplicationsTab() {
   const [showDeclineModal, setShowDeclineModal] = useState(false);
   const [selectedAppId, setSelectedAppId] = useState(null);
 
+  // Project detail modal
+  const [selectedProject, setSelectedProject] = useState(null);
+
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewProjectId, setReviewProjectId] = useState(null);
+
+  // Tải danh sách hồ sơ ứng tuyển theo trang (Server-side Pagination)
   const fetchApplications = async () => {
     try {
       setLoading(true);
-      const res = await getMyApplications({ status: statusFilter, search, limit: 20 });
+      const res = await getMyApplications({ status: statusFilter, search, page, limit: ITEMS_PER_PAGE });
       if (res.success) {
-        setApplications(res.data.applications);
+        setApplications(res.data.applications || []);
+        setTotalPages(res.data.totalPages || 1);
       }
     } catch (error) {
       toast.error('Lỗi khi tải hồ sơ đã nộp');
@@ -33,170 +59,216 @@ export default function MyApplicationsTab() {
       setLoading(false);
     }
   };
+  const handleRowClick = async (projectId) => {
+    if (!projectId) return;
+    try {
+      const res = await getProjectDetail(projectId);
+      if (res.success) {
+        setSelectedProject(res.data);
+      }
+    } catch (error) {
+      toast.error('Không thể tải thông tin chi tiết dự án');
+    }
+  };
 
   useEffect(() => {
     fetchApplications();
-  }, [statusFilter, search]);
+  }, [statusFilter, search, page]);
 
+  // hàm xử lý hành động với applicationId
   const handleAction = async (action, appId) => {
     try {
-      if (action === 'cancel') {
+      if (action === ACTION_TYPES.CANCEL) {
         const res = await cancelApplication(appId);
         if (res.success) toast.success('Hủy đơn thành công');
         setShowCancelModal(false);
-      } else if (action === 'accept') {
+      } else if (action === ACTION_TYPES.ACCEPT) {
         const res = await acceptInvite(appId);
         if (res.success) toast.success('Đã chấp nhận tham gia dự án');
         setShowAcceptModal(false);
-      } else if (action === 'decline') {
+      } else if (action === ACTION_TYPES.DECLINE) {
         const res = await declineInvite(appId);
         if (res.success) toast.success('Đã từ chối lời mời');
         setShowDeclineModal(false);
       }
       fetchApplications();
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Có lỗi xảy ra');
+      toast.error(error?.message || 'Có lỗi xảy ra');
     }
   };
 
   const getStatusBadge = (status) => {
     switch (status) {
       case APPLICATION_STATUS.PENDING:
-        return <Badge bg="warning" text="dark" className="rounded-pill px-3 py-2 bg-opacity-25 fw-normal">Đang chờ duyệt</Badge>;
+        return <StatusBadge variant="warning" text="Đang chờ" />;
       case APPLICATION_STATUS.APPROVED:
-        return <Badge bg="success" className="rounded-pill px-3 py-2 fw-normal">Đã duyệt</Badge>;
+        return <StatusBadge variant="success" text="Đã duyệt" />;
       case APPLICATION_STATUS.REJECTED:
-        return <Badge bg="danger" className="rounded-pill px-3 py-2 fw-normal">Đã từ chối</Badge>;
+        return <StatusBadge variant="danger" text="Đã từ chối" />;
       case APPLICATION_STATUS.INVITED:
-        return <Badge bg="info" className="rounded-pill px-3 py-2 fw-normal">Được mời</Badge>;
+        return <StatusBadge variant="primary" text="Được mời" />;
+      case APPLICATION_STATUS.EXPIRED:
+        return <StatusBadge variant="secondary" text="Đã hết hạn" />;
       default:
         return null;
     }
   };
 
   return (
-    <Row>
-      <Col md={3}>
-        <div className="bg-light p-3 rounded-4 border">
-          <h6 className="fw-bold mb-3">Trạng thái hồ sơ</h6>
-          <Form>
-            {['', APPLICATION_STATUS.PENDING, APPLICATION_STATUS.APPROVED, APPLICATION_STATUS.REJECTED, APPLICATION_STATUS.INVITED].map((statusValue, idx) => (
-              <Form.Check
-                key={idx}
-                type="radio"
-                id={`status-radio-${idx}`}
-                name="statusFilter"
-                label={
-                  statusValue === '' ? 'Tất cả' :
-                    statusValue === APPLICATION_STATUS.PENDING ? 'Đang chờ duyệt' :
-                      statusValue === APPLICATION_STATUS.APPROVED ? 'Đã duyệt' :
-                        statusValue === APPLICATION_STATUS.REJECTED ? 'Đã từ chối' : 'Được mời'
-                }
-                checked={statusFilter === statusValue}
-                onChange={() => setStatusFilter(statusValue)}
-                className="mb-2 text-muted"
-              />
-            ))}
-          </Form>
+    <div className="bg-white rounded-4 shadow-sm border p-4">
+      <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <h5 className="fw-bold mb-0 text-dark">Hồ sơ đã nộp</h5>
 
-          <h6 className="fw-bold mt-4 mb-3">Tìm kiếm</h6>
-          <InputGroup>
-            <InputGroup.Text className="bg-white"><FaSearch className="text-muted" /></InputGroup.Text>
+        <div className="d-flex flex-wrap gap-3 align-items-center flex-grow-1 justify-content-end" style={{ maxWidth: '600px' }}>
+          <Form.Select
+            value={statusFilter}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setPage(1);
+            }}
+            className="shadow-none border rounded-pill"
+            style={{ width: '180px' }}
+          >
+            <option value="">Tất cả trạng thái</option>
+            <option value={APPLICATION_STATUS.PENDING}>Đang chờ duyệt</option>
+            <option value={APPLICATION_STATUS.APPROVED}>Đã duyệt</option>
+            <option value={APPLICATION_STATUS.REJECTED}>Đã từ chối</option>
+            <option value={APPLICATION_STATUS.INVITED}>Được mời</option>
+            <option value={APPLICATION_STATUS.EXPIRED}>Đã hết hạn</option>
+          </Form.Select>
+
+          <InputGroup style={{ width: '250px' }}>
+            <InputGroup.Text className="bg-white border-end-0 rounded-start-pill text-muted px-3">
+              <FaSearch />
+            </InputGroup.Text>
             <Form.Control
-              placeholder="Tên dự án..."
+              placeholder="Tìm kiếm dự án..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="border-start-0 ps-0 shadow-none"
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              className="border-start-0 shadow-none rounded-end-pill ps-0"
             />
           </InputGroup>
         </div>
-      </Col>
-
-      <Col md={9}>
-        <div className="d-flex flex-column gap-3">
-          {loading ? (
-            <div className="text-center py-4 text-muted">Đang tải...</div>
-          ) : applications.length === 0 ? (
-            <div className="text-center py-5 text-muted bg-light rounded-4 border">
-              Bạn chưa nộp hồ sơ nào
-            </div>
-          ) : (
-            applications.map(app => (
-              <Card key={app._id} className="border shadow-sm rounded-4">
-                <Card.Body className="d-flex align-items-center py-3 px-4">
-                  {/* Cột 1: Thông tin dự án */}
-                  <div className="flex-grow-1" style={{ minWidth: 0 }}>
-                    <h6 className="fw-bold mb-1 text-truncate text-primary">{app.projectId?.title || 'Dự án đã bị xóa'}</h6>
-                    <div className="text-muted d-flex gap-2 align-items-center mb-1" style={{ fontSize: '13px' }}>
-                      <span className="text-truncate">{app.projectId?.departmentIds?.map(d => d.name).join(' · ')}</span>
-                    </div>
-                    <div className="text-muted d-flex gap-2 align-items-center" style={{ fontSize: '12px' }}>
-                      <FaRegClock />
-                      <span>Nộp hồ sơ: {formatDate(app.createdAt)}</span>
-                      <span>·</span>
-                      <span>Hạn ứng tuyển: {app.projectId?.deadline ? formatDate(app.projectId.deadline) : 'Không có'}</span>
-                    </div>
-                  </div>
-
-                  {/* Cột 2: Nghiên cứu */}
-                  <div className="mx-3" style={{ width: '130px' }}>
-                    <Button variant="outline-secondary" className="w-100 rounded-pill py-1 d-flex align-items-center justify-content-center gap-1" disabled title="Tính năng dành cho gói VIP/Premium">
-                      <FaStar className="text-warning" />
-                      Nghiên cứu
-                    </Button>
-                  </div>
-
-                  {/* Cột 3: Trạng thái */}
-                  <div className="mx-3 text-center" style={{ width: '130px' }}>
-                    {getStatusBadge(app.status)}
-                  </div>
-
-                  {/* Cột 4: Hành động */}
-                  <div className="ms-2 d-flex align-items-center gap-2" style={{ width: '140px' }}>
-                    <Button
-                      variant="outline-primary"
-                      className="rounded-pill px-3 py-1"
-                      onClick={() => window.open(app.cvFileUrl, '_blank')}
-                    >
-                      Xem chi tiết
-                    </Button>
-                    <Dropdown align="end">
-                      <Dropdown.Toggle as="div" className="btn btn-link text-muted p-1" style={{ cursor: 'pointer' }}>
-                        <FaEllipsisV />
-                      </Dropdown.Toggle>
-                      <Dropdown.Menu className="border shadow-sm rounded-3">
-                        {app.status === APPLICATION_STATUS.PENDING && (
-                          <Dropdown.Item onClick={() => { setSelectedAppId(app._id); setShowCancelModal(true); }} className="text-danger">
-                            Hủy đơn
+      </div>
+      <CustomTable
+        headers={[
+          { label: 'STT', className: 'text-center text-dark fw-bold', style: { width: '5%' } },
+          { label: 'Dự án', className: 'text-dark fw-bold', style: { width: '39%' } },
+          { label: 'Thời gian nộp', className: 'text-dark fw-bold', style: { width: '15%' } },
+          { label: 'Hạn chót', className: 'text-dark fw-bold', style: { width: '15%' } },
+          { label: 'Trạng thái', className: 'text-center text-dark fw-bold', style: { width: '13%' } },
+          { label: 'Hành động', className: 'text-center text-dark fw-bold', style: { width: '13%' } }
+        ]}
+      >
+        {loading ? (
+          <tr>
+            <td colSpan="6" className="text-center py-4 text-muted">Đang tải...</td>
+          </tr>
+        ) : applications.length === 0 ? (
+          <tr>
+            <td colSpan="6" className="text-center py-5 text-muted">Bạn chưa nộp hồ sơ nào</td>
+          </tr>
+        ) : (
+          applications.map((app, idx) => (
+            <tr
+              key={app._id}
+              onClick={() => handleRowClick(app.projectId?._id)}
+              style={{ cursor: 'pointer' }}
+            >
+              <td className="text-center" onClick={(e) => e.stopPropagation()}>
+                <div className="d-flex align-items-center justify-content-center gap-2">
+                  <Form.Check type="checkbox" />
+                  <span className="text-muted">{(page - 1) * ITEMS_PER_PAGE + idx + 1}</span>
+                </div>
+              </td>
+              <td>
+                <div className="fw-semibold text-dark text-truncate" style={{ maxWidth: '250px' }}>
+                  {app.projectId?.title || 'Dự án đã bị xóa'}
+                </div>
+                <div className="d-flex flex-wrap gap-1 mt-1">
+                  {app.projectId?.departmentIds?.map(d => (
+                    <Badge key={d._id} bg="secondary" className="bg-opacity-50 text-dark fw-normal px-2 py-1">
+                      {d.name}
+                    </Badge>
+                  ))}
+                </div>
+              </td>
+              <td className="text-muted" style={{ fontSize: '14px' }}>{formatDate(app.createdAt)}</td>
+              <td className="text-muted" style={{ fontSize: '14px' }}>
+                {app.projectId?.deadline ? formatDate(app.projectId.deadline) : 'Không có'}
+              </td>
+              <td className="text-center">
+                {getStatusBadge(app.status)}
+              </td>
+              <td onClick={(e) => e.stopPropagation()}>
+                <div className="d-flex align-items-center justify-content-center gap-2">
+                  <Button
+                    variant="secondary text-dark"
+                    className="rounded-pill px-3 py-1"
+                    style={{ fontSize: '12px' }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      window.open(app.cvFileUrl, '_blank');
+                    }}
+                  >
+                    Xem CV
+                  </Button>
+                  <Dropdown align="end" onClick={(e) => e.stopPropagation()}>
+                    <Dropdown.Toggle as="div" className="btn btn-link text-muted p-1" style={{ cursor: 'pointer' }}>
+                      <FaEllipsisV />
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu className="border shadow-sm rounded-3 text-center mt-1" style={{ minWidth: '120px', fontSize: '13px', padding: '4px 0' }}>
+                      {app.status === APPLICATION_STATUS.PENDING && (
+                        <Dropdown.Item onClick={() => { setSelectedAppId(app._id); setShowCancelModal(true); }} className="text-danger py-1 fw-bold">
+                          Hủy đơn
+                        </Dropdown.Item>
+                      )}
+                      {app.status === APPLICATION_STATUS.INVITED && (
+                        <>
+                          <Dropdown.Item onClick={() => { setSelectedAppId(app._id); setShowAcceptModal(true); }} className="text-success py-1">
+                            <FaCheckCircle className="me-1" /> Chấp nhận
                           </Dropdown.Item>
-                        )}
-                        {app.status === APPLICATION_STATUS.INVITED && (
-                          <>
-                            <Dropdown.Item onClick={() => { setSelectedAppId(app._id); setShowAcceptModal(true); }} className="text-success">
-                              <FaCheckCircle className="me-2" /> Chấp nhận tham gia
-                            </Dropdown.Item>
-                            <Dropdown.Item onClick={() => { setSelectedAppId(app._id); setShowDeclineModal(true); }} className="text-danger">
-                              <FaTimesCircle className="me-2" /> Từ chối
-                            </Dropdown.Item>
-                          </>
-                        )}
-                        {app.status !== APPLICATION_STATUS.PENDING && app.status !== APPLICATION_STATUS.INVITED && (
-                          <Dropdown.Item disabled>Không có hành động</Dropdown.Item>
-                        )}
-                      </Dropdown.Menu>
-                    </Dropdown>
-                  </div>
-                </Card.Body>
-              </Card>
-            ))
-          )}
-        </div>
-      </Col>
+                          <Dropdown.Item onClick={() => { setSelectedAppId(app._id); setShowDeclineModal(true); }} className="text-danger py-1">
+                            <FaTimesCircle className="me-1" /> Từ chối
+                          </Dropdown.Item>
+                        </>
+                      )}
+                      {app.status === APPLICATION_STATUS.APPROVED && app.projectId?.status === PROJECT_STATUS.COMPLETED && (
+                        <Dropdown.Item 
+                          onClick={() => { setReviewProjectId(app.projectId._id); setShowReviewModal(true); }} 
+                          className="text-primary py-1 fw-bold"
+                        >
+                          <FaStar className="me-1" /> Đánh giá đồng đội
+                        </Dropdown.Item>
+                      )}
+                      {app.status !== APPLICATION_STATUS.PENDING && app.status !== APPLICATION_STATUS.INVITED && !(app.status === APPLICATION_STATUS.APPROVED && app.projectId?.status === PROJECT_STATUS.COMPLETED) && (
+                        <Dropdown.Item disabled className="py-1">Không có hành động</Dropdown.Item>
+                      )}
+                    </Dropdown.Menu>
+                  </Dropdown>
+                </div>
+              </td>
+            </tr>
+          ))
+        )}
+      </CustomTable>
+
+      {/* Phân trang server-side */}
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        onPageChange={(newPage) => setPage(newPage)}
+        disabled={loading}
+        className="mt-4"
+      />
 
       <ConfirmActionModal
         show={showCancelModal}
         onHide={() => setShowCancelModal(false)}
-        onConfirm={() => handleAction('cancel', selectedAppId)}
+        onConfirm={() => handleAction(ACTION_TYPES.CANCEL, selectedAppId)}
         title="Hủy đơn đăng ký"
         message="Bạn có chắc chắn muốn hủy đơn đăng ký vào dự án này không?"
         confirmText="Hủy đơn"
@@ -205,7 +277,7 @@ export default function MyApplicationsTab() {
       <ConfirmActionModal
         show={showAcceptModal}
         onHide={() => setShowAcceptModal(false)}
-        onConfirm={() => handleAction('accept', selectedAppId)}
+        onConfirm={() => handleAction(ACTION_TYPES.ACCEPT, selectedAppId)}
         title="Chấp nhận tham gia"
         message="Bạn đồng ý tham gia dự án này chứ?"
         confirmText="Đồng ý"
@@ -214,12 +286,31 @@ export default function MyApplicationsTab() {
       <ConfirmActionModal
         show={showDeclineModal}
         onHide={() => setShowDeclineModal(false)}
-        onConfirm={() => handleAction('decline', selectedAppId)}
+        onConfirm={() => handleAction(ACTION_TYPES.DECLINE, selectedAppId)}
         title="Từ chối lời mời"
         message="Bạn có chắc chắn muốn từ chối lời mời này không?"
         confirmText="Từ chối"
         variant="danger"
       />
-    </Row>
+
+      {/* Modal Xem Dự Án */}
+      {selectedProject && (
+        <ProjectDetailModal
+          show={!!selectedProject}
+          onHide={() => setSelectedProject(null)}
+          project={selectedProject}
+        />
+      )}
+
+      {/* Modal Đánh giá đồng đội */}
+      <Modal show={showReviewModal} onHide={() => setShowReviewModal(false)} size="lg" centered>
+        <Modal.Header closeButton>
+          <Modal.Title className="h5 fw-bold">Đánh giá đồng đội</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="bg-light">
+          {reviewProjectId && <ReviewTab projectId={reviewProjectId} />}
+        </Modal.Body>
+      </Modal>
+    </div>
   );
 }

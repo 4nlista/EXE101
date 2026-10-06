@@ -34,6 +34,11 @@ const server = http.createServer(app);
 // Khởi tạo Socket.io
 initSocket(server);
 
+// Khởi chạy các Cron Job ngầm
+require('./cron/subscriptionCron')();
+require('./jobs/autoRatingJob')();
+require('./jobs/expireProjectJob').initExpireProjectCron();
+
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

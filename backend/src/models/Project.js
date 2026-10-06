@@ -89,7 +89,25 @@ const projectSchema = new mongoose.Schema(
     // ===== THÀNH VIÊN ĐÃ DUYỆT =====
 
     // Danh sách thành viên đã được duyệt vào dự án
-    members: [memberSchema]
+    members: [memberSchema],
+
+    // ===== ĐÁNH GIÁ =====
+
+    // Thời điểm dự án được đánh dấu hoàn thành
+    completedAt: {
+      type: Date,
+      default: null
+    },
+    // Hạn chót đánh giá (completedAt + 7 ngày)
+    reviewDeadline: {
+      type: Date,
+      default: null
+    },
+    // Đánh dấu đã chạy xong cron job auto-rate
+    autoRatedCompleted: {
+      type: Boolean,
+      default: false
+    }
   },
   { timestamps: true }
 );

@@ -14,8 +14,13 @@ import PublicProfile from '../pages/profile/PublicProfile';
 import Messages from '../pages/messages/Messages';
 import AIHub from '../pages/ai/AIHub';
 import AdminDashboard from '../pages/admin/AdminDashboard';
-import Settings from '../pages/settings/Settings';
+import ChangePassword from '../pages/settings/ChangePassword';
 import ProfileOnboarding from '../pages/profile/ProfileOnboarding';
+import Subscription from '../pages/subscription/Subscription';
+import PaymentResult from '../pages/subscription/PaymentResult';
+import HistoryPayment from '../pages/subscription/HistoryPayment';
+import Payment from '../pages/subscription/Payment';
+import Notifications from '../pages/notifications/Notifications';
 import { ROLE_CODE } from '../constants/roleEnum';
 
 // Route cho Admin
@@ -96,7 +101,16 @@ export default function AppRoutes() {
 
         <Route path="/messages" element={<Messages />} />
         <Route path="/ai-hub" element={<AIHub />} />
-        <Route path="/settings" element={<Settings />} />
+        <Route path="/change-password" element={<ChangePassword />} />
+        
+        {/* Thanh toán & Gói dịch vụ */}
+        <Route path="/subscription" element={<Subscription />} />
+        <Route path="/payment-result" element={<PaymentResult />} />
+        <Route path="/transactions" element={<HistoryPayment />} />
+        <Route path="/payment/:orderId" element={<Payment />} />
+        
+        {/* Thông báo */}
+        <Route path="/notifications" element={<Notifications />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

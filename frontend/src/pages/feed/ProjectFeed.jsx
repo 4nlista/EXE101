@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Spinner, Form } from 'react-bootstrap';
+import { useLocation } from 'react-router-dom';
 import Button from '../../components/Button';
 import Modal from '../../components/Modal';
 import Alert from '../../components/Alert';
 import { useQuery } from '@tanstack/react-query';
-import { getProjects } from '../../services/projectService';
+import { getProjects, getProjectDetail } from '../../services/projectService';
 import ProjectCard from '../../components/ProjectCard';
 import ProjectFilter from '../../components/ProjectFilter';
 import ProjectDetailModal from './ProjectDetailModal';
@@ -26,6 +27,28 @@ export default function ProjectFeed() {
     deadline: '',
     sort: 'newest'
   });
+
+  const location = useLocation();
+
+  // Tự động mở ProjectDetailModal nếu có state từ trang khác truyền sang (VD: Click thông báo)
+  useEffect(() => {
+    const openProjectId = location.state?.openProjectId;
+    if (openProjectId) {
+      const fetchProject = async () => {
+        try {
+          const res = await getProjectDetail(openProjectId);
+          if (res.data) {
+            setSelectedProject(res.data);
+          }
+        } catch (error) {
+          console.error('Lỗi khi fetch dự án từ thông báo:', error);
+        }
+      };
+      fetchProject();
+      // Xóa state để không bị mở lại khi người dùng F5 hoặc điều hướng lung tung
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   // Gọi API thông qua React Query
   const { data: response, isLoading, isError, error } = useQuery({

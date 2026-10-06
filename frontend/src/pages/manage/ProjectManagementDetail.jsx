@@ -11,13 +11,25 @@ import {
   approveApplicant,
   rejectApplicant,
   inviteApplicant,
-  kickMember
+  kickMember,
+  updateProjectStatus
 } from '../../services/projectService';
 import { initConversation } from '../../services/messageService';
 import { APPLICATION_STATUS } from '../../constants/applicationEnum';
 import { PROJECT_STATUS } from '../../constants/projectEnum';
 import { formatDate } from '../../utils/formatDate';
+import StatusBadge from '../../components/StatusBadge';
 import UpdateProjectModal from './UpdateProjectModal';
+import CustomTable from '../../components/CustomTable';
+import ReviewTab from './components/ReviewTab';
+
+const ACTION_TYPES = {
+  APPROVE: 'approve', // Chấp nhận đơn đăng ký
+  REJECT: 'reject',   // Từ chối đơn đăng ký
+  INVITE: 'invite',   // Mời thành viên
+  KICK: 'kick',       // Kích thành viên
+  CHANGE_STATUS: 'change_status' // Thay đổi trạng thái
+};
 
 export default function ProjectManagementDetail() {
   const { projectId } = useParams();
@@ -34,8 +46,12 @@ export default function ProjectManagementDetail() {
   const [sortTime, setSortTime] = useState('newest');
   const [filterStatus, setFilterStatus] = useState('ALL');
 
+  // Phân trang danh sách ứng viên
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
   const [showConfirm, setShowConfirm] = useState(false);
-  const [confirmAction, setConfirmAction] = useState({ type: null, appId: null, userId: null, name: '' });
+  const [confirmAction, setConfirmAction] = useState({ type: null, appId: null, userId: null, name: '', newStatus: null });
 
   const fetchData = async () => {
     try {
@@ -62,23 +78,26 @@ export default function ProjectManagementDetail() {
 
   const handleConfirmAction = async () => {
     try {
-      if (confirmAction.type === 'approve') {
+      if (confirmAction.type === ACTION_TYPES.APPROVE) {
         await approveApplicant(projectId, confirmAction.appId);
         toast.success(`Đã duyệt ứng viên ${confirmAction.name}`);
-      } else if (confirmAction.type === 'reject') {
+      } else if (confirmAction.type === ACTION_TYPES.REJECT) {
         await rejectApplicant(projectId, confirmAction.appId);
         toast.success(`Đã từ chối ứng viên ${confirmAction.name}`);
-      } else if (confirmAction.type === 'invite') {
+      } else if (confirmAction.type === ACTION_TYPES.INVITE) {
         await inviteApplicant(projectId, confirmAction.appId);
         toast.success(`Đã gửi lời mời tham gia dự án đến ${confirmAction.name}`);
-      } else if (confirmAction.type === 'kick') {
+      } else if (confirmAction.type === ACTION_TYPES.KICK) {
         await kickMember(projectId, confirmAction.userId);
         toast.success(`Đã xóa thành viên ${confirmAction.name} khỏi dự án`);
+      } else if (confirmAction.type === ACTION_TYPES.CHANGE_STATUS) {
+        await updateProjectStatus(projectId, confirmAction.newStatus);
+        toast.success(`Đã cập nhật trạng thái dự án thành công`);
       }
       setShowConfirm(false);
       fetchData(); // Reload dữ liệu để cập nhật danh sách ứng viên và thành viên
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Có lỗi xảy ra');
+      toast.error(error?.message || 'Có lỗi xảy ra');
     }
   };
 
@@ -87,7 +106,7 @@ export default function ProjectManagementDetail() {
       setLoading(true);
       const res = await initConversation(targetUserId);
       if (res.success) {
-        navigate('/messages', { state: { conversationId: res.data._id } });
+        navigate('/messages', { state: { conversationId: res.data._id, conversation: res.data } });
       }
     } catch (error) {
       toast.error('Không thể bắt đầu cuộc trò chuyện');
@@ -99,13 +118,15 @@ export default function ProjectManagementDetail() {
   const getStatusBadge = (status) => {
     switch (status) {
       case APPLICATION_STATUS.PENDING:
-        return <Badge bg="warning" text="dark" className="rounded-pill px-3 py-2 bg-opacity-25 fw-normal">Đang xử lý</Badge>;
+        return <StatusBadge variant="warning" text="Đang xử lý" />;
       case APPLICATION_STATUS.APPROVED:
-        return <Badge bg="success" className="rounded-pill px-3 py-2 fw-normal">Đã duyệt</Badge>;
+        return <StatusBadge variant="success" text="Đã duyệt" />;
       case APPLICATION_STATUS.REJECTED:
-        return <Badge bg="danger" className="rounded-pill px-3 py-2 fw-normal">Từ chối</Badge>;
+        return <StatusBadge variant="danger" text="Từ chối" />;
       case APPLICATION_STATUS.INVITED:
-        return <Badge bg="info" className="rounded-pill px-3 py-2 fw-normal">Được mời</Badge>;
+        return <StatusBadge variant="primary" text="Được mời" />;
+      case APPLICATION_STATUS.EXPIRED:
+        return <StatusBadge variant="secondary" text="Đã hết hạn" />;
       default:
         return null;
     }
@@ -119,6 +140,15 @@ export default function ProjectManagementDetail() {
       const timeB = new Date(b.createdAt).getTime();
       return sortTime === 'newest' ? timeB - timeA : timeA - timeB;
     });
+
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentApplications = filteredApplications.slice(startIndex, startIndex + itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(filteredApplications.length / itemsPerPage));
+
+  // Reset trang về 1 nếu thay đổi bộ lọc
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [sortTime, filterStatus]);
 
   // Xuất CSV
   const exportToCSV = () => {
@@ -158,15 +188,26 @@ export default function ProjectManagementDetail() {
       <div className="bg-white rounded-4 shadow-sm border p-4 mb-4">
         <div className="d-flex justify-content-between align-items-start mb-4">
           <div className="d-flex gap-3">
-            <div className="bg-light rounded-3 d-flex align-items-center justify-content-center" style={{ width: '64px', height: '64px' }}>
-              <FaRegFileAlt size={32} className="text-primary" />
+            <div className="bg-light rounded-3 d-flex align-items-center justify-content-center border" style={{ width: '64px', height: '64px' }}>
+              <FaRegFileAlt size={32} className="text-secondary" />
             </div>
             <div>
               <div className="d-flex align-items-center gap-2 mb-2">
                 <h4 className="fw-bold mb-0">{project.title}</h4>
-                <Badge bg={project.status === PROJECT_STATUS.OPEN ? 'warning' : 'secondary'} className="rounded-pill px-3 py-1 bg-opacity-25 text-dark">
-                  {project.status === PROJECT_STATUS.OPEN ? 'Đang tuyển' : 'Đã đóng'}
-                </Badge>
+                <StatusBadge
+                  variant={
+                    project.status === PROJECT_STATUS.OPEN ? 'warning' :
+                      project.status === PROJECT_STATUS.IN_PROGRESS ? 'primary' :
+                        project.status === PROJECT_STATUS.COMPLETED ? 'success' :
+                          project.status === PROJECT_STATUS.CANCELLED ? 'danger' : 'secondary'
+                  }
+                  text={
+                    project.status === PROJECT_STATUS.OPEN ? 'Đang tuyển' :
+                      project.status === PROJECT_STATUS.IN_PROGRESS ? 'Đang thực hiện' :
+                        project.status === PROJECT_STATUS.COMPLETED ? 'Kết thúc' :
+                          project.status === PROJECT_STATUS.CANCELLED ? 'Đã hủy' : 'Đã đóng'
+                  }
+                />
               </div>
               <div className="text-muted" style={{ fontSize: '13px' }}>
                 Đăng bởi: <span className="fw-semibold text-dark">{project.ownerId?.name || 'Bạn'}</span>
@@ -186,34 +227,73 @@ export default function ProjectManagementDetail() {
                 style={{ width: `${Math.min(100, (members.length / project.maxMembers) * 100)}%` }}
               />
             </div>
-            <Button variant="primary" className="rounded-pill px-3" onClick={() => setShowUpdateModal(true)}>
-              <FaEdit className="me-0" /> Chỉnh sửa
-            </Button>
+
+            <div className="d-flex justify-content-end gap-2">
+              {project.status === PROJECT_STATUS.OPEN && members.length < (project.maxMembers / 2) && (
+                <Button variant="dark" className="rounded px-3 text-white shadow-none" onClick={() => {
+                  setConfirmAction({ type: ACTION_TYPES.CHANGE_STATUS, name: 'hủy dự án này', newStatus: PROJECT_STATUS.CANCELLED });
+                  setShowConfirm(true);
+                }}>
+                  Hủy dự án
+                </Button>
+              )}
+              {project.status === PROJECT_STATUS.CLOSED && (
+                <>
+                  {members.length < (project.maxMembers / 2) && (
+                    <Button variant="danger" className="rounded px-3 text-white shadow-none" onClick={() => {
+                      setConfirmAction({ type: ACTION_TYPES.CHANGE_STATUS, name: 'hủy dự án này', newStatus: PROJECT_STATUS.CANCELLED });
+                      setShowConfirm(true);
+                    }}>
+                      Hủy dự án
+                    </Button>
+                  )}
+                  <Button variant="success" className="rounded px-3 shadow-none text-white fw-medium" onClick={() => {
+                    setConfirmAction({ type: ACTION_TYPES.CHANGE_STATUS, name: 'bắt đầu dự án này', newStatus: PROJECT_STATUS.IN_PROGRESS });
+                    setShowConfirm(true);
+                  }}>
+                    Bắt đầu dự án
+                  </Button>
+                </>
+              )}
+              {project.status === PROJECT_STATUS.IN_PROGRESS && (
+                <Button variant="success" className="rounded px-3 shadow-none text-white fw-medium" onClick={() => {
+                  setConfirmAction({ type: ACTION_TYPES.CHANGE_STATUS, name: 'hoàn thành dự án này', newStatus: PROJECT_STATUS.COMPLETED });
+                  setShowConfirm(true);
+                }}>
+                  Hoàn thành dự án
+                </Button>
+              )}
+              {project.status !== PROJECT_STATUS.CANCELLED && project.status !== PROJECT_STATUS.COMPLETED && (
+                <Button variant="primary" className="rounded px-3 shadow-none fw-medium" onClick={() => setShowUpdateModal(true)}>
+                  <FaEdit className="me-1" /> Chỉnh sửa
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 
         <Row className="g-3 border-top border-bottom py-2 mb-3">
           <Col md={5} className="border-end">
-            <div className="text-dark mb-1 fw-bold" style={{ fontSize: '13px' }}>Ngành</div>
+            <div className="text-dark mb-1 fw-bold" style={{ fontSize: '13px' }}>Ngành <span className="text-danger">*</span></div>
             <div className="">{project.departmentIds?.map(d => d.name).join(', ')}</div>
           </Col>
           <Col md={3} className="border-end ">
-            <div className="text-dark mb-1 fw-bold" style={{ fontSize: '13px' }}>Mục tiêu điểm</div>
-            <div className="">{project.gradeTarget ? `${project.gradeTarget} / 10` : 'Không có'}</div>
+            <div className="text-dark mb-1 fw-bold" style={{ fontSize: '13px' }}>Mục tiêu điểm <span className="text-danger">*</span></div>
+            <div className="">{project.gradeTarget ? `${project.gradeTarget}` : 'Không có'}</div>
           </Col>
           <Col md={3}>
-            <div className="text-dark mb-1 fw-bold" style={{ fontSize: '13px' }}>Hạn ứng tuyển</div>
+            <div className="text-dark mb-1 fw-bold" style={{ fontSize: '13px' }}>Hạn ứng tuyển <span className="text-danger">*</span></div>
             <div className="">{project.deadline ? formatDate(project.deadline) : 'Không có'}</div>
           </Col>
         </Row>
 
-        <Row className="g-4">
+        <Row className="g-3">
           <Col md={6}>
-            <h6 className="fw-bold mb-2">Tổng quan dự án</h6>
-            <p className="text-muted" style={{ fontSize: '13px', whiteSpace: 'pre-line' }}>{project.description}</p>
+            <h6 className="fw-bold mb-2 text-dark">Tổng quan dự án <span className="text-danger">*</span></h6>
+            <p className="text-muted" style={{ fontSize: '14px', whiteSpace: 'pre-line' }}>{project.description}</p>
           </Col>
           <Col md={6}>
-            <h6 className="fw-bold mb-2">Yêu cầu ứng viên</h6>
+            <h6 className="fw-bold mb-2 text-dark">Yêu cầu ứng viên <span className="text-danger">*</span></h6>
             <p className="text-muted" style={{ fontSize: '14px', whiteSpace: 'pre-line' }}>{project.candidateRequirements}</p>
           </Col>
         </Row>
@@ -232,6 +312,13 @@ export default function ProjectManagementDetail() {
               Thành viên dự án
             </Nav.Link>
           </Nav.Item>
+          {project.status === PROJECT_STATUS.COMPLETED && (
+            <Nav.Item>
+              <Nav.Link eventKey="reviews" className={activeTab === 'reviews' ? 'fw-bold text-dark border-bottom border-primary border-3' : 'text-muted'}>
+                Đánh giá thành viên
+              </Nav.Link>
+            </Nav.Item>
+          )}
         </Nav>
 
         {activeTab === 'applicants' && (
@@ -245,9 +332,10 @@ export default function ProjectManagementDetail() {
               <option value={APPLICATION_STATUS.PENDING}>Đang xử lý</option>
               <option value={APPLICATION_STATUS.APPROVED}>Đã duyệt</option>
               <option value={APPLICATION_STATUS.REJECTED}>Từ chối</option>
+              <option value={APPLICATION_STATUS.EXPIRED}>Đã hết hạn</option>
             </Form.Select>
             <Button variant="secondary text-dark" size="sm" className="d-flex align-items-center gap-1 rounded px-3" onClick={exportToCSV}>
-              <FaDownload /> Export CSV
+              <FaDownload /> Export
             </Button>
           </div>
         )}
@@ -257,111 +345,135 @@ export default function ProjectManagementDetail() {
       <div className="rounded-4 shadow-sm border p-4">
         {activeTab === 'applicants' && (
           <div className="table-responsive">
-            <Table striped hover className="align-middle border-top border-bottom mb-2 ">
-              <thead className="bg-light">
+            <CustomTable
+              headers={[
+                { label: 'STT', className: 'text-center text-dark fw-bold', style: { width: '5%' } },
+                { label: 'Ứng viên', className: 'text-dark fw-bold', style: { width: '25%' } },
+                { label: 'Thời gian nộp', className: 'text-dark fw-bold', style: { width: '15%' } },
+                { label: 'Nghiên cứu', className: 'text-dark fw-bold', style: { width: '15%' } },
+                { label: 'Trạng thái', className: 'text-center text-dark fw-bold', style: { width: '15%' } },
+                { label: 'CV', className: 'text-center text-dark fw-bold', style: { width: '10%' } },
+                { label: 'Hành động', className: 'text-center text-dark fw-bold', style: { width: '15%' } }
+              ]}
+              className="mb-3"
+            >
+              {currentApplications.length === 0 ? (
                 <tr>
-                  <th className="py-3 text-muted fw-semibold border-0 text-center" style={{ width: '60px' }}>STT</th>
-                  <th className="py-3 text-muted fw-semibold border-0">Ứng viên</th>
-                  <th className="py-3 text-muted fw-semibold border-0">Thời gian nộp</th>
-                  <th className="py-3 text-muted fw-semibold border-0">Nghiên cứu</th>
-                  <th className="py-3 text-muted fw-semibold border-0 text-center">Trạng thái</th>
-                  <th className="py-3 text-muted fw-semibold border-0 text-center">CV</th>
-                  <th className="py-3 text-muted fw-semibold border-0 text-center" style={{ width: '180px' }}>Hành động</th>
+                  <td colSpan="7" className="text-center py-4 text-muted">Không tìm thấy ứng viên nào phù hợp</td>
                 </tr>
-              </thead>
-              <tbody>
-                {filteredApplications.length === 0 ? (
-                  <tr>
-                    <td colSpan="7" className="text-center py-4 text-muted">Không tìm thấy ứng viên nào phù hợp</td>
-                  </tr>
-                ) : (
-                  filteredApplications.map((app, idx) => (
-                    <tr key={app._id}>
-                      <td className="text-center text-muted">{idx + 1}</td>
-                      <td>
-                        <div 
-                          className="d-flex align-items-center gap-3 hover-opacity"
-                          style={{ cursor: 'pointer', transition: 'opacity 0.2s' }}
-                          onClick={() => {
-                            if (app.applicantId?._id) {
-                              navigate(`/profile/${app.applicantId._id}`);
-                            }
-                          }}
-                        >
-                          <img
-                            src={app.applicantId?.avatar || 'https://via.placeholder.com/40'}
-                            alt="Avatar"
-                            className="rounded-circle"
-                            style={{ width: '40px', height: '40px', objectFit: 'cover' }}
-                          />
-                          <div>
-                            <div className="fw-semibold text-dark hover-primary text-primary-hover">{app.applicantId?.name}</div>
-                            <div className="text-muted" style={{ fontSize: '12px' }}>{app.applicantId?.majorId?.name || app.applicantId?.departmentId?.name || 'Chưa cập nhật'}</div>
-                          </div>
+              ) : (
+                currentApplications.map((app, idx) => (
+                  <tr key={app._id}>
+                    <td className="text-center text-muted">{startIndex + idx + 1}</td>
+                    <td>
+                      <div
+                        className="d-flex align-items-center gap-3 hover-opacity"
+                        style={{ cursor: 'pointer', transition: 'opacity 0.2s' }}
+                        onClick={() => {
+                          if (app.applicantId?._id) {
+                            navigate(`/profile/${app.applicantId._id}`);
+                          }
+                        }}
+                      >
+                        <img
+                          src={app.applicantId?.avatar || 'https://via.placeholder.com/40'}
+                          alt="Avatar"
+                          className="rounded-circle"
+                          style={{ width: '40px', height: '40px', objectFit: 'cover' }}
+                        />
+                        <div>
+                          <div className="fw-semibold text-dark hover-primary text-primary-hover">{app.applicantId?.name}</div>
+                          <div className="text-muted" style={{ fontSize: '12px' }}>{app.applicantId?.majorId?.name || app.applicantId?.departmentId?.name || 'Chưa cập nhật'}</div>
                         </div>
-                      </td>
-                      <td className="text-muted">{formatDate(app.createdAt)}</td>
-                      <td>
-                        <Button variant="outline-primary" size="sm" className="rounded-pill d-flex align-items-center gap-1" disabled title="Tính năng VIP/Premium">
-                          <FaStar className="text-warning" /> Match
-                        </Button>
-                      </td>
-                      <td className="text-center">{getStatusBadge(app.status)}</td>
-                      <td className="text-center">
-                        <a
-                          href={app.cvFileUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="btn btn-sm rounded-pill text-white"
-                          style={{ backgroundColor: '#515253ff', borderColor: '#f7f7f7ff' }}
-                        >
-                          Xem CV
-                        </a>
-                      </td>
-                      <td className="text-center">
-                        {app.status === APPLICATION_STATUS.PENDING && (
-                          <div className="d-flex justify-content-center gap-2">
-                            <Button
-                              variant="outline-success"
-                              size="sm"
-                              onClick={() => {
-                                setConfirmAction({ type: 'approve', appId: app._id, name: app.applicantId?.name });
-                                setShowConfirm(true);
-                              }}
-                            >Duyệt</Button>
-                            <Button
-                              variant="outline-danger"
-                              size="sm"
-                              onClick={() => {
-                                setConfirmAction({ type: 'reject', appId: app._id, name: app.applicantId?.name });
-                                setShowConfirm(true);
-                              }}
-                            >Từ chối</Button>
-                          </div>
-                        )}
-                        {app.status === APPLICATION_STATUS.APPROVED && (
+                      </div>
+                    </td>
+                    <td className="text-muted">{formatDate(app.createdAt)}</td>
+                    <td>
+                      <Button variant="outline-primary" size="sm" className="rounded-pill d-flex align-items-center gap-1" disabled title="Tính năng VIP/Premium">
+                        <FaStar className="text-warning" /> Match
+                      </Button>
+                    </td>
+                    <td className="text-center">{getStatusBadge(app.status)}</td>
+                    <td className="text-center">
+                      <a
+                        href={app.cvFileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn btn-sm rounded-pill text-white"
+                        style={{ backgroundColor: '#515253ff', borderColor: '#f7f7f7ff' }}
+                      >
+                        Xem CV
+                      </a>
+                    </td>
+                    <td className="text-center">
+                      {app.status === APPLICATION_STATUS.PENDING && project.status !== PROJECT_STATUS.CANCELLED && project.status !== PROJECT_STATUS.COMPLETED && (
+                        <div className="d-flex justify-content-center gap-2">
                           <Button
-                            variant="primary"
-                            size="sm"
-                            onClick={() => handleStartChat(app.applicantId._id)}
-                          >Nhắn tin</Button>
-                        )}
-                        {app.status === APPLICATION_STATUS.REJECTED && (
-                          <Button
-                            variant="info"
+                            variant="success"
                             size="sm"
                             onClick={() => {
-                              setConfirmAction({ type: 'invite', appId: app._id, name: app.applicantId?.name });
+                              setConfirmAction({ type: ACTION_TYPES.APPROVE, appId: app._id, name: app.applicantId?.name });
                               setShowConfirm(true);
                             }}
-                          >Mời tham gia</Button>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </Table>
+                          >Duyệt</Button>
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            onClick={() => {
+                              setConfirmAction({ type: ACTION_TYPES.REJECT, appId: app._id, name: app.applicantId?.name });
+                              setShowConfirm(true);
+                            }}
+                          >Từ chối</Button>
+                        </div>
+                      )}
+                      {app.status === APPLICATION_STATUS.APPROVED && (
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => handleStartChat(app.applicantId._id)}
+                        >Nhắn tin</Button>
+                      )}
+                      {app.status === APPLICATION_STATUS.REJECTED && members.length < project.maxMembers && project.status !== PROJECT_STATUS.CANCELLED && project.status !== PROJECT_STATUS.COMPLETED && (
+                        <Button
+                          variant="info"
+                          size="sm"
+                          onClick={() => {
+                            setConfirmAction({ type: ACTION_TYPES.INVITE, appId: app._id, name: app.applicantId?.name });
+                            setShowConfirm(true);
+                          }}
+                        >Mời tham gia</Button>
+                      )}
+                      {app.status === APPLICATION_STATUS.EXPIRED && (
+                        <span className="text-muted small">Đã hết hạn</span>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </CustomTable>
+
+            {/* Phân trang */}
+            <div className="d-flex justify-content-center align-items-center gap-3 mt-3">
+              <Button
+                variant="light border"
+                size="sm"
+                className="px-3"
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              >
+                &lt;
+              </Button>
+              <span className="text-dark fw-semibold" style={{ fontSize: '14px' }}>{currentPage} / {totalPages}</span>
+              <Button
+                variant="light border"
+                size="sm"
+                className="px-3"
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+              >
+                &gt;
+              </Button>
+            </div>
           </div>
         )}
 
@@ -398,15 +510,17 @@ export default function ProjectManagementDetail() {
                             style={{ fontSize: '13px' }}
                           >Nhắn tin</Button>
                         </div>
-                        <Button
-                          variant="warning"
-                          className="w-100 rounded-pill py-1"
-                          onClick={() => {
-                            setConfirmAction({ type: 'kick', userId: member.userId._id, name: member.userId.name });
-                            setShowConfirm(true);
-                          }}
-                          style={{ fontSize: '13px' }}
-                        >Xóa khỏi dự án</Button>
+                        {project.status !== PROJECT_STATUS.CANCELLED && project.status !== PROJECT_STATUS.COMPLETED && (
+                          <Button
+                            variant="warning"
+                            className="w-100 rounded-pill py-1"
+                            onClick={() => {
+                              setConfirmAction({ type: ACTION_TYPES.KICK, userId: member.userId._id, name: member.userId.name });
+                              setShowConfirm(true);
+                            }}
+                            style={{ fontSize: '13px' }}
+                          >Xóa khỏi dự án</Button>
+                        )}
                       </div>
                     </Card.Body>
                   </Card>
@@ -415,6 +529,10 @@ export default function ProjectManagementDetail() {
             )}
           </Row>
         )}
+
+        {activeTab === 'reviews' && project.status === PROJECT_STATUS.COMPLETED && (
+          <ReviewTab projectId={project._id} />
+        )}
       </div>
 
       <ConfirmActionModal
@@ -422,23 +540,26 @@ export default function ProjectManagementDetail() {
         onHide={() => setShowConfirm(false)}
         onConfirm={handleConfirmAction}
         title={
-          confirmAction.type === 'approve' ? 'Duyệt ứng viên' :
-            confirmAction.type === 'reject' ? 'Từ chối ứng viên' :
-              confirmAction.type === 'invite' ? 'Mời tham gia' : 'Xóa thành viên'
+          confirmAction.type === ACTION_TYPES.APPROVE ? 'Duyệt ứng viên' :
+            confirmAction.type === ACTION_TYPES.REJECT ? 'Từ chối ứng viên' :
+              confirmAction.type === ACTION_TYPES.INVITE ? 'Mời tham gia' :
+                confirmAction.type === ACTION_TYPES.CHANGE_STATUS ? 'Xác nhận thay đổi' : 'Xóa thành viên'
         }
         message={
-          confirmAction.type === 'approve' ? `Bạn có chắc chắn muốn duyệt ứng viên ${confirmAction.name} vào dự án không?` :
-            confirmAction.type === 'reject' ? `Bạn có chắc chắn muốn từ chối ứng viên ${confirmAction.name} không?` :
-              confirmAction.type === 'invite' ? `Bạn có muốn gửi lời mời tham gia dự án đến ${confirmAction.name}?` :
-                `Bạn có chắc chắn muốn xóa thành viên ${confirmAction.name} khỏi dự án không?`
+          confirmAction.type === ACTION_TYPES.APPROVE ? `Bạn có chắc chắn muốn duyệt ứng viên ${confirmAction.name} vào dự án không?` :
+            confirmAction.type === ACTION_TYPES.REJECT ? `Bạn có chắc chắn muốn từ chối ứng viên ${confirmAction.name} không?` :
+              confirmAction.type === ACTION_TYPES.INVITE ? `Bạn có muốn gửi lời mời tham gia dự án đến ${confirmAction.name}?` :
+                confirmAction.type === ACTION_TYPES.CHANGE_STATUS ? `Bạn có chắc chắn muốn ${confirmAction.name}? Hành động này có thể không thể hoàn tác.` :
+                  `Bạn có chắc chắn muốn xóa thành viên ${confirmAction.name} khỏi dự án không?`
         }
         confirmText={
-          confirmAction.type === 'approve' ? 'Duyệt' :
-            confirmAction.type === 'reject' ? 'Từ chối' :
-              confirmAction.type === 'invite' ? 'Mời' : 'Xóa'
+          confirmAction.type === ACTION_TYPES.APPROVE ? 'Duyệt' :
+            confirmAction.type === ACTION_TYPES.REJECT ? 'Từ chối' :
+              confirmAction.type === ACTION_TYPES.INVITE ? 'Mời' :
+                confirmAction.type === ACTION_TYPES.CHANGE_STATUS ? 'Xác nhận' : 'Xóa'
         }
         variant={
-          confirmAction.type === 'approve' || confirmAction.type === 'invite' ? 'success' : 'danger'
+          confirmAction.type === ACTION_TYPES.APPROVE || confirmAction.type === ACTION_TYPES.INVITE || (confirmAction.type === ACTION_TYPES.CHANGE_STATUS && confirmAction.newStatus !== PROJECT_STATUS.CANCELLED) ? 'success' : 'danger'
         }
       />
 

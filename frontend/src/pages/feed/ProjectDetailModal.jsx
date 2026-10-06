@@ -273,8 +273,16 @@ export default function ProjectDetailModal({ project, show, onHide }) {
             )}
 
             {!appStatus.canApply ? (
-              <div className="w-100 p-3 rounded text-danger text-center fw-bold d-flex align-items-center justify-content-center gap-2 mt-2" style={{ backgroundColor: '#fef2f2', border: '1px solid #f87171' }}>
-                <AlertCircle size={20} /> ! {getStatusMessage(appStatus.status, appStatus.rejectionCount)}
+              <div className="w-100 p-3 rounded fw-bold d-flex align-items-center justify-content-center gap-2 mt-2" 
+                   style={
+                     appStatus.status === APPLICATION_STATUS.APPROVED
+                       ? { backgroundColor: '#f0fdf4', border: '1px solid #4ade80', color: '#166534' }
+                       : appStatus.status === APPLICATION_STATUS.PENDING || appStatus.status === APPLICATION_STATUS.INVITED
+                       ? { backgroundColor: '#fffbeb', border: '1px solid #fcd34d', color: '#92400e' }
+                       : { backgroundColor: '#fef2f2', border: '1px solid #f87171', color: '#dc2626' }
+                   }>
+                {appStatus.status === APPLICATION_STATUS.APPROVED ? <CheckCircle size={20} /> : <AlertCircle size={20} />} 
+                {getStatusMessage(appStatus.status, appStatus.rejectionCount)}
               </div>
             ) : (
               <Form onSubmit={handleApplySubmit}>

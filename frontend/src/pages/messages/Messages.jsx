@@ -1,92 +1,83 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Container, Row, Col, ListGroup, Form, InputGroup, Dropdown, Badge } from 'react-bootstrap';
-import { FaPaperPlane, FaUserCircle, FaEllipsisV, FaCheck, FaCheckDouble } from 'react-icons/fa';
-import { getConversations, getMessages, sendMessage, revokeMessage, clearConversation, markConversationAsRead } from '../../services/messageService';
-import { toast } from 'react-toastify';
-import Button from '../../components/Button';
+import { Row, Col } from 'react-bootstrap';
+import { MessageSquare } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
+import { toast } from 'react-toastify';
+
+import {
+  getConversations,
+  getMessages,
+  sendMessage,
+  revokeMessage,
+  clearConversation,
+  markConversationAsRead
+} from '../../services/messageService';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSocket } from '../../contexts/SocketContext';
+import ConfirmActionModal from '../../components/ConfirmActionModal';
 
-const formatDateTime = (dateString) => {
-  if (!dateString) return '';
-  const d = new Date(dateString);
-  const pad = (n) => n.toString().padStart(2, '0');
-  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-};
+// Các sub-component tách biệt theo kiến trúc modular
+import ConversationSidebar from './components/ConversationSidebar';
+import ChatHeader from './components/ChatHeader';
+import MessageBubble from './components/MessageBubble';
+import MessageComposer from './components/MessageComposer';
+import { formatActivityStatus, isSameDay } from './utils/messageHelpers';
 
-const formatRelativeTime = (dateString) => {
-  if (!dateString) return '';
-  const d = new Date(dateString);
-  const now = new Date();
-  const diffMs = now - d;
-  const diffSec = Math.floor(diffMs / 1000);
-  const diffMin = Math.floor(diffSec / 60);
-  const diffHour = Math.floor(diffMin / 60);
-  const diffDay = Math.floor(diffHour / 24);
+import './Messages.css';
 
-  if (diffSec < 60) {
-    return 'Vừa xong';
-  } else if (diffMin < 60) {
-    return `${diffMin} phút trước`;
-  } else if (diffHour < 24) {
-    return `${diffHour} giờ trước`;
-  } else if (diffDay < 7) {
-    return `${diffDay} ngày trước`;
-  } else {
-    const pad = (n) => n.toString().padStart(2, '0');
-    if (d.getFullYear() !== now.getFullYear()) {
-      return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
-    }
-    return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}`;
-  }
-};
-
-const CustomToggle = React.forwardRef(({ children, onClick, className }, ref) => (
-  <span
-    ref={ref}
-    className={className}
-    style={{ cursor: 'pointer' }}
-    onClick={(e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      onClick(e);
-    }}
-  >
-    {children}
-  </span>
-));
-
+// Trang nhắn tin thời gian thực hỗ trợ trò chuyện 1-1, emoji, trạng thái online và thu hồi tin nhắn
 export default function Messages() {
   const { currentUser } = useAuth();
   const currentUserId = currentUser?._id || currentUser?.id;
-  const { socket } = useSocket();
+  const { socket, isUserOnline, getUserLastSeen } = useSocket();
 
   const [conversations, setConversations] = useState([]);
   const [activeConversation, setActiveConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [messageInput, setMessageInput] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Trạng thái Emoji picker và các refs
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const emojiPickerRef = useRef(null);
+  const emojiButtonRef = useRef(null);
+  const inputRef = useRef(null);
+
+  // Modal xác nhận thao tác
+  const [showClearModal, setShowClearModal] = useState(false);
+  const [convToClear, setConvToClear] = useState(null);
+  const [showRevokeModal, setShowRevokeModal] = useState(false);
+  const [msgToRevoke, setMsgToRevoke] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+
   const messagesEndRef = useRef(null);
   const location = useLocation();
 
+  // Timer cập nhật nhãn hoạt động gần đây theo từng phút
+  const [, setMinuteTick] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => setMinuteTick(t => t + 1), 30000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Lấy danh sách cuộc trò chuyện của người dùng
   const fetchConversations = async () => {
     try {
       const res = await getConversations();
       if (res.success) {
         let fetchedConvs = res.data;
-        
-        // Nếu chuyển từ trang Profile qua, có truyền sẵn conversation object
-        // mà backend đã lọc mất (do đã clear chat) thì add tạm vào để người dùng chat
+
+        // Nếu chuyển từ trang khác (Profile) qua có mang theo conversation object
         if (location.state?.conversation && location.state?.conversationId) {
           const exists = fetchedConvs.some(c => c._id === location.state.conversationId);
           if (!exists) {
             fetchedConvs = [location.state.conversation, ...fetchedConvs];
           }
         }
-        
+
         setConversations(fetchedConvs);
-        
-        // Cập nhật activeConversation ngay sau khi tải xong nếu có id
+
+        // Tự động mở cuộc trò chuyện nếu truyền conversationId qua location state
         if (location.state?.conversationId) {
           const conv = fetchedConvs.find(c => c._id === location.state.conversationId);
           if (conv) {
@@ -104,6 +95,7 @@ export default function Messages() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state]);
 
+  // Tải danh sách tin nhắn và tham gia room socket khi chọn cuộc trò chuyện
   useEffect(() => {
     if (activeConversation) {
       const fetchMsgs = async () => {
@@ -111,25 +103,34 @@ export default function Messages() {
           const res = await getMessages(activeConversation._id);
           if (res.success) {
             setMessages(res.data);
-            // Đánh dấu đã xem khi mở chat (nếu có unread)
-            const myParticipant = activeConversation.participants.find(p => p.userId?._id?.toString() === currentUserId?.toString() || p.userId?.toString() === currentUserId?.toString());
+
+            // Đánh dấu đã xem nếu có tin nhắn chưa đọc
+            const myParticipant = activeConversation.participants.find(
+              p =>
+                p.userId?._id?.toString() === currentUserId?.toString() ||
+                p.userId?.toString() === currentUserId?.toString()
+            );
             if (myParticipant && myParticipant.unreadCount > 0) {
               await markConversationAsRead(activeConversation._id);
-              // Cập nhật lại local conversations state để xóa unreadCount
-              setConversations(prev => prev.map(c => {
-                if (c._id === activeConversation._id) {
-                  return {
-                    ...c,
-                    participants: c.participants.map(p => {
-                      if (p.userId?._id?.toString() === currentUserId?.toString() || p.userId?.toString() === currentUserId?.toString()) {
-                        return { ...p, unreadCount: 0 };
-                      }
-                      return p;
-                    })
-                  };
-                }
-                return c;
-              }));
+              setConversations(prev =>
+                prev.map(c => {
+                  if (c._id === activeConversation._id) {
+                    return {
+                      ...c,
+                      participants: c.participants.map(p => {
+                        if (
+                          p.userId?._id?.toString() === currentUserId?.toString() ||
+                          p.userId?.toString() === currentUserId?.toString()
+                        ) {
+                          return { ...p, unreadCount: 0 };
+                        }
+                        return p;
+                      })
+                    };
+                  }
+                  return c;
+                })
+              );
             }
           }
         } catch (error) {
@@ -147,9 +148,10 @@ export default function Messages() {
       if (socket && activeConversation) {
         socket.emit('leave_conversation', activeConversation._id);
       }
-    }
-  }, [activeConversation, socket]);
+    };
+  }, [activeConversation, socket, currentUserId]);
 
+  // Lắng nghe các sự kiện socket tin nhắn mới, thu hồi, đã xem
   useEffect(() => {
     if (!socket) return;
 
@@ -168,9 +170,13 @@ export default function Messages() {
             }
           };
 
-          // Tăng unreadCount cho mình nếu KHÔNG ĐANG MỞ chat này
+          // Tăng unreadCount nếu không đang mở cuộc trò chuyện này
           if (!activeConversation || activeConversation._id !== conversationId) {
-            const myPartIdx = updatedConv.participants.findIndex(p => p.userId?._id?.toString() === currentUserId?.toString() || p.userId?.toString() === currentUserId?.toString());
+            const myPartIdx = updatedConv.participants.findIndex(
+              p =>
+                p.userId?._id?.toString() === currentUserId?.toString() ||
+                p.userId?.toString() === currentUserId?.toString()
+            );
             if (myPartIdx !== -1) {
               const updatedParticipants = [...updatedConv.participants];
               updatedParticipants[myPartIdx] = {
@@ -190,7 +196,6 @@ export default function Messages() {
 
       if (activeConversation && activeConversation._id === conversationId) {
         setMessages(prev => [...prev, message]);
-        // Báo đã đọc ngay lập tức vì đang mở
         markConversationAsRead(conversationId);
       }
     };
@@ -198,14 +203,18 @@ export default function Messages() {
     const handleMessageRevoked = (data) => {
       const { messageId, conversationId } = data;
       if (activeConversation && activeConversation._id === conversationId) {
-        setMessages(prev => prev.map(m => m._id === messageId ? { ...m, isRevoked: true } : m));
+        setMessages(prev => prev.map(m => (m._id === messageId ? { ...m, isRevoked: true } : m)));
       }
     };
 
     const handleMessagesRead = (data) => {
       const { conversationId, readerId } = data;
       if (activeConversation && activeConversation._id === conversationId) {
-        setMessages(prev => prev.map(m => (m.senderId?._id !== readerId && m.senderId !== readerId) ? { ...m, status: 'read' } : m));
+        setMessages(prev =>
+          prev.map(m =>
+            m.senderId?._id !== readerId && m.senderId !== readerId ? { ...m, status: 'read' } : m
+          )
+        );
       }
     };
 
@@ -218,12 +227,60 @@ export default function Messages() {
       socket.off('message_revoked', handleMessageRevoked);
       socket.off('messages_read', handleMessagesRead);
     };
-  }, [socket, activeConversation]);
+  }, [socket, activeConversation, currentUserId]);
 
+  // Cuộn xuống tin nhắn mới nhất
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Đóng bảng emoji khi click ra ngoài hoặc bấm Escape
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(e.target) &&
+        emojiButtonRef.current &&
+        !emojiButtonRef.current.contains(e.target)
+      ) {
+        setShowEmojiPicker(false);
+      }
+    };
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && showEmojiPicker) {
+        setShowEmojiPicker(false);
+      }
+    };
+
+    if (showEmojiPicker) {
+      document.addEventListener('mousedown', handleClickOutside);
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showEmojiPicker]);
+
+  // Chèn emoji vào vị trí con trỏ của ô input
+  const handleSelectEmoji = (emoji) => {
+    const input = inputRef.current;
+    if (!input) {
+      setMessageInput(prev => prev + emoji);
+      return;
+    }
+    const start = input.selectionStart ?? messageInput.length;
+    const end = input.selectionEnd ?? messageInput.length;
+    const newText = messageInput.substring(0, start) + emoji + messageInput.substring(end);
+    setMessageInput(newText);
+    setTimeout(() => {
+      input.focus();
+      input.setSelectionRange(start + emoji.length, start + emoji.length);
+    }, 0);
+  };
+
+  // Gửi tin nhắn mới
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!messageInput.trim() || !activeConversation) return;
@@ -240,12 +297,13 @@ export default function Messages() {
     setMessages(prev => [...prev, tempMessage]);
     const currentInput = messageInput;
     setMessageInput('');
+    setShowEmojiPicker(false);
 
     try {
       const res = await sendMessage(activeConversation._id, currentInput);
       if (!res.success) throw new Error('Lỗi gửi');
 
-      setMessages(prev => prev.map(m => m._id === tempId ? res.data : m));
+      setMessages(prev => prev.map(m => (m._id === tempId ? res.data : m)));
 
       setConversations(prev => {
         const idx = prev.findIndex(c => c._id === activeConversation._id);
@@ -271,232 +329,207 @@ export default function Messages() {
     }
   };
 
-  const handleClearConversation = async (conversationId) => {
-    if (!window.confirm('Bạn có chắc chắn muốn xóa lịch sử cuộc trò chuyện này?')) return;
+  // Mở modal xóa lịch sử cuộc trò chuyện
+  const openClearModal = (e, conversationId) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    setConvToClear(conversationId);
+    setShowClearModal(true);
+  };
+
+  // Xác nhận xóa lịch sử cuộc trò chuyện
+  const confirmClearConversation = async () => {
+    if (!convToClear) return;
+    setIsProcessing(true);
     try {
-      await clearConversation(conversationId);
+      await clearConversation(convToClear);
       toast.success('Đã xóa đoạn chat');
-      if (activeConversation?._id === conversationId) setActiveConversation(null);
-      fetchConversations();
+
+      if (location.state?.conversationId === convToClear) {
+        window.history.replaceState({}, '');
+      }
+
+      if (activeConversation?._id === convToClear) setActiveConversation(null);
+      setConversations(prev => prev.filter(c => c._id !== convToClear));
+      setShowClearModal(false);
+      setConvToClear(null);
     } catch (error) {
       toast.error('Lỗi khi xóa đoạn chat');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
-  const handleRevokeMessage = async (messageId) => {
-    if (!window.confirm('Bạn có chắc chắn muốn thu hồi tin nhắn này?')) return;
+  // Mở modal thu hồi tin nhắn
+  const openRevokeModal = (messageId) => {
+    setMsgToRevoke(messageId);
+    setShowRevokeModal(true);
+  };
+
+  // Xác nhận thu hồi tin nhắn
+  const confirmRevokeMessage = async () => {
+    if (!msgToRevoke) return;
+    setIsProcessing(true);
     try {
-      await revokeMessage(messageId);
-      setMessages(prev => prev.map(m => m._id === messageId ? { ...m, isRevoked: true } : m));
+      await revokeMessage(msgToRevoke);
+      setMessages(prev => prev.map(m => (m._id === msgToRevoke ? { ...m, isRevoked: true } : m)));
+      setShowRevokeModal(false);
+      setMsgToRevoke(null);
+      toast.success('Đã thu hồi tin nhắn');
     } catch (error) {
       toast.error(error.response?.data?.message || 'Lỗi khi thu hồi tin nhắn');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
-  const renderMessageStatus = (status) => {
-    if (status === 'read') return <span className="text-info ms-1" title="Đã xem"><FaCheckDouble size={12} /></span>;
-    if (status === 'delivered') return <span className="text-secondary ms-1" title="Đã nhận"><FaCheckDouble size={12} /></span>;
-    return <span className="text-secondary ms-1" title="Đã gửi"><FaCheck size={12} /></span>;
-  };
+  // Lọc cuộc trò chuyện theo từ khóa tìm kiếm
+  const filteredConversations = conversations.filter(conv => {
+    const partner = conv.participants.find(
+      p => p.userId?._id?.toString() !== currentUserId?.toString()
+    )?.userId;
+    const partnerName = partner?.name || '';
+    const lastContent = conv.lastMessage?.content || '';
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return true;
+    return partnerName.toLowerCase().includes(q) || lastContent.toLowerCase().includes(q);
+  });
+
+  // Thông tin đối tác của cuộc trò chuyện đang mở
+  const activePartner = activeConversation?.participants.find(
+    p => p.userId?._id?.toString() !== currentUserId?.toString()
+  )?.userId;
+  const activePartnerId = activePartner?._id?.toString() || activePartner?.toString();
+  const isActivePartnerOnline = isUserOnline(activePartnerId);
+  const activePartnerLastSeen =
+    getUserLastSeen(activePartnerId) ||
+    activePartner?.lastActiveAt ||
+    activePartner?.updatedAt ||
+    activeConversation?.lastMessage?.sentAt;
+  const partnerStatus = formatActivityStatus(isActivePartnerOnline, activePartnerLastSeen);
 
   return (
-    <Container className="py-4" style={{ height: 'calc(100vh - 80px)' }}>
-      <Row className="h-100 bg-white rounded-4 shadow-sm border overflow-hidden">
-        {/* Sidebar */}
-        <Col md={4} className="border-end p-0 d-flex flex-column h-100">
-          <div className="p-3 border-bottom bg-light">
-            <h5 className="mb-0 fw-bold">Tin nhắn</h5>
-          </div>
-          <ListGroup variant="flush" className="overflow-auto flex-grow-1">
-            {conversations.length === 0 ? (
-              <div className="p-4 text-center text-muted">Chưa có tin nhắn nào</div>
-            ) : (
-              conversations.map(conv => {
-                const partner = conv.participants.find(p => p.userId?._id?.toString() !== currentUserId?.toString())?.userId;
-                const myParticipant = conv.participants.find(p => p.userId?._id?.toString() === currentUserId?.toString() || p.userId?.toString() === currentUserId?.toString());
-                const unreadCount = myParticipant?.unreadCount || 0;
-                const isActive = activeConversation?._id === conv._id;
+    <div className="messages-page-wrapper">
+      <div className="messages-shell">
+        <Row className="g-0 h-100">
+          {/* Cột trái: Danh sách cuộc trò chuyện */}
+          <ConversationSidebar
+            conversations={filteredConversations}
+            activeConversationId={activeConversation?._id}
+            currentUserId={currentUserId}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            onSelectConversation={setActiveConversation}
+            onOpenClearModal={openClearModal}
+            isUserOnline={isUserOnline}
+          />
 
-                // Xử lý lastMessage bị ẩn nếu đã clear đoạn chat
-                let displayLastMessage = conv.lastMessage;
-                if (myParticipant?.clearedAt && conv.lastMessage?.sentAt) {
-                  if (new Date(conv.lastMessage.sentAt) <= new Date(myParticipant.clearedAt)) {
-                    displayLastMessage = null; // Ẩn tin nhắn cũ khỏi sidebar
-                  }
-                }
-
-                console.log('[CHAT DEBUG][FE PARTNER]', {
-                  currentUserId,
-                  partnerId: partner?._id,
-                  partnerName: partner?.name
-                });
-
-                return (
-                  <ListGroup.Item
-                    as="div"
-                    key={conv._id}
-                    action
-                    active={isActive}
-                    onClick={() => setActiveConversation(conv)}
-                    className="d-flex align-items-center p-3 border-0 border-bottom"
-                    style={{ cursor: 'pointer', backgroundColor: isActive ? 'var(--gray-100)' : 'transparent' }}
-                  >
-                    <div className="position-relative me-3">
-                      {partner?.avatar ? (
-                        <img
-                          src={partner.avatar}
-                          alt={partner.name}
-                          className="rounded-circle object-fit-cover"
-                          width={48} height={48}
-                        />
-                      ) : (
-                        <FaUserCircle size={48} className="text-secondary" />
-                      )}
-                      {/* Có thể thêm chấm xanh online nếu làm tính năng online sau */}
-                    </div>
-
-                    <div className="flex-grow-1 overflow-hidden">
-                      <h6 className={`mb-1 text-truncate ${unreadCount > 0 ? 'fw-bold text-dark' : 'text-dark'}`}>
-                        {conv.type === 'group' ? conv.name : partner?.name || 'Người dùng'}
-                      </h6>
-                      <p className={`mb-0 text-truncate ${unreadCount > 0 ? 'fw-bold text-dark' : 'text-muted'}`} style={{ fontSize: '0.875rem' }}>
-                        {displayLastMessage?.senderId?.toString() === currentUserId?.toString() && 'Bạn: '}
-                        {displayLastMessage?.content || 'Chưa có tin nhắn'}
-                      </p>
-                    </div>
-
-                    <div className="d-flex flex-column align-items-end justify-content-between ms-2" style={{ minWidth: '70px', height: '42px' }}>
-                      <div className="d-flex justify-content-end w-100 mb-1">
-                        {displayLastMessage && (
-                          <small className={`text-nowrap ${unreadCount > 0 ? 'fw-bold text-primary' : 'text-muted'}`} style={{ fontSize: '0.75rem' }}>
-                            {formatRelativeTime(displayLastMessage.sentAt)}
-                          </small>
-                        )}
-                      </div>
-
-                      <div className="d-flex align-items-center justify-content-end w-100">
-                        {unreadCount > 0 && (
-                          <Badge pill bg="danger" className="me-2">
-                            {unreadCount}
-                          </Badge>
-                        )}
-
-                        {/* Dropdown Menu - Xóa đoạn chat */}
-                        <Dropdown>
-                          <Dropdown.Toggle as={CustomToggle} className={`p-1 ${isActive ? 'text-dark' : 'text-muted'}`}>
-                            <FaEllipsisV size={14} />
-                          </Dropdown.Toggle>
-                          <Dropdown.Menu align="end" style={{ zIndex: 1050 }}>
-                            <Dropdown.Item className="text-danger" onClick={(e) => { e.stopPropagation(); handleClearConversation(conv._id); }}>Xóa đoạn chat</Dropdown.Item>
-                          </Dropdown.Menu>
-                        </Dropdown>
-                      </div>
-                    </div>
-                  </ListGroup.Item>
-                );
-              })
-            )}
-          </ListGroup>
-        </Col>
-
-        {/* Chat Area */}
-        <Col md={8} className="p-0 d-flex flex-column h-100">
-          {activeConversation ? (
-            <>
-              {/* Chat Header */}
-              <div className="p-3 border-bottom d-flex align-items-center gap-3 bg-light">
-                <img
-                  src={activeConversation.participants.find(p => p.userId?._id?.toString() !== currentUserId?.toString())?.userId?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(activeConversation.participants.find(p => p.userId?._id?.toString() !== currentUserId?.toString())?.userId?.name || 'A')}&background=random`}
-                  alt="avatar"
-                  className="rounded-circle object-fit-cover"
-                  style={{ width: '40px', height: '40px' }}
+          {/* Cột phải: Khung chat chi tiết */}
+          <Col md={8} lg={9} className="messages-chat-pane">
+            {activeConversation ? (
+              <>
+                {/* Header hiển thị thông tin đối tác */}
+                <ChatHeader
+                  partner={activePartner}
+                  isOnline={isActivePartnerOnline}
+                  activityStatusText={partnerStatus.text}
+                  onOpenClearModal={() => openClearModal(null, activeConversation._id)}
                 />
-                <h5 className="mb-0 fw-bold">
-                  {activeConversation.participants.find(p => p.userId?._id?.toString() !== currentUserId?.toString())?.userId?.name || 'Người dùng'}
-                </h5>
-              </div>
 
-              {/* Messages */}
-              <div className="flex-grow-1 p-3 overflow-auto" style={{ backgroundColor: '#f8f9fa' }}>
-                {messages.length === 0 ? (
-                  <div className="h-100 d-flex align-items-center justify-content-center text-muted">
-                    Hãy gửi tin nhắn đầu tiên để bắt đầu trò chuyện
-                  </div>
-                ) : (
-                  messages.map(msg => {
-                    const isMine = msg.senderId?._id?.toString() === currentUserId?.toString() || msg.senderId?.toString() === currentUserId?.toString();
-                    const canRevoke = isMine && !msg.isRevoked && (Date.now() - new Date(msg.createdAt).getTime() < 24 * 60 * 60 * 1000);
-
-                    return (
-                      <div key={msg._id} className={`d-flex mb-3 ${isMine ? 'justify-content-end' : 'justify-content-start'}`}>
-                        {!isMine && (
-                          <img
-                            src={msg.senderId?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(msg.senderId?.name || 'A')}&background=random`}
-                            alt="avatar"
-                            className="rounded-circle me-2 align-self-end shadow-sm"
-                            style={{ width: '32px', height: '32px', objectFit: 'cover' }}
-                          />
-                        )}
-                        <div className={`d-flex flex-column ${isMine ? 'align-items-end' : 'align-items-start'}`} style={{ maxWidth: '75%' }}>
-                          <div className="d-flex align-items-center gap-2">
-                            {isMine && canRevoke && (
-                              <Dropdown drop="start">
-                                <Dropdown.Toggle as={CustomToggle} className="text-muted p-2" style={{ opacity: 0.6 }}>
-                                  <FaEllipsisV size={12} />
-                                </Dropdown.Toggle>
-                                <Dropdown.Menu>
-                                  <Dropdown.Item onClick={() => handleRevokeMessage(msg._id)}>Thu hồi tin nhắn</Dropdown.Item>
-                                </Dropdown.Menu>
-                              </Dropdown>
-                            )}
-                            <div
-                              className={`p-3 rounded-4 shadow-sm ${msg.isRevoked ? 'bg-light border text-muted' : (isMine ? 'bg-primary text-white' : 'bg-white border')}`}
-                              style={{ borderBottomRightRadius: isMine ? '4px' : '16px', borderBottomLeftRadius: !isMine ? '4px' : '16px' }}
-                            >
-                              <div style={{ wordBreak: 'break-word', fontSize: '15px', fontStyle: msg.isRevoked ? 'italic' : 'normal' }}>
-                                {msg.isRevoked ? 'Tin nhắn đã bị thu hồi' : msg.content}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="small text-muted mt-1 d-flex align-items-center" style={{ fontSize: '11px' }}>
-                            {formatDateTime(msg.createdAt)}
-                            {isMine && !msg.isRevoked && renderMessageStatus(msg.status)}
-                          </div>
-                        </div>
+                {/* Danh sách các tin nhắn */}
+                <div className="messages-body-area">
+                  {messages.length === 0 ? (
+                    <div className="h-100 d-flex flex-column align-items-center justify-content-center text-muted">
+                      <MessageSquare size={40} className="mb-2 text-secondary opacity-50" />
+                      <div className="fw-semibold">
+                        Hãy gửi lời chào đến {activePartner?.name || 'đối tác'}
                       </div>
-                    );
-                  })
-                )}
-                <div ref={messagesEndRef} />
-              </div>
+                      <small className="text-secondary">
+                        Bắt đầu cuộc hội thoại để trao đổi về công việc và dự án
+                      </small>
+                    </div>
+                  ) : (
+                    messages.map((msg, idx) => {
+                      const isMine =
+                        msg.senderId?._id?.toString() === currentUserId?.toString() ||
+                        msg.senderId?.toString() === currentUserId?.toString();
+                      const prevMsg = idx > 0 ? messages[idx - 1] : null;
+                      const showDateSeparator =
+                        !prevMsg || !isSameDay(prevMsg.createdAt, msg.createdAt);
 
-              {/* Input */}
-              <div className="p-3 border-top bg-white">
-                <Form onSubmit={handleSendMessage}>
-                  <InputGroup>
-                    <Form.Control
-                      placeholder="Nhập tin nhắn..."
-                      value={messageInput}
-                      onChange={(e) => setMessageInput(e.target.value)}
-                      className="rounded-pill rounded-end-0 bg-light border-0 px-4 py-2"
-                    />
-                    <Button type="submit" variant="primary" className="rounded-pill rounded-start-0 px-4">
-                      <FaPaperPlane />
-                    </Button>
-                  </InputGroup>
-                </Form>
+                      return (
+                        <MessageBubble
+                          key={msg._id || idx}
+                          message={msg}
+                          isMine={isMine}
+                          showDateSeparator={showDateSeparator}
+                          onOpenRevokeModal={openRevokeModal}
+                        />
+                      );
+                    })
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
+
+                {/* Khung nhập và gửi tin nhắn */}
+                <MessageComposer
+                  messageInput={messageInput}
+                  setMessageInput={setMessageInput}
+                  onSendMessage={handleSendMessage}
+                  showEmojiPicker={showEmojiPicker}
+                  onToggleEmoji={() => setShowEmojiPicker(prev => !prev)}
+                  emojiPickerRef={emojiPickerRef}
+                  emojiButtonRef={emojiButtonRef}
+                  inputRef={inputRef}
+                  onSelectEmoji={handleSelectEmoji}
+                />
+              </>
+            ) : (
+              <div className="h-100 d-flex flex-column align-items-center justify-content-center text-muted p-4">
+                <div
+                  className="rounded-circle d-flex align-items-center justify-content-center mb-3"
+                  style={{
+                    width: '80px',
+                    height: '80px',
+                    backgroundColor: '#fff7ed',
+                    color: 'var(--orange, #e98224)'
+                  }}
+                >
+                  <MessageSquare size={40} />
+                </div>
+                <h5 className="fw-bold text-dark">Chọn một cuộc trò chuyện để bắt đầu</h5>
+                <p className="text-muted small text-center" style={{ maxWidth: '360px' }}>
+                  Bạn có thể chọn người nhận từ danh sách bên trái hoặc nhấn nút Nhắn tin từ hồ sơ
+                  dự án của họ.
+                </p>
               </div>
-            </>
-          ) : (
-            <div className="h-100 d-flex flex-column align-items-center justify-content-center text-muted bg-light">
-              <FaUserCircle size={80} className="mb-3 text-secondary opacity-50" />
-              <h5 className="fw-semibold">Chọn một cuộc trò chuyện để bắt đầu</h5>
-              <p>Hoặc tìm người bạn muốn liên hệ từ trang dự án</p>
-            </div>
-          )}
-        </Col>
-      </Row>
-    </Container>
+            )}
+          </Col>
+        </Row>
+      </div>
+
+      {/* Modal xác nhận xóa lịch sử cuộc trò chuyện */}
+      <ConfirmActionModal
+        show={showClearModal}
+        onHide={() => setShowClearModal(false)}
+        onConfirm={confirmClearConversation}
+        title="Xóa đoạn chat"
+        message="Bạn có chắc chắn muốn xóa toàn bộ lịch sử cuộc trò chuyện này? Dữ liệu tin nhắn sẽ không thể khôi phục."
+        confirmText="Xóa đoạn chat"
+        variant="danger"
+        isLoading={isProcessing}
+      />
+
+      {/* Modal xác nhận thu hồi tin nhắn */}
+      <ConfirmActionModal
+        show={showRevokeModal}
+        onHide={() => setShowRevokeModal(false)}
+        onConfirm={confirmRevokeMessage}
+        title="Thu hồi tin nhắn"
+        message="Bạn có chắc chắn muốn thu hồi tin nhắn này không? Tin nhắn sẽ được ẩn với tất cả mọi người trong cuộc trò chuyện."
+        confirmText="Thu hồi"
+        variant="warning"
+        isLoading={isProcessing}
+      />
+    </div>
   );
 }

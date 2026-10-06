@@ -1,6 +1,8 @@
 const User = require('../models/User');
 const ProjectHistory = require('../models/ProjectHistory');
 const Skill = require('../models/Skill');
+const Subscription = require('../models/Subscription');
+const { SUBSCRIPTION_STATUS } = require('../constants/subscriptionEnum');
 const Fuse = require('fuse.js');
 
 // Helper xử lý kỹ năng bằng Fuzzy Matching
@@ -57,7 +59,7 @@ const updateOnboardingProfile = async (userId, bodyData, avatarUrl) => {
     semester,
     departmentId,
     majorId,
-    gradeGoal
+    gpa
   } = bodyData;
 
   let mainSkills = bodyData.mainSkills ? JSON.parse(bodyData.mainSkills) : [];
@@ -96,7 +98,7 @@ const updateOnboardingProfile = async (userId, bodyData, avatarUrl) => {
     majorId,
     mainSkills: [...new Set(finalSkills)],
     projectHistory: projectHistoryIds,
-    gradeGoal,
+    gpa,
     onboardingCompleted: true
   };
 
@@ -104,17 +106,35 @@ const updateOnboardingProfile = async (userId, bodyData, avatarUrl) => {
     updateData.avatar = avatarUrl;
   }
 
-  const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true, runValidators: true });
+  const updatedUser = await User.findByIdAndUpdate(userId, updateData, { returnDocument: 'after', runValidators: true });
 
   return updatedUser;
 };
 
 const getMyProfile = async (userId) => {
-  return await User.findById(userId)
+  const user = await User.findById(userId)
     .populate('departmentId', 'name')
     .populate('majorId', 'name')
     .populate('projectHistory')
     .select('-password -googleId'); // Không trả về mật khẩu
+
+  if (!user) return null;
+
+  const userData = user.toObject();
+
+  // Find active subscription if any
+  if (user.currentPackage !== 'free') {
+    const activeSub = await Subscription.findOne({ 
+      userId: user._id, 
+      status: SUBSCRIPTION_STATUS.ACTIVE 
+    }).sort({ endDate: -1 });
+
+    if (activeSub) {
+      userData.subscriptionEndDate = activeSub.endDate;
+    }
+  }
+
+  return userData;
 };
 
 const getPublicProfile = async (userId) => {
@@ -139,21 +159,21 @@ const getPublicProfile = async (userId) => {
   if (!privacy.majorId) delete publicData.majorId;
   if (!privacy.mainSkills) delete publicData.mainSkills;
   if (!privacy.projectHistory) delete publicData.projectHistory;
-  if (!privacy.gradeGoal) delete publicData.gradeGoal;
+  if (!privacy.gpa) delete publicData.gpa;
 
   return publicData;
 };
 
 const updateMyProfile = async (userId, bodyData, avatarUrl) => {
   const {
-    name, phone, dob, address, semester, departmentId, majorId, gradeGoal, privacySettings
+    name, phone, dob, address, semester, departmentId, majorId, gpa, privacySettings
   } = bodyData;
 
   let mainSkills = bodyData.mainSkills ? JSON.parse(bodyData.mainSkills) : [];
   const finalSkills = await processSkills(mainSkills);
 
   const updateData = {
-    name, phone, dob, address, semester, departmentId, majorId, gradeGoal,
+    name, phone, dob, address, semester, departmentId, majorId, gpa,
     mainSkills: finalSkills
   };
 
@@ -164,7 +184,7 @@ const updateMyProfile = async (userId, bodyData, avatarUrl) => {
     updateData.avatar = avatarUrl;
   }
 
-  const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true, runValidators: true })
+  const updatedUser = await User.findByIdAndUpdate(userId, updateData, { returnDocument: 'after', runValidators: true })
     .populate('departmentId', 'name')
     .populate('majorId', 'name')
     .populate('projectHistory')

@@ -100,6 +100,23 @@ const resetPasswordSchema = Joi.object({
   })
 });
 
+const changePasswordSchema = Joi.object({
+  oldPassword: Joi.string().required().messages({
+    'string.empty': 'Mật khẩu hiện tại không được để trống.',
+    'any.required': 'Vui lòng nhập mật khẩu hiện tại.'
+  }),
+  newPassword: Joi.string().min(6).invalid(Joi.ref('oldPassword')).required().messages({
+    'string.min': 'Mật khẩu mới phải có ít nhất 6 ký tự.',
+    'string.empty': 'Mật khẩu mới không được để trống.',
+    'any.required': 'Vui lòng nhập mật khẩu mới.',
+    'any.invalid': 'Mật khẩu mới không được trùng với mật khẩu hiện tại.'
+  }),
+  confirmNewPassword: Joi.any().valid(Joi.ref('newPassword')).required().messages({
+    'any.only': 'Xác nhận mật khẩu không khớp.',
+    'any.required': 'Vui lòng xác nhận mật khẩu mới.'
+  })
+});
+
 module.exports = {
   loginSchema,
   registerSchema,
@@ -107,5 +124,6 @@ module.exports = {
   loginGoogleSchema,
   forgotPasswordSchema,
   verifyForgotOtpSchema,
-  resetPasswordSchema
+  resetPasswordSchema,
+  changePasswordSchema
 };
