@@ -240,7 +240,7 @@ export default function ProjectManagementDetail() {
               {project.status === PROJECT_STATUS.CLOSED && (
                 <>
                   {members.length < (project.maxMembers / 2) && (
-                    <Button variant="danger" className="rounded px-3 text-white shadow-none" onClick={() => {
+                    <Button variant="danger" className="rounded px-3 text-dark shadow-none" onClick={() => {
                       setConfirmAction({ type: ACTION_TYPES.CHANGE_STATUS, name: 'hủy dự án này', newStatus: PROJECT_STATUS.CANCELLED });
                       setShowConfirm(true);
                     }}>
