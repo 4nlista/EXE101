@@ -296,7 +296,7 @@
 /* 2. Có đúng 1 dự án: giới hạn cố định tối đa 640px cho cả khối */
 .aihub-ai-message-wrap.single-project {
   width: 100%;
-  max-width: 540px;
+  max-width: 240px;
 }
 
 .aihub-ai-message-wrap.single-project .aihub-message.ai {
