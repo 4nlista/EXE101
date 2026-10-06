@@ -1,6 +1,6 @@
 import React from 'react';
 import { Row, Col, Card } from 'react-bootstrap';
-import { FaUserFriends, FaCheckCircle, FaFileAlt } from 'react-icons/fa';
+import { FaUserFriends, FaCheckCircle, FaFileAlt, FaTimesCircle } from 'react-icons/fa';
 
 export default function StatsCards({ stats }) {
   if (!stats) return null;
@@ -45,6 +45,14 @@ export default function StatsCards({ stats }) {
       icon: <FaFileAlt size={24} className="text-info" />,
       bgColor: '#e0f2fe',
       iconBg: '#bae6fd'
+    },
+    {
+      title: 'Đã hủy',
+      count: stats.cancelledProjects || 0,
+      desc: 'dự án đã bị hủy bỏ',
+      icon: <FaTimesCircle size={24} className="text-danger" />,
+      bgColor: '#fef2f2',
+      iconBg: '#fee2e2'
     }
   ];
 

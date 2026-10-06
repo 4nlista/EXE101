@@ -190,11 +190,12 @@ const getMyProjects = async (ownerId, query) => {
 };
 
 const getMyProjectStats = async (ownerId) => {
-  const [openCount, closedCount, inProgressCount, completedCount] = await Promise.all([
+  const [openCount, closedCount, inProgressCount, completedCount, cancelledCount] = await Promise.all([
     Project.countDocuments({ ownerId, status: PROJECT_STATUS.OPEN }),
     Project.countDocuments({ ownerId, status: PROJECT_STATUS.CLOSED }),
     Project.countDocuments({ ownerId, status: PROJECT_STATUS.IN_PROGRESS }),
-    Project.countDocuments({ ownerId, status: PROJECT_STATUS.COMPLETED })
+    Project.countDocuments({ ownerId, status: PROJECT_STATUS.COMPLETED }),
+    Project.countDocuments({ ownerId, status: PROJECT_STATUS.CANCELLED })
   ]);
 
   const projects = await Project.find({ ownerId }).select('_id');
@@ -210,6 +211,7 @@ const getMyProjectStats = async (ownerId) => {
     closedProjects: closedCount,
     inProgressProjects: inProgressCount,
     completedProjects: completedCount,
+    cancelledProjects: cancelledCount,
     pendingApplications: pendingCount
   };
 };
