@@ -113,6 +113,23 @@ export default function PublicProfilePage() {
     }
     setErrors({});
 
+    if (editData.phone) {
+      if (!/^0\d{9}$/.test(editData.phone)) {
+        toast.error("Số điện thoại phải bắt đầu bằng 0 và có đúng 10 chữ số");
+        return;
+      }
+      try {
+        const res = await profileService.checkPhoneAvailability(editData.phone);
+        if (res.data && res.data.isAvailable === false) {
+          toast.error("Số điện thoại này đã được sử dụng bởi một tài khoản khác");
+          return;
+        }
+      } catch (err) {
+        toast.error(err?.response?.data?.message || "Lỗi kiểm tra số điện thoại");
+        return;
+      }
+    }
+
     const formData = new FormData();
     formData.append('name', editData.name);
     formData.append('phone', editData.phone);

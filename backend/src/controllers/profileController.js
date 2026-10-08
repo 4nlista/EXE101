@@ -72,9 +72,39 @@ const updateMyProfile = async (req, res, next) => {
   }
 };
 
+/**
+ * GET /api/users/check-phone?phone=...
+ * Kiểm tra xem số điện thoại đã được dùng bởi tài khoản khác chưa
+ */
+const checkPhone = async (req, res, next) => {
+  try {
+    const { phone } = req.query;
+    if (!phone) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vui lòng cung cấp số điện thoại cần kiểm tra'
+      });
+    }
+
+    const userId = req.user ? req.user.id : null;
+    const isAvailable = await profileService.checkPhoneAvailability(phone, userId);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        isAvailable,
+        message: isAvailable ? 'Số điện thoại khả dụng' : 'Số điện thoại này đã được sử dụng bởi một tài khoản khác'
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   updateOnboardingProfile,
   getMyProfile,
   getPublicProfile,
-  updateMyProfile
+  updateMyProfile,
+  checkPhone
 };

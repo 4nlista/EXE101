@@ -4,6 +4,9 @@ const profileController = require('../controllers/profileController');
 const { verifyToken } = require('../middlewares/authMiddleware');
 const uploadCloud = require('../utils/uploadCloud');
 
+// [GET] Kiểm tra số điện thoại có bị trùng không
+router.get('/check-phone', verifyToken, profileController.checkPhone);
+
 // [GET] Lấy hồ sơ cá nhân của mình
 router.get('/my-profile', verifyToken, profileController.getMyProfile);
 

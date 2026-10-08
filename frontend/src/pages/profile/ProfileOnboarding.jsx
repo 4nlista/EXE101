@@ -16,6 +16,7 @@ const ProfileOnboarding = () => {
     return saved ? parseInt(saved, 10) : 1;
   });
   const [errors, setErrors] = useState({});
+  const [checkingPhone, setCheckingPhone] = useState(false);
   const { mutate: submitOnboarding, isPending: submitting } = useOnboardingMutation(setCurrentStep, setErrors);
 
   // ----------------------------------------
@@ -102,7 +103,7 @@ const ProfileOnboarding = () => {
     }
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     let newErrors = {};
 
     // Validate Bước 1
@@ -123,6 +124,29 @@ const ProfileOnboarding = () => {
         newErrors.dob = "Ngày sinh không được để trống";
       } else if (new Date(formData.dob) > new Date()) {
         newErrors.dob = "Ngày sinh không được ở tương lai";
+      }
+
+      if (Object.keys(newErrors).length > 0) {
+        setErrors(newErrors);
+        return;
+      }
+
+      // Kiểm tra trùng số điện thoại với server ngay tại Bước 1
+      try {
+        setCheckingPhone(true);
+        const res = await profileService.checkPhoneAvailability(formData.phone);
+        if (res.data && res.data.isAvailable === false) {
+          setErrors({ phone: "Số điện thoại này đã được sử dụng bởi một tài khoản khác" });
+          setCheckingPhone(false);
+          return;
+        }
+      } catch (err) {
+        const errorMsg = err?.response?.data?.message || "Lỗi kiểm tra số điện thoại";
+        setErrors({ phone: errorMsg });
+        setCheckingPhone(false);
+        return;
+      } finally {
+        setCheckingPhone(false);
       }
     }
 
@@ -510,9 +534,11 @@ const ProfileOnboarding = () => {
                   {currentStep === 4 && renderStep4()}
                 </div>
                 <div className="d-flex justify-content-between mt-4">
-                  <Button variant="outline-secondary" onClick={handleBack} disabled={currentStep === 1 || submitting}>Quay lại</Button>
+                  <Button variant="outline-secondary" onClick={handleBack} disabled={currentStep === 1 || submitting || checkingPhone}>Quay lại</Button>
                   {currentStep < 4 ? (
-                    <Button variant="primary" onClick={handleNext}>Tiếp tục</Button>
+                    <Button variant="primary" onClick={handleNext} disabled={checkingPhone}>
+                      {checkingPhone ? 'Đang kiểm tra...' : 'Tiếp tục'}
+                    </Button>
                   ) : (
                     <Button variant="success" onClick={handleSubmit} disabled={submitting}>
                       {submitting ? 'Đang lưu...' : 'Hoàn thiện hồ sơ'}

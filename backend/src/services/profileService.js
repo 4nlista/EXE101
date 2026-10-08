@@ -62,8 +62,15 @@ const updateOnboardingProfile = async (userId, bodyData, avatarUrl) => {
     gpa
   } = bodyData;
 
-  let mainSkills = bodyData.mainSkills ? JSON.parse(bodyData.mainSkills) : [];
-  let projectHistory = bodyData.projectHistory ? JSON.parse(bodyData.projectHistory) : [];
+  // Kiểm tra tính duy nhất của số điện thoại nếu có
+  if (phone) {
+    const existingPhone = await User.findOne({ phone: phone.trim(), _id: { $ne: userId } });
+    if (existingPhone) {
+      const error = new Error('Số điện thoại này đã được sử dụng bởi một tài khoản khác.');
+      error.statusCode = 400;
+      throw error;
+    }
+  }
 
   // 1. Lưu Lịch sử dự án
   await ProjectHistory.deleteMany({ userId });
@@ -169,6 +176,16 @@ const updateMyProfile = async (userId, bodyData, avatarUrl) => {
     name, phone, dob, address, semester, departmentId, majorId, gpa, privacySettings
   } = bodyData;
 
+  // Kiểm tra tính duy nhất của số điện thoại nếu có
+  if (phone) {
+    const existingPhone = await User.findOne({ phone: phone.trim(), _id: { $ne: userId } });
+    if (existingPhone) {
+      const error = new Error('Số điện thoại này đã được sử dụng bởi một tài khoản khác.');
+      error.statusCode = 400;
+      throw error;
+    }
+  }
+
   let mainSkills = bodyData.mainSkills ? JSON.parse(bodyData.mainSkills) : [];
   const finalSkills = await processSkills(mainSkills);
 
@@ -192,9 +209,25 @@ const updateMyProfile = async (userId, bodyData, avatarUrl) => {
   return updatedUser;
 };
 
+/**
+ * Kiểm tra số điện thoại có khả dụng không (chưa có tài khoản khác sử dụng)
+ * @param {string} phone - Số điện thoại cần kiểm tra
+ * @param {string} currentUserId - ID người dùng hiện tại (bỏ qua chính họ khi edit)
+ */
+const checkPhoneAvailability = async (phone, currentUserId) => {
+  if (!phone) return true;
+  const query = { phone: phone.trim() };
+  if (currentUserId) {
+    query._id = { $ne: currentUserId };
+  }
+  const existingUser = await User.findOne(query);
+  return !existingUser;
+};
+
 module.exports = {
   updateOnboardingProfile,
   getMyProfile,
   getPublicProfile,
-  updateMyProfile
+  updateMyProfile,
+  checkPhoneAvailability
 };

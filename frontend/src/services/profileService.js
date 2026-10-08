@@ -14,6 +14,14 @@ export const profileService = {
   },
 
   /**
+   * Kiểm tra số điện thoại có bị trùng lặp trong hệ thống không
+   * @param {string} phone
+   */
+  checkPhoneAvailability: async (phone) => {
+    return await axiosClient.get(`/users/check-phone?phone=${encodeURIComponent(phone)}`);
+  },
+
+  /**
    * Lấy hồ sơ cá nhân của người đang đăng nhập
    */
   getMyProfile: async () => {
