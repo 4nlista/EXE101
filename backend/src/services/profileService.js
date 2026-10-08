@@ -72,6 +72,18 @@ const updateOnboardingProfile = async (userId, bodyData, avatarUrl) => {
     }
   }
 
+  // Kiểm tra tính hợp lệ của điểm GPA (thang điểm 4.0)
+  let validGpa = undefined;
+  if (gpa !== undefined && gpa !== null && gpa !== '') {
+    const numGpa = Number(gpa);
+    if (isNaN(numGpa) || numGpa < 0 || numGpa > 4.0) {
+      const error = new Error('Điểm GPA phải nằm trong khoảng từ 0.0 đến 4.0');
+      error.statusCode = 400;
+      throw error;
+    }
+    validGpa = numGpa;
+  }
+
   // 1. Lưu Lịch sử dự án
   await ProjectHistory.deleteMany({ userId });
 
@@ -105,9 +117,12 @@ const updateOnboardingProfile = async (userId, bodyData, avatarUrl) => {
     majorId,
     mainSkills: [...new Set(finalSkills)],
     projectHistory: projectHistoryIds,
-    gpa,
     onboardingCompleted: true
   };
+
+  if (validGpa !== undefined) {
+    updateData.gpa = validGpa;
+  }
 
   if (avatarUrl) {
     updateData.avatar = avatarUrl;
@@ -186,13 +201,29 @@ const updateMyProfile = async (userId, bodyData, avatarUrl) => {
     }
   }
 
+  // Kiểm tra tính hợp lệ của điểm GPA (thang điểm 4.0)
+  let validGpa = undefined;
+  if (gpa !== undefined && gpa !== null && gpa !== '') {
+    const numGpa = Number(gpa);
+    if (isNaN(numGpa) || numGpa < 0 || numGpa > 4.0) {
+      const error = new Error('Điểm GPA phải nằm trong khoảng từ 0.0 đến 4.0');
+      error.statusCode = 400;
+      throw error;
+    }
+    validGpa = numGpa;
+  }
+
   let mainSkills = bodyData.mainSkills ? JSON.parse(bodyData.mainSkills) : [];
   const finalSkills = await processSkills(mainSkills);
 
   const updateData = {
-    name, phone, dob, address, semester, departmentId, majorId, gpa,
+    name, phone, dob, address, semester, departmentId, majorId,
     mainSkills: finalSkills
   };
+
+  if (validGpa !== undefined) {
+    updateData.gpa = validGpa;
+  }
 
   if (privacySettings) {
     updateData.privacySettings = JSON.parse(privacySettings);

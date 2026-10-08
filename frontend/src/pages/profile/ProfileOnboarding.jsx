@@ -31,12 +31,19 @@ const ProfileOnboarding = () => {
     const saved = sessionStorage.getItem('onboardingForm');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        return {
+          ...parsed,
+          // Xóa giá trị mặc định 0 hoặc 0.0 cũ nếu người dùng chưa thực sự nhập
+          gpa: (parsed.gpa !== undefined && parsed.gpa !== null && parsed.gpa !== 0 && parsed.gpa !== '0' && parsed.gpa !== 0.0)
+            ? parsed.gpa
+            : ''
+        };
       } catch (e) { }
     }
     return {
       name: '', phone: '', dob: '', address: '', semester: 1,
-      departmentId: '', majorId: '', mainSkills: [], projectHistory: [], gpa: 0.0
+      departmentId: '', majorId: '', mainSkills: [], projectHistory: [], gpa: ''
     };
   });
 
@@ -68,10 +75,17 @@ const ProfileOnboarding = () => {
     const { name, value } = e.target;
     let finalValue = value;
     if (name === 'gpa') {
-      const num = parseFloat(value);
-      if (!isNaN(num)) {
-        if (num > 4.0) finalValue = '4.0';
-        if (num < 0.0) finalValue = '0.0';
+      if (value === '') {
+        finalValue = '';
+      } else {
+        const num = parseFloat(value);
+        if (!isNaN(num)) {
+          if (num > 4.0) finalValue = '4.0';
+          else if (num < 0.0) finalValue = '0.0';
+          else finalValue = value;
+        } else {
+          finalValue = value;
+        }
       }
     }
     setFormData(prev => {
@@ -181,13 +195,14 @@ const ProfileOnboarding = () => {
   };
 
   const handleSubmit = () => {
-    // Validate Bước 4
+    // Validate Bước 4: Điểm GPA
     if (formData.gpa === '' || formData.gpa === null || formData.gpa === undefined) {
-      setErrors({ gpa: "Vui lòng nhập GPA" });
+      setErrors({ gpa: "Vui lòng nhập điểm GPA của bạn" });
       return;
     }
-    if (Number(formData.gpa) < 0 || Number(formData.gpa) > 4) {
-      setErrors({ gpa: "GPA phải nằm trong khoảng 0.0 - 4.0" });
+    const numGpa = Number(formData.gpa);
+    if (isNaN(numGpa) || numGpa < 0 || numGpa > 4.0) {
+      setErrors({ gpa: "Điểm GPA phải nằm trong khoảng từ 0.0 đến 4.0" });
       return;
     }
 
@@ -202,7 +217,7 @@ const ProfileOnboarding = () => {
     payload.append('semester', formData.semester);
     payload.append('departmentId', formData.departmentId);
     if (formData.majorId) payload.append('majorId', formData.majorId);
-    payload.append('gpa', formData.gpa);
+    payload.append('gpa', numGpa);
 
     // Mảng phức tạp cần stringify khi ném vào FormData
     const skillArray = formData.mainSkills.map(opt => opt.value);
@@ -284,7 +299,7 @@ const ProfileOnboarding = () => {
   // RENDER UI
   // ----------------------------------------
   const renderStepIndicator = () => {
-    const steps = ['Cá nhân', 'Học tập', 'Năng lực', 'Mục tiêu'];
+    const steps = ['Cá nhân', 'Học tập', 'Năng lực', 'Điểm GPA'];
     return (
       <div className="d-flex justify-content-between mb-4 position-relative">
         <div style={{ position: 'absolute', top: '15px', left: '10%', right: '10%', height: '2px', backgroundColor: '#e0e0e0', zIndex: 1 }}></div>
@@ -495,28 +510,101 @@ const ProfileOnboarding = () => {
     </div>
   );
 
-  const renderStep4 = () => (
-    <div className="text-center">
-      <h4 className="mb-4">Mục tiêu phấn đấu</h4>
-      <Form.Group className="mb-5 mx-auto" style={{ maxWidth: '400px' }}>
-        <Form.Control
-          type="number"
-          name="gpa"
-          min={0.0}
-          max={4.0}
-          step={0.1}
-          value={formData.gpa}
-          onChange={handleChange}
-          isInvalid={!!errors.gpa}
-          className="text-center fw-bold text-primary fs-3 py-2"
-        />
-        <Form.Control.Feedback type="invalid" className="mt-2 text-center">
-          {errors.gpa}
-        </Form.Control.Feedback>
-      </Form.Group>
-      <div className="alert alert-info">Hồ sơ của bạn đã sẵn sàng!</div>
-    </div>
-  );
+  const renderStep4 = () => {
+    const numGpa = Number(formData.gpa);
+    const hasValidGpa = formData.gpa !== '' && !isNaN(numGpa) && numGpa >= 0 && numGpa <= 4;
+
+    // Helper tính xếp loại học lực tương ứng theo thang điểm 4
+    const getAcademicRank = (score) => {
+      if (score >= 3.6) return { label: 'Xuất sắc', variant: 'success', text: '3.60 - 4.00' };
+      if (score >= 3.2) return { label: 'Giỏi', variant: 'primary', text: '3.20 - 3.59' };
+      if (score >= 2.5) return { label: 'Khá', variant: 'info', text: '2.50 - 3.19' };
+      if (score >= 2.0) return { label: 'Trung bình', variant: 'warning', text: '2.00 - 2.49' };
+      return { label: 'Yếu / Cần cố gắng', variant: 'secondary', text: '< 2.00' };
+    };
+
+    const rank = hasValidGpa ? getAcademicRank(numGpa) : null;
+
+    return (
+      <div className="py-2">
+        <div className="text-center mb-4">
+          <div
+            className="rounded-circle bg-light d-inline-flex align-items-center justify-content-center border shadow-sm mb-3"
+            style={{ width: '64px', height: '64px' }}
+          >
+            {/* Monochrome graduation cap icon */}
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="32" height="32" className="text-secondary">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-5.25 6.557c0 1.105.895 2 2 2h6.5a2 2 0 0 0 2-2v-3.675a55.378 55.378 0 0 0-5.25-2.882" />
+            </svg>
+          </div>
+          <h4 className="fw-bold mb-1">Điểm trung bình tích lũy (GPA)</h4>
+          <p className="text-muted small mb-0">
+            Nhập điểm GPA học tập của bạn theo thang điểm 4 (từ 0.0 đến 4.0)
+          </p>
+        </div>
+
+        {/* Ô nhập điểm GPA */}
+        <div className="mx-auto mb-4" style={{ maxWidth: '360px' }}>
+          <Form.Group className="text-center">
+            <Form.Label className="fw-semibold text-secondary small text-uppercase mb-2">
+              Điểm GPA của bạn <span className="text-danger">*</span>
+            </Form.Label>
+            <div className="input-group input-group-lg shadow-sm">
+              <Form.Control
+                type="number"
+                name="gpa"
+                min="0"
+                max="4.0"
+                step="0.01"
+                placeholder="Ví dụ: 3.25"
+                value={formData.gpa}
+                onChange={handleChange}
+                isInvalid={!!errors.gpa}
+                className="text-center fw-bold fs-3 text-primary"
+                autoFocus
+              />
+              <span className="input-group-text bg-light text-muted fw-bold">/ 4.0</span>
+            </div>
+            {errors.gpa && (
+              <div className="text-danger small mt-2 text-center d-flex align-items-center justify-content-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                  <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z" />
+                </svg>
+                {errors.gpa}
+              </div>
+            )}
+          </Form.Group>
+        </div>
+
+        {/* Xếp loại học lực tự động */}
+        {rank && (
+          <div className="mb-4 text-center">
+            <span className="text-muted small me-2">Học lực dự kiến:</span>
+            <Badge bg={rank.variant} className="px-3 py-2 fw-semibold fs-6">
+              {rank.label} ({rank.text})
+            </Badge>
+          </div>
+        )}
+
+        {/* Thông tin giải thích & quyền riêng tư */}
+        <div className="p-3 bg-light rounded-3 border text-start mx-auto mb-2" style={{ maxWidth: '500px' }}>
+          <div className="d-flex gap-3 align-items-start">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="22" height="22" className="text-secondary flex-shrink-0 mt-1">
+              <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+            </svg>
+            <div className="small text-muted">
+              <p className="mb-1 fw-semibold text-dark">Mục đích sử dụng điểm GPA:</p>
+              <ul className="mb-0 ps-3">
+                <li>Hệ thống đề xuất thành viên nhóm có năng lực tương đồng hoặc bổ trợ cho nhau.</li>
+                <li>Bạn có thể tùy chọn <strong>Ẩn/Hiện điểm GPA</strong> trong mục Cài đặt quyền riêng tư sau khi hoàn thành.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="min-vh-100 bg-light d-flex align-items-center py-3">
