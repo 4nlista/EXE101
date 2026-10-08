@@ -126,10 +126,13 @@ const registerUser = async (email, password) => {
   
   console.log(`🔑 [OTP REGISTER] Mã OTP đăng ký cho ${email}: ${otpCode}`);
   
-  // Gửi email ngầm (background) để trả response HTTP tức thì (< 50ms) cho người dùng
-  sendEmail(email, 'Mã xác thực đăng ký tài khoản UniVerse AI', htmlContent).catch(err => {
-    console.error('❌ Lỗi gửi email ngầm:', err);
-  });
+  // Đảm bảo gửi email thành công trước khi thông báo tới người dùng
+  const emailSent = await sendEmail(email, 'Mã xác thực đăng ký tài khoản UniVerse AI', htmlContent);
+  if (!emailSent) {
+    const error = new Error('Hệ thống không thể gửi email xác thực lúc này. Vui lòng kiểm tra lại địa chỉ email hoặc thử lại sau.');
+    error.statusCode = 500;
+    throw error;
+  }
 
   return { message: 'Mã xác thực đã được gửi tới email của bạn.' };
 };
@@ -323,10 +326,13 @@ const forgotPassword = async (email) => {
   `;
   console.log(`🔑 [OTP FORGOT] Mã OTP quên mật khẩu cho ${email}: ${otpCode}`);
 
-  // Gửi email ngầm (background)
-  sendEmail(email, 'Mã xác thực đặt lại mật khẩu UniVerse AI', htmlContent).catch(err => {
-    console.error('❌ Lỗi gửi email ngầm:', err);
-  });
+  // Đảm bảo gửi email thành công trước khi thông báo tới người dùng
+  const emailSent = await sendEmail(email, 'Mã xác thực đặt lại mật khẩu UniVerse AI', htmlContent);
+  if (!emailSent) {
+    const error = new Error('Hệ thống không thể gửi email xác thực lúc này. Vui lòng kiểm tra lại địa chỉ email hoặc thử lại sau.');
+    error.statusCode = 500;
+    throw error;
+  }
 
   return { message: 'Mã OTP đã được gửi tới email của bạn. Vui lòng kiểm tra hộp thư.' };
 };
