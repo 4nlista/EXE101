@@ -144,8 +144,15 @@ const registerUser = async (email, password) => {
  * @param {string} password - Mật khẩu đã nhập
  */
 const verifyOtp = async (email, otp, password) => {
-  // 1. Kiểm tra OTP hợp lệ và chưa sử dụng
-  const otpRecord = await Otp.findOne({ email, isUsed: false }).sort({ createdAt: -1 });
+  // 1. Kiểm tra OTP hợp lệ và chưa sử dụng (hoặc user chưa được tạo thành công)
+  let otpRecord = await Otp.findOne({ email, isUsed: false }).sort({ createdAt: -1 });
+  if (!otpRecord) {
+    const userExists = await User.findOne({ email });
+    if (!userExists) {
+      otpRecord = await Otp.findOne({ email }).sort({ createdAt: -1 });
+    }
+  }
+
   if (!otpRecord) {
     const error = new Error('Không tìm thấy mã OTP hoặc mã đã hết hạn.');
     error.statusCode = 400;
@@ -166,14 +173,13 @@ const verifyOtp = async (email, otp, password) => {
     throw error;
   }
 
-  // Đánh dấu OTP đã sử dụng
-  otpRecord.isUsed = true;
-  await otpRecord.save();
-
-  // 4. Mã hóa mật khẩu và tạo User mới (Tên mặc định lấy từ tiền tố email)
+  // 4. Mã hóa mật khẩu và tạo User mới
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
-  const defaultName = email ? email.split('@')[0] : 'Người dùng mới';
+  
+  // Tên mặc định: nếu tiền tố email chỉ chứa chữ cái thì lấy, ngược lại mặc định là 'Người dùng mới' để thỏa mãn regex
+  const emailPrefix = email ? email.split('@')[0] : '';
+  const defaultName = /^[\p{L}\s]+$/u.test(emailPrefix) ? emailPrefix : 'Người dùng mới';
 
   const newUser = await User.create({
     name: defaultName,
@@ -182,6 +188,10 @@ const verifyOtp = async (email, otp, password) => {
     roleCode: ROLE_CODE.USER, // User mặc định
     onboardingCompleted: false // Bắt buộc hoàn tất hồ sơ sau này
   });
+
+  // Đánh dấu OTP đã sử dụng sau khi tạo user thành công
+  otpRecord.isUsed = true;
+  await otpRecord.save();
 
   // 5. Tạo JWT Token để tự động đăng nhập sau khi xác thực thành công
   const payload = {
@@ -233,10 +243,11 @@ const loginGoogle = async (googleToken) => {
   let user = await User.findOne({ email });
 
   if (!user) {
-    // Tạo user mới nếu chưa tồn tại
+    // Tên hợp lệ từ Google thỏa mãn chữ cái và khoảng trắng, nếu không thì dùng 'Người dùng mới'
+    const validGoogleName = name && /^[\p{L}\s]+$/u.test(name.trim()) ? name.trim() : 'Người dùng mới';
     user = await User.create({
       email,
-      name,
+      name: validGoogleName,
       avatar: picture,
       googleId,
       roleCode: ROLE_CODE.USER, // User mặc định

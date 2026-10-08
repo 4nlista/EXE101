@@ -51,6 +51,7 @@ const userSchema = new mongoose.Schema(
     // Họ và Tên đầy đủ
     name: {
       type: String,
+      default: 'Người dùng mới',
       match: [/^[\p{L}\s]+$/u, 'Họ và tên chỉ được chứa chữ cái và khoảng trắng']
     },
     // URL ảnh đại diện
