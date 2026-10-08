@@ -13,6 +13,10 @@ const createTransporter = () => {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS
     },
+    family: 4, // Ép buộc sử dụng IPv4, tránh treo kết nối IPv6 trên container Linux của Render
+    connectionTimeout: 10000, // Timeout kết nối tối đa 10s
+    greetingTimeout: 5000,
+    socketTimeout: 15000,
     tls: {
       rejectUnauthorized: true
     }
