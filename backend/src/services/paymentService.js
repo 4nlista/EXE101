@@ -70,6 +70,14 @@ exports.checkPaymentStatus = async (orderId) => {
   const transaction = await Transaction.findById(orderId);
   if (!transaction) throw new Error('Giao dịch không tồn tại');
 
+  // Nếu đơn đang PENDING nhưng đã quá 60 phút -> tự động chuyển sang FAILED ngay lập tức
+  const sixtyMinsAgo = new Date(Date.now() - 60 * 60 * 1000);
+  if (transaction.status === TRANSACTION_STATUS.PENDING && transaction.createdAt < sixtyMinsAgo) {
+    transaction.status = TRANSACTION_STATUS.FAILED;
+    transaction.description = 'Đã hủy do quá thời gian thanh toán (60 phút)';
+    await transaction.save();
+  }
+
   return { status: transaction.status };
 };
 
@@ -83,8 +91,8 @@ exports.sepayWebhook = async (req) => {
   }
 
   // Tìm orderId trong nội dung chuyển khoản bằng Regex
-  // VD: Nội dung là "NGUYEN VAN A CHUYEN TIEN EXE101 64e2b9c3f..."
-  const match = content.match(/EXE101\s([a-f0-9]{24})/i);
+  // Hỗ trợ cả trường hợp có hoặc không có khoảng trắng: "EXE101 64e2b..." hoặc "EXE10164e2b..."
+  const match = content.match(/EXE101\s*([a-f0-9]{24})/i);
   if (!match) {
     return { success: true, message: 'Giao dịch không chứa mã Order của hệ thống' };
   }
@@ -96,16 +104,19 @@ exports.sepayWebhook = async (req) => {
     return { success: true, message: 'Order không tồn tại trên hệ thống' };
   }
 
-  // Nếu giao dịch đã được xử lý từ trước rồi thì bỏ qua
-  if (transaction.status !== TRANSACTION_STATUS.PENDING) {
+  // Nếu giao dịch đã được xác nhận thành công trước đó thì bỏ qua (tránh xử lý trùng)
+  if (transaction.status === TRANSACTION_STATUS.SUCCESS) {
     return { success: true, message: 'Giao dịch này đã được xác nhận trước đó' };
   }
+
+  // Lấy mã giao dịch SePay (ưu tiên code -> referenceCode -> id)
+  const sepayTxId = code || req.body.referenceCode || req.body.id?.toString() || `SEPAY_${Date.now()}`;
 
   // Kiểm tra số tiền khách chuyển có đủ hay không
   if (transferAmount < transaction.amount) {
     // Khách chuyển thiếu tiền -> Chuyển sang Failed
     transaction.status = TRANSACTION_STATUS.FAILED;
-    transaction.sepayTransactionId = code;
+    transaction.sepayTransactionId = sepayTxId;
     transaction.description = `Chuyển thiếu tiền (${transferAmount}đ / ${transaction.amount}đ). Cần Admin xử lý hoàn tiền thủ công.`;
     await transaction.save();
 
@@ -116,20 +127,25 @@ exports.sepayWebhook = async (req) => {
         userId: user._id,
         type: NOTIFICATION_TYPE.SUBSCRIPTION,
         title: 'Giao dịch không thành công',
-        message: `Bạn đã chuyển thiếu tiền (chỉ gửi ${transferAmount.toLocaleString()}đ). Giao dịch bị hủy. Vui lòng liên hệ bộ phận CSKH để được hoàn tiền.`
+        content: `Bạn đã chuyển thiếu tiền (chỉ gửi ${transferAmount.toLocaleString()}đ). Giao dịch bị hủy. Vui lòng liên hệ bộ phận CSKH để được hoàn tiền.`
       });
     }
 
     return { success: true, message: 'Giao dịch chuyển thiếu tiền. Chờ Admin xử lý hoàn tiền.' };
   }
 
+  // Xác định chính xác loại gói từ description hoặc amount (chống lỗi nếu description từng bị ghi đè)
+  let packageType = transaction.description?.startsWith('Mua_goi_')
+    ? transaction.description.replace('Mua_goi_', '')
+    : (transaction.amount === 139000 ? PACKAGE_TYPE.PREMIUM : PACKAGE_TYPE.VIP);
+
   // Xử lý thành công
   transaction.status = TRANSACTION_STATUS.SUCCESS;
-  transaction.sepayTransactionId = code; // Mã giao dịch ngân hàng do SePay gửi qua
-  transaction.paidAt = new Date(transactionDate);
+  transaction.description = `Mua_goi_${packageType}`;
+  transaction.sepayTransactionId = sepayTxId;
+  transaction.paidAt = new Date(transactionDate || Date.now());
 
   const user = await User.findById(transaction.userId);
-  const packageType = transaction.description.replace('Mua_goi_', '');
   const isUpgradingToPremium = packageType === PACKAGE_TYPE.PREMIUM;
 
   let activeSub = await Subscription.findOne({ userId: user._id, status: SUBSCRIPTION_STATUS.ACTIVE });
@@ -221,8 +237,17 @@ exports.getMyTransactions = async (userId, fromDate, toDate) => {
 exports.getTransactionInfo = async (orderId, userId) => {
   const transaction = await Transaction.findOne({ _id: orderId, userId });
   if (!transaction) throw new Error('Không tìm thấy giao dịch');
+
+  // Kiểm tra nếu đơn quá 60 phút thì chuyển sang FAILED ngay, không cho hiển thị QR
+  const sixtyMinsAgo = new Date(Date.now() - 60 * 60 * 1000);
+  if (transaction.status === TRANSACTION_STATUS.PENDING && transaction.createdAt < sixtyMinsAgo) {
+    transaction.status = TRANSACTION_STATUS.FAILED;
+    transaction.description = 'Đã hủy do quá thời gian thanh toán (60 phút)';
+    await transaction.save();
+  }
+
   if (transaction.status !== TRANSACTION_STATUS.PENDING) {
-    throw new Error('Giao dịch này không còn hợp lệ để thanh toán');
+    throw new Error('Giao dịch này không còn hợp lệ hoặc đã hết hạn');
   }
 
   // Tạo lại thông tin QR giống lúc createPaymentUrl

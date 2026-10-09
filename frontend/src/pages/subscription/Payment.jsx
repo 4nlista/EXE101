@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Container, Spinner, Row, Col } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
-import { AlertCircle, CheckCircle, Copy, Clock } from 'lucide-react';
+import { AlertCircle, CheckCircle, Copy, Clock, ArrowLeft } from 'lucide-react';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
 import paymentService from '../../services/paymentService';
@@ -20,17 +20,41 @@ export default function Payment() {
   const [paymentStatus, setPaymentStatus] = useState(TRANSACTION_STATUS.PENDING);
   const [timeLeft, setTimeLeft] = useState(60 * 60); // 60 minutes
   const [errorMsg, setErrorMsg] = useState('');
+  const [redirectCountdown, setRedirectCountdown] = useState(null);
 
   const pollingInterval = useRef(null);
   const countdownInterval = useRef(null);
+  const redirectTimer = useRef(null);
 
   useEffect(() => {
     fetchTransaction();
     return () => {
       if (pollingInterval.current) clearInterval(pollingInterval.current);
       if (countdownInterval.current) clearInterval(countdownInterval.current);
+      if (redirectTimer.current) clearInterval(redirectTimer.current);
     };
   }, [orderId]);
+
+  // Tự động xóa QR và chuyển hướng về trang Bảng giá khi đơn hết hạn
+  const triggerAutoRedirect = (msg) => {
+    setQrData(null); // Xóa ngay ảnh QR để khách không thể quét nhầm đơn cũ
+    setPaymentStatus(TRANSACTION_STATUS.FAILED);
+    if (msg) setErrorMsg(msg);
+    if (pollingInterval.current) clearInterval(pollingInterval.current);
+    if (countdownInterval.current) clearInterval(countdownInterval.current);
+
+    let count = 5;
+    setRedirectCountdown(count);
+    if (redirectTimer.current) clearInterval(redirectTimer.current);
+    redirectTimer.current = setInterval(() => {
+      count -= 1;
+      setRedirectCountdown(count);
+      if (count <= 0) {
+        clearInterval(redirectTimer.current);
+        navigate('/subscription');
+      }
+    }, 1000);
+  };
 
   const fetchTransaction = async () => {
     try {
@@ -39,14 +63,13 @@ export default function Payment() {
       if (res.success && res.data) {
         setQrData(res.data);
 
-        // Calculate time left (60 mins from createdAt)
+        // Tính thời gian còn lại (60 phút từ thời điểm tạo đơn)
         const createdTime = new Date(res.data.createdAt).getTime();
         const now = new Date().getTime();
         const diffInSeconds = Math.floor((createdTime + 60 * 60 * 1000 - now) / 1000);
 
         if (diffInSeconds <= 0) {
-          setPaymentStatus(TRANSACTION_STATUS.FAILED);
-          setErrorMsg('Đơn hàng đã hết hạn (quá 60 phút)');
+          triggerAutoRedirect('Đơn hàng đã hết hạn thanh toán (quá 60 phút).');
         } else {
           setTimeLeft(diffInSeconds);
           startPolling(orderId);
@@ -54,8 +77,7 @@ export default function Payment() {
         }
       }
     } catch (error) {
-      setErrorMsg(error?.response?.data?.message || 'Không tìm thấy giao dịch hoặc giao dịch đã hết hạn');
-      setPaymentStatus(TRANSACTION_STATUS.FAILED);
+      triggerAutoRedirect(error?.response?.data?.message || 'Không tìm thấy giao dịch hoặc giao dịch đã hết hạn.');
     } finally {
       setLoading(false);
     }
@@ -67,12 +89,14 @@ export default function Payment() {
       try {
         const res = await paymentService.checkPaymentStatus(id);
         if (res.success && res.status !== TRANSACTION_STATUS.PENDING) {
-          setPaymentStatus(res.status);
-          clearInterval(pollingInterval.current);
-          clearInterval(countdownInterval.current);
+          if (pollingInterval.current) clearInterval(pollingInterval.current);
+          if (countdownInterval.current) clearInterval(countdownInterval.current);
 
           if (res.status === TRANSACTION_STATUS.SUCCESS) {
+            setPaymentStatus(TRANSACTION_STATUS.SUCCESS);
             await fetchMyProfile();
+          } else if (res.status === TRANSACTION_STATUS.FAILED) {
+            triggerAutoRedirect('Đơn hàng đã hết hạn hoặc bị hủy.');
           }
         }
       } catch (error) {
@@ -88,10 +112,7 @@ export default function Payment() {
       current -= 1;
       setTimeLeft(current);
       if (current <= 0) {
-        clearInterval(countdownInterval.current);
-        if (pollingInterval.current) clearInterval(pollingInterval.current);
-        setPaymentStatus(TRANSACTION_STATUS.FAILED);
-        setErrorMsg('Đơn hàng đã hết hạn (quá 60 phút)');
+        triggerAutoRedirect('Đơn hàng đã hết hạn thanh toán (quá 60 phút).');
       }
     }, 1000);
   };
@@ -100,6 +121,7 @@ export default function Payment() {
     try {
       if (pollingInterval.current) clearInterval(pollingInterval.current);
       if (countdownInterval.current) clearInterval(countdownInterval.current);
+      if (redirectTimer.current) clearInterval(redirectTimer.current);
       await paymentService.cancelPayment(orderId);
       navigate('/subscription');
     } catch (error) {
@@ -237,14 +259,24 @@ export default function Payment() {
             </div>
           )}
 
-          {/* MÀN HÌNH THẤT BẠI */}
+          {/* MÀN HÌNH THẤT BẠI / HẾT HẠN */}
           {paymentStatus === TRANSACTION_STATUS.FAILED && (
             <div className="py-5 text-center px-4">
-              <AlertCircle size={90} className="text-danger mb-4 mx-auto d-block" />
-              <h2 className="fw-bold text-danger mb-3">Giao dịch đã kết thúc</h2>
-              <p className="text-muted fs-5 mb-5">{errorMsg || 'Giao dịch bị từ chối, hết hạn hoặc đã bị hủy.'}</p>
-              <Button variant="danger" className="px-5 py-3 fw-bold fs-5 shadow-sm rounded-pill" onClick={() => navigate('/subscription')}>
-                Thử lại thanh toán
+              <AlertCircle size={80} className="text-danger mb-4 mx-auto d-block" />
+              <h2 className="fw-bold text-danger mb-3">Đơn hàng đã hết hạn thanh toán</h2>
+              <p className="text-muted fs-5 mb-2">{errorMsg || 'Mã QR đã hết hạn hiệu lực để đảm bảo an toàn giao dịch.'}</p>
+              <p className="text-muted mb-4">
+                Đang tự động chuyển về trang Bảng giá sau <strong className="text-danger fs-5">{redirectCountdown ?? 5}s</strong> để bạn tạo đơn thanh toán mới...
+              </p>
+              <Button
+                variant="cancel"
+                className="px-4 py-2 fw-semibold d-inline-flex align-items-center gap-2 border shadow-sm text-dark"
+                onClick={() => {
+                  if (redirectTimer.current) clearInterval(redirectTimer.current);
+                  navigate('/subscription');
+                }}
+              >
+                <ArrowLeft size={18} /> Quay lại
               </Button>
             </div>
           )}

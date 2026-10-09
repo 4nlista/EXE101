@@ -34,20 +34,20 @@ const runSubscriptionCron = () => {
     }
   });
 
-  // Chạy mỗi 15 phút một lần: Dọn dẹp đơn hàng PENDING quá hạn (15 phút)
+  // Quét định kỳ mỗi 15 phút: Dọn dẹp đơn hàng PENDING quá hạn (60 phút)
   cron.schedule('*/15 * * * *', async () => {
     console.log('--- CRON JOB: Bắt đầu dọn dẹp các đơn hàng PENDING quá hạn ---');
     try {
       const TransactionModel = require('../models/Transaction');
       const { TRANSACTION_STATUS } = require('../constants/transactionEnum');
       
-      const fifteenMinsAgo = new Date(Date.now() - 15 * 60 * 1000); // 15 phút trước
+      const sixtyMinsAgo = new Date(Date.now() - 60 * 60 * 1000); // 60 phút trước (đồng bộ với đồng hồ đếm ngược Frontend)
 
       const result = await TransactionModel.updateMany({
         status: TRANSACTION_STATUS.PENDING,
-        createdAt: { $lt: fifteenMinsAgo }
+        createdAt: { $lt: sixtyMinsAgo }
       }, {
-        $set: { status: TRANSACTION_STATUS.FAILED, description: 'Đã hủy do quá thời gian thanh toán (15 phút)' }
+        $set: { status: TRANSACTION_STATUS.FAILED, description: 'Đã hủy do quá thời gian thanh toán (60 phút)' }
       });
 
       if (result.modifiedCount > 0) {
