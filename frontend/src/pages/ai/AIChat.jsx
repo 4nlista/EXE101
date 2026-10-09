@@ -174,7 +174,7 @@ const AIChat = ({
                         {msg.text}
                       </div>
 
-                      {/* Danh sách thẻ Dự án: 1 dự án co gọn vừa vặn, 2-3 dự án dàn đều cột linh hoạt */}
+                      {/* Danh sách thẻ Dự án: 1 dự án chiếm 40-50%, 2 dự án chiếm 50-50%, từ 3 dự án trở lên tối đa 3 card/hàng (33.33%) */}
                       {hasProjects && (
                         <Row className="mt-3 pb-2 g-3">
                           {msg.projects.map((proj, pIdx) => {
@@ -187,10 +187,18 @@ const AIChat = ({
                                 candidateRequirements: proj.skills?.join(', ')
                               };
 
-                            const colMd = hasSingleProject ? 12 : msg.projects.length === 2 ? 6 : 4;
+                            // Phân bổ độ rộng cột chuẩn UX:
+                            // - 1 dự án: chiếm 40% - 50% (md={6}, lg={5}) để card cân đối, dễ nhìn
+                            // - 2 dự án: chiếm 50% mỗi card (md={6} - 2 card/hàng)
+                            // - 3 dự án trở lên: chiếm 33.33% mỗi card (lg={4} - 3 card/hàng, tự động xuống dòng 3 trên 1 dưới, 3 trên 2 dưới...)
+                            const colProps = msg.projects.length === 1
+                              ? { xs: 12, sm: 8, md: 6, lg: 5 }
+                              : msg.projects.length === 2
+                                ? { xs: 12, md: 6 }
+                                : { xs: 12, md: 6, lg: 4 };
 
                             return (
-                              <Col xs={12} md={colMd} key={pIdx}>
+                              <Col {...colProps} key={pIdx}>
                                 <ProjectCard
                                   project={projectData}
                                   matchPercent={proj.matchPercent}

@@ -169,7 +169,16 @@ const createProject = async (projectData, ownerId) => {
     deadline
   } = projectData;
 
-  // 1. Kiểm tra giới hạn tạo dự án trong tháng dựa trên Gói đăng ký
+  // 1. Kiểm tra người dùng đã hoàn thành hồ sơ onboarding chưa
+  const owner = await User.findById(ownerId);
+  if (!owner) throw new Error('Không tìm thấy người dùng');
+  if (!owner.onboardingCompleted) {
+    const err = new Error('Vui lòng hoàn tất hồ sơ cá nhân trước khi tạo bài đăng dự án.');
+    err.statusCode = 403;
+    throw err;
+  }
+
+  // 2. Kiểm tra giới hạn tạo dự án trong tháng dựa trên Gói đăng ký
   const limitCheck = await checkLimit(ownerId);
   if (!limitCheck.isAllowed) {
     const err = new Error(limitCheck.message);

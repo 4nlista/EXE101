@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Spinner } from 'react-bootstrap';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Button from '../../components/Button';
 import Modal from '../../components/Modal';
 import Alert from '../../components/Alert';
@@ -12,12 +12,17 @@ import ProjectCard from '../../components/ProjectCard';
 import ProjectFilter from '../../components/ProjectFilter';
 import ProjectDetailModal from './ProjectDetailModal';
 import CreateProjectModal from './CreateProjectModal';
+import OnboardingRequiredModal from '../../components/OnboardingRequiredModal';
 import Input from '../../components/Input';
 import { Search } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function ProjectFeed() {
+  const navigate = useNavigate();
+  const { currentUser } = useAuth();
   const queryClient = useQueryClient();
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showOnboardingModal, setShowOnboardingModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
   const [filters, setFilters] = useState({
     page: 1,
@@ -64,6 +69,14 @@ export default function ProjectFeed() {
   const projects = response?.data?.projects || [];
   const pagination = response?.data?.pagination || null;
 
+  const handleCreateProjectClick = () => {
+    if (currentUser && !currentUser.onboardingCompleted) {
+      setShowOnboardingModal(true);
+      return;
+    }
+    setShowCreateModal(true);
+  };
+
   return (
     <div className="min-vh-100 d-flex flex-column" style={{ backgroundColor: '#f0f2f5' }}>
 
@@ -76,6 +89,32 @@ export default function ProjectFeed() {
 
           {/* Cột phải: Main Content (9 phần) */}
           <Col xl={9} lg={9} md={8}>
+
+            {/* Banner nhắc nhở hoàn tất hồ sơ cho người dùng chưa onboarding */}
+            {currentUser && !currentUser.onboardingCompleted && (
+              <div className="bg-white border border-warning border-opacity-75 rounded-3 p-3 mb-3 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 shadow-sm">
+                <div className="d-flex align-items-center gap-2">
+                  <span className="fs-5">⚡</span>
+                  <div>
+                    <div className="fw-semibold text-dark" style={{ fontSize: '0.92rem' }}>
+                      Hồ sơ của bạn chưa hoàn thiện
+                    </div>
+                    <div className="text-secondary small">
+                      Hãy bổ sung thông tin cá nhân để bắt đầu ứng tuyển vào dự án và trải nghiệm tính năng ghép nhóm AI!
+                    </div>
+                  </div>
+                </div>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => navigate('/onboarding')}
+                  className="text-nowrap fw-medium"
+                  style={{ backgroundColor: '#ea580c', borderColor: '#ea580c' }}
+                >
+                  Hoàn tất hồ sơ ngay →
+                </Button>
+              </div>
+            )}
 
             {/* Top Bar */}
             <div className="bg-white p-3 rounded shadow-sm border border-primary border-opacity-25 mb-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center">
@@ -109,7 +148,7 @@ export default function ProjectFeed() {
                   variant="primary"
                   className="text-white px-3 fw-medium"
                   style={{ backgroundColor: '#ea580c', borderColor: '#ea580c' }}
-                  onClick={() => setShowCreateModal(true)}
+                  onClick={handleCreateProjectClick}
                 >
                   +Tạo bài đăng
                 </Button>
@@ -181,6 +220,13 @@ export default function ProjectFeed() {
       <CreateProjectModal
         show={showCreateModal}
         onHide={() => setShowCreateModal(false)}
+      />
+
+      {/* Modal Cảnh báo yêu cầu hoàn tất hồ sơ */}
+      <OnboardingRequiredModal
+        show={showOnboardingModal}
+        onHide={() => setShowOnboardingModal(false)}
+        actionTitle="tạo bài đăng dự án mới"
       />
     </div>
   );

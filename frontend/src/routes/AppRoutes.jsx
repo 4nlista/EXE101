@@ -17,7 +17,6 @@ import AdminDashboard from '../pages/admin/AdminDashboard';
 import ChangePassword from '../pages/settings/ChangePassword';
 import ProfileOnboarding from '../pages/profile/ProfileOnboarding';
 import Subscription from '../pages/subscription/Subscription';
-import PaymentResult from '../pages/subscription/PaymentResult';
 import HistoryPayment from '../pages/subscription/HistoryPayment';
 import Payment from '../pages/subscription/Payment';
 import Notifications from '../pages/notifications/Notifications';
@@ -60,16 +59,13 @@ function ProtectedRoute({ children, requireOnboarding = true }) {
   return children;
 }
 
-// Route public: đã login → redirect vào trong
+// Route public: đã login → redirect vào trong (mặc định vào /feed để người dùng khám phá)
 function PublicRoute({ children }) {
   const { isAuthenticated, currentUser } = useAuth();
 
   if (isAuthenticated && currentUser) {
     if (currentUser.roleCode === ROLE_CODE.ADMIN) {
       return <Navigate to="/admin" replace />;
-    }
-    if (!currentUser.onboardingCompleted) {
-      return <Navigate to="/onboarding" replace />;
     }
     return <Navigate to="/feed" replace />;
   }
@@ -91,26 +87,26 @@ export default function AppRoutes() {
       {/* Route riêng cho Admin */}
       <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
 
-      {/* App Layout cho các trang sau đăng nhập (User) */}
-      <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+      {/* Các trang cho phép người dùng xem ngay cả khi chưa hoàn tất hồ sơ */}
+      <Route element={<ProtectedRoute requireOnboarding={false}><AppLayout /></ProtectedRoute>}>
         <Route path="/feed" element={<Feed />} />
+        <Route path="/notifications" element={<Notifications />} />
+      </Route>
+
+      {/* Các tính năng yêu cầu bắt buộc hoàn thiện hồ sơ mới được truy cập */}
+      <Route element={<ProtectedRoute requireOnboarding={true}><AppLayout /></ProtectedRoute>}>
         <Route path="/manage" element={<ManageProjects />} />
         <Route path="/manage/:projectId" element={<ProjectManagementDetail />} />
         <Route path="/profile" element={<PublicProfile />} />
         <Route path="/profile/:id" element={<PublicProfile />} />
-
         <Route path="/messages" element={<Messages />} />
         <Route path="/ai-hub" element={<AIHub />} />
         <Route path="/change-password" element={<ChangePassword />} />
         
         {/* Thanh toán & Gói dịch vụ */}
         <Route path="/subscription" element={<Subscription />} />
-        <Route path="/payment-result" element={<PaymentResult />} />
         <Route path="/transactions" element={<HistoryPayment />} />
         <Route path="/payment/:orderId" element={<Payment />} />
-        
-        {/* Thông báo */}
-        <Route path="/notifications" element={<Notifications />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

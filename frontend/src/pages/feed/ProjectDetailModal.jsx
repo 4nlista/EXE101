@@ -10,6 +10,8 @@ import { toast } from 'react-toastify';
 import { applyProject, checkApplicationStatus } from '../../services/applicationService';
 import { APPLICATION_STATUS } from '../../constants';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import OnboardingRequiredModal from '../../components/OnboardingRequiredModal';
 
 const getTimeAgo = (dateString) => {
   if (!dateString) return '';
@@ -26,11 +28,13 @@ const getTimeAgo = (dateString) => {
 };
 
 export default function ProjectDetailModal({ project, show, onHide }) {
+  const { currentUser } = useAuth();
   const [applyFile, setApplyFile] = useState(null);
   const [applyNote, setApplyNote] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [appStatus, setAppStatus] = useState({ canApply: true, status: null, rejectionCount: 0 });
+  const [showOnboardingModal, setShowOnboardingModal] = useState(false);
   const navigate = useNavigate();
 
   const getStatusMessage = (status, rejectionCount) => {
@@ -89,6 +93,12 @@ export default function ProjectDetailModal({ project, show, onHide }) {
   const handleApplySubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
+
+    // Kiểm tra hoàn tất hồ sơ onboarding
+    if (currentUser && !currentUser.onboardingCompleted) {
+      setShowOnboardingModal(true);
+      return;
+    }
 
     if (!applyFile) {
       setErrorMsg('Vui lòng chọn file CV.');
@@ -273,7 +283,25 @@ export default function ProjectDetailModal({ project, show, onHide }) {
               </Alert>
             )}
 
-            {!appStatus.canApply ? (
+            {currentUser && !currentUser.onboardingCompleted ? (
+              <div className="w-100 p-4 rounded text-center my-2 border bg-light">
+                <p className="text-secondary mb-3 small" style={{ lineHeight: '1.6' }}>
+                  Bạn cần hoàn tất hồ sơ cá nhân để chủ dự án xem xét chuyên ngành, kỹ năng và GPA của bạn trước khi ứng tuyển.
+                </p>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => {
+                    onHide();
+                    navigate('/onboarding');
+                  }}
+                  style={{ backgroundColor: '#ea580c', borderColor: '#ea580c' }}
+                  className="fw-medium px-4 shadow-sm"
+                >
+                  Hoàn tất hồ sơ ngay →
+                </Button>
+              </div>
+            ) : !appStatus.canApply ? (
               <div className="w-100 p-3 rounded fw-bold d-flex align-items-center justify-content-center gap-2 mt-2" 
                    style={
                      appStatus.status === APPLICATION_STATUS.APPROVED
@@ -371,6 +399,13 @@ export default function ProjectDetailModal({ project, show, onHide }) {
           </Card.Body>
         </Card>
       </Modal.Body>
+
+      {/* Modal Cảnh báo yêu cầu hoàn tất hồ sơ */}
+      <OnboardingRequiredModal
+        show={showOnboardingModal}
+        onHide={() => setShowOnboardingModal(false)}
+        actionTitle="ứng tuyển vào dự án này"
+      />
     </Modal>
   );
 }

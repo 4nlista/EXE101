@@ -1,6 +1,7 @@
 const Application = require('../models/Application');
 const Project = require('../models/Project');
 const Notification = require('../models/Notification');
+const User = require('../models/User');
 const { APPLICATION_STATUS } = require('../constants/applicationEnum');
 const { PROJECT_STATUS } = require('../constants/projectEnum');
 const { NOTIFICATION_TYPE } = require('../constants/notificationEnum');
@@ -14,6 +15,14 @@ const { checkAndUpdateExpiredProjects } = require('../jobs/expireProjectJob');
  * @param {string} note Ghi chú ứng tuyển
  */
 const createApplication = async (projectId, applicantId, cvFileUrl, note) => {
+  // 0. Kiểm tra ứng viên đã hoàn thành hồ sơ cá nhân chưa
+  const applicant = await User.findById(applicantId);
+  if (!applicant || !applicant.onboardingCompleted) {
+    const err = new Error('Vui lòng hoàn tất hồ sơ cá nhân trước khi ứng tuyển vào dự án.');
+    err.statusCode = 403;
+    throw err;
+  }
+
   // 1. Kiểm tra dự án tồn tại
   const project = await Project.findById(projectId);
   if (!project) {

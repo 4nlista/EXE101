@@ -281,35 +281,29 @@
   display: flex;
   gap: 12px;
   align-items: flex-start;
+  width: 100%;
 }
 
 /* 1. Chỉ có văn bản (không có card): co dãn tự nhiên theo câu chữ */
 .aihub-ai-message-wrap.text-only {
   width: fit-content;
-  max-width: min(780px, 85%);
+  max-width: min(800px, 85%);
 }
 
 .aihub-ai-message-wrap.text-only .aihub-message.ai {
   width: fit-content;
 }
 
-/* 2. Có đúng 1 dự án: giới hạn cố định tối đa 240px cho cả khối */
-.aihub-ai-message-wrap.single-project {
-  width: 100%;
-  max-width: 240px;
-}
-
-.aihub-ai-message-wrap.single-project .aihub-message.ai {
-  width: 100%;
-  max-width: 100%;
-}
-
-/* 3. Có từ 2 dự án trở lên: bung rộng 100% để hiển thị đều 2-3 cột card */
+/* 2. Có card dự án đề xuất (1 hoặc nhiều): mở rộng 100% để hiển thị lưới card cân đối */
+.aihub-ai-message-wrap.has-projects,
+.aihub-ai-message-wrap.single-project,
 .aihub-ai-message-wrap.multiple-projects {
   width: 100%;
   max-width: 100%;
 }
 
+.aihub-ai-message-wrap.has-projects .aihub-message.ai,
+.aihub-ai-message-wrap.single-project .aihub-message.ai,
 .aihub-ai-message-wrap.multiple-projects .aihub-message.ai {
   width: 100%;
   max-width: 100%;

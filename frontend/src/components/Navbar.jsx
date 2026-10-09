@@ -74,9 +74,20 @@ export default function Navbar() {
             <div className="drop-menu">
               <div className="drop-user">
                 <div className="drop-user-name">{currentUser?.name || currentUser?.email || 'Người dùng'}</div>
-                <div className="drop-user-email">Chưa cập nhật vai trò</div>
+                <div className="drop-user-email">
+                  {currentUser?.onboardingCompleted ? 'Hồ sơ đã hoàn tất' : 'Chưa hoàn tất hồ sơ'}
+                </div>
               </div>
               <div style={{ padding: '6px 0' }}>
+                {!currentUser?.onboardingCompleted && (
+                  <button
+                    className="drop-item fw-semibold"
+                    style={{ color: '#ea580c' }}
+                    onClick={() => { navigate('/onboarding'); setShowDrop(false); }}
+                  >
+                    <Sparkles size={16} /> Hoàn tất hồ sơ (0/4)
+                  </button>
+                )}
                 <button className="drop-item" onClick={() => { navigate('/profile'); setShowDrop(false); }}><User size={16} /> Hồ sơ cá nhân</button>
                 <button className="drop-item" onClick={() => { navigate('/subscription'); setShowDrop(false); }}><Crown size={16} className="text-warning" /> Nâng cấp tài khoản</button>
                 <button className="drop-item" onClick={() => { navigate('/transactions'); setShowDrop(false); }}><ReceiptText size={16} /> Lịch sử thanh toán</button>

@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Container, Row, Col, Form, Offcanvas } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import { LogOut, ArrowRight } from 'lucide-react';
 import CreatableSelect from 'react-select/creatable';
 import { toast } from 'react-toastify';
+import { useAuth } from '../../contexts/AuthContext';
+import LogoImg from '../../assets/images/Logo.png';
 import { profileService } from '../../services/profileService';
 import { useDepartments, useMajors, useSkills } from '../../hooks/useMasterData';
 import { useOnboardingMutation } from '../../hooks/useProfile';
@@ -13,6 +16,7 @@ import StatusBadge from '../../components/StatusBadge';
 
 const ProfileOnboarding = () => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const fileInputRef = useRef(null);
 
   const [currentStep, setCurrentStep] = useState(() => {
@@ -605,6 +609,35 @@ const ProfileOnboarding = () => {
       <Container>
         <Row className="justify-content-center">
           <Col md={10} lg={8} xl={7}>
+            {/* Thanh điều hướng & lối thoát hiểm Onboarding */}
+            <div className="d-flex justify-content-between align-items-center mb-3 px-1">
+              <div className="d-flex align-items-center gap-2">
+                <img src={LogoImg} alt="UniVerse AI Logo" style={{ height: '30px' }} />
+                <span className="fw-bold text-dark fs-5">UniVerse AI</span>
+              </div>
+              <div className="d-flex align-items-center gap-2">
+                <Button
+                  variant="cancel"
+                  size="sm"
+                  onClick={() => navigate('/feed')}
+                  className="d-inline-flex align-items-center gap-1"
+                >
+                  Bỏ qua & Xem bảng tin <ArrowRight size={14} />
+                </Button>
+                <Button
+                  variant="cancel"
+                  size="sm"
+                  onClick={() => {
+                    logout();
+                    navigate('/');
+                  }}
+                  className="d-inline-flex align-items-center gap-1 text-danger border-danger border-opacity-25"
+                >
+                  <LogOut size={14} /> Đăng xuất
+                </Button>
+              </div>
+            </div>
+
             <Card className="shadow border-0 rounded-4">
               <Card.Body className="p-4 p-sm-5">
                 {renderStepIndicator()}
