@@ -1,6 +1,8 @@
 import React from 'react';
-import { Card, Badge, Form } from 'react-bootstrap';
+import { Form } from 'react-bootstrap';
 import Button from '../../../components/Button';
+import Card from '../../../components/Card';
+import StatusBadge from '../../../components/StatusBadge';
 import CustomTable from '../../../components/CustomTable';
 import { Plus, SquarePen, Trash2, Eye, Folder } from 'lucide-react';
 
@@ -27,8 +29,8 @@ export default function ProjectHistoryTable({
   };
 
   const getRoleBadge = (role) => {
-    if (role === 'leader') return <Badge bg="warning" text="dark">Nhóm trưởng</Badge>;
-    if (role === 'member') return <Badge bg="secondary">Thành viên</Badge>;
+    if (role === 'leader') return <StatusBadge variant="warning" text="Nhóm trưởng" />;
+    if (role === 'member') return <StatusBadge variant="secondary" text="Thành viên" />;
     return null;
   };
 
@@ -79,9 +81,11 @@ export default function ProjectHistoryTable({
                   onClick={() => openProjectDetail(proj)}
                 >
                   <td className="px-3 border-0 border-bottom align-middle">
-                    <Badge className="rounded-pill px-3 py-1 fw-semibold text-primary bg-primary bg-opacity-10 border-0" style={{ fontSize: '0.75rem' }}>
-                      {proj.type === 'personal' ? 'Cá nhân' : 'Nhóm'}
-                    </Badge>
+                    <StatusBadge
+                      variant="primary"
+                      text={proj.type === 'personal' ? 'Cá nhân' : 'Nhóm'}
+                      className="rounded-pill px-3 py-1 fw-semibold"
+                    />
                   </td>
                   <td className="fw-bold text-dark px-3 border-0 border-bottom align-middle">{proj.projectName}</td>
                   <td className="text-muted px-3 border-0 border-bottom align-middle">{formatDate(proj.startDate)}</td>

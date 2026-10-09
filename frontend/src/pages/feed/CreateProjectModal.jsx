@@ -319,7 +319,7 @@ export default function CreateProjectModal({ show, onHide }) {
 
       {(!showUpsell && !isCheckingLimit && !isFetching) && (
         <Modal.Footer className="pt-2">
-          <Button variant="outline-secondary" onClick={handleClose} disabled={createMutation.isLoading}>
+          <Button variant="cancel" onClick={handleClose} disabled={createMutation.isLoading}>
             Hủy
           </Button>
           <Button
@@ -327,9 +327,9 @@ export default function CreateProjectModal({ show, onHide }) {
             form="createProjectForm"
             variant="primary"
             style={{ backgroundColor: '#ea580c', borderColor: '#ea580c' }}
-            disabled={createMutation.isLoading}
+            loading={createMutation.isLoading}
           >
-            {createMutation.isLoading ? 'Đang Đăng bài...' : 'Đăng bài'}
+            Đăng bài
           </Button>
         </Modal.Footer>
       )}

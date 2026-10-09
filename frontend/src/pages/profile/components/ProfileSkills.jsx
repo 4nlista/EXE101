@@ -1,7 +1,9 @@
 import React from 'react';
-import { Card, Badge, Form } from 'react-bootstrap';
+import { Form } from 'react-bootstrap';
 import { Star } from 'lucide-react';
 import CreatableSelect from 'react-select/creatable';
+import Card from '../../../components/Card';
+import StatusBadge from '../../../components/StatusBadge';
 import { useSkills } from '../../../hooks/useMasterData';
 
 export default function ProfileSkills({
@@ -70,9 +72,7 @@ export default function ProfileSkills({
           <div className="d-flex flex-wrap gap-2">
             {profileData.mainSkills && profileData.mainSkills.length > 0 ? (
               profileData.mainSkills.map((skill, idx) => (
-                <Badge key={idx} bg="light" text="dark" className="border border-secondary px-2 py-1 fw-medium rounded-pill" style={{ fontSize: '0.8rem' }}>
-                  {skill}
-                </Badge>
+                <StatusBadge key={idx} variant="light" text={skill} className="border border-secondary px-2 py-1 fw-medium rounded-pill" style={{ fontSize: '0.8rem' }} />
               ))
             ) : (
               <span className="text-muted small">Chưa có kỹ năng</span>

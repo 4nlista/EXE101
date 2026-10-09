@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Badge, Row, Col, Card } from 'react-bootstrap';
+import { Form, Badge, Row, Col } from 'react-bootstrap';
 import Modal from '../../components/Modal';
 import Button from '../../components/Button';
+import Card from '../../components/Card';
 import Alert from '../../components/Alert';
 import Input from '../../components/Input';
 import { Clock, FileText, CheckCircle, Upload, Send, AlertCircle } from 'lucide-react';
@@ -357,7 +358,7 @@ export default function ProjectDetailModal({ project, show, onHide }) {
                 {/* ── Footer Buttons ── */}
                 <div className="mt-4 pt-3 border-top d-flex justify-content-center">
                   <div className="w-100 d-flex justify-content-end gap-2">
-                    <Button variant="outline-light" type="button" onClick={onHide} className="fw-medium px-4 bg-secondary text-white">
+                    <Button variant="cancel" type="button" onClick={onHide} className="fw-medium px-4">
                       Hủy
                     </Button>
                     <Button type="submit" variant="primary" disabled={!applyFile} loading={isSubmitting} className="fw-medium px-4 d-flex align-items-center gap-2" style={{ backgroundColor: '#ea580c', borderColor: '#ea580c' }}>

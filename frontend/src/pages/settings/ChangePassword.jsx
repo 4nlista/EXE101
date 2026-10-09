@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Container, Card, Form, Button as BsButton } from 'react-bootstrap';
+import { Container, Form } from 'react-bootstrap';
 import { Lock, KeyRound, ShieldCheck } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
@@ -7,6 +7,8 @@ import axiosClient from '../../utils/axiosClient';
 import { useAuth } from '../../contexts/AuthContext';
 import Input from '../../components/Input';
 import Alert from '../../components/Alert';
+import Button from '../../components/Button';
+import Card from '../../components/Card';
 
 export default function ChangePassword() {
   const navigate = useNavigate();
@@ -121,22 +123,22 @@ export default function ChangePassword() {
             />
 
             <div className="d-flex gap-3 pt-2">
-              <BsButton
-                variant="light"
-                className="w-50 rounded-2 fw-medium border shadow-sm"
+              <Button
+                variant="cancel"
+                className="w-50"
                 onClick={() => navigate(-1)}
                 disabled={loading}
               >
                 Hủy bỏ
-              </BsButton>
-              <BsButton
+              </Button>
+              <Button
                 variant="primary"
                 type="submit"
-                className="w-50 rounded-2 fw-medium shadow-sm"
-                disabled={loading}
+                className="w-50"
+                loading={loading}
               >
-                {loading ? 'Đang cập nhật...' : 'Cập nhật'}
-              </BsButton>
+                Cập nhật
+              </Button>
             </div>
           </Form>
         </Card.Body>

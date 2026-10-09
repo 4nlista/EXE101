@@ -267,7 +267,7 @@ export default function UpdateProjectModal({ show, onHide, project, onSuccess })
       </Modal.Body>
 
       <Modal.Footer className="pt-2">
-        <Button variant="outline-secondary" onClick={handleClose} disabled={updateMutation.isLoading}>
+        <Button variant="cancel" onClick={handleClose} disabled={updateMutation.isLoading}>
           Hủy
         </Button>
         <Button
@@ -275,9 +275,9 @@ export default function UpdateProjectModal({ show, onHide, project, onSuccess })
           form="updateProjectForm"
           variant="primary"
           style={{ backgroundColor: '#ea580c', borderColor: '#ea580c' }}
-          disabled={updateMutation.isLoading}
+          loading={updateMutation.isLoading}
         >
-          {updateMutation.isLoading ? 'Đang lưu...' : 'Lưu thay đổi'}
+          Lưu thay đổi
         </Button>
       </Modal.Footer>
     </Modal>

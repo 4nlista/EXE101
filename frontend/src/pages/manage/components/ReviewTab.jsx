@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, ProgressBar, Spinner } from 'react-bootstrap';
+import { Row, Col, ProgressBar, Spinner } from 'react-bootstrap';
 import { FaStar } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import Button from '../../../components/Button';
+import Card from '../../../components/Card';
 import { getProjectReviewStatus, createReview } from '../../../services/reviewService';
 import ConfirmActionModal from '../../../components/ConfirmActionModal';
 
@@ -142,9 +143,9 @@ export default function ReviewTab({ projectId }) {
                       </div>
                     ) : (
                       <Button
-                        variant="primary text-white"
+                        variant="primary"
                         size="sm"
-                        className="rounded-pill px-3"
+                        className="rounded-pill px-3 text-white fw-medium"
                         disabled={isExpired}
                         onClick={() => handleOpenReviewModal(member)}
                       >

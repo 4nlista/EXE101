@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { Container, Card, Spinner } from 'react-bootstrap';
+import { Container, Spinner } from 'react-bootstrap';
 import { CheckCircle, XCircle } from 'lucide-react';
 import paymentService from '../../services/paymentService';
 import Button from '../../components/Button';
+import Card from '../../components/Card';
 
 import { TRANSACTION_STATUS } from '../../constants/transactionEnum';
 
@@ -64,7 +65,7 @@ export default function PaymentResult() {
               <h4 className="fw-bold text-danger mb-3">Thanh toán thất bại</h4>
               <p className="text-muted mb-4">{message}</p>
               <Link to="/subscription">
-                <Button variant="outline-danger" className="w-100">Thử lại</Button>
+                <Button variant="danger" className="w-100">Thử lại</Button>
               </Link>
             </>
           )}

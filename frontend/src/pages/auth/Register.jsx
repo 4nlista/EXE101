@@ -4,8 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { GoogleLogin } from '@react-oauth/google';
 import { Mail, Lock, ArrowLeft } from 'lucide-react';
 import { toast } from 'react-toastify';
-import LogoImg from '../../assets/images/Logo.png';
-import IconLoginImg from '../../assets/images/Icon_login.png';
+import AuthLayout from '../../layouts/AuthLayout';
 
 // Import các UI Component hạt nhân
 import Input from '../../components/Input';
@@ -151,196 +150,170 @@ export default function Register() {
     otpRefs[0].current?.focus();
   };
 
-  return (
-    <div className="auth-layout-split">
-      {/* ── Left Hero ── */}
-      <div className="auth-hero-split">
-        <div className="auth-brand-wrapper">
-          <img src={LogoImg} alt="UniVerse AI Logo" className="auth-brand-logo" />
-          <span className="auth-brand-text">UniVerse AI</span>
-        </div>
-        <div className="auth-hero-content">
-          <img
-            src={IconLoginImg}
-            alt="Register Illustration"
-            className="auth-hero-img"
-          />
-          <p className="auth-hero-slogan">
-            Hệ thống hỗ trợ ghép nhóm thông minh, giúp người dùng dễ dàng tìm kiếm những người thành viên phù hợp nhất dựa trên kỹ năng và chuyên ngành để nâng cao hiệu quả.
-          </p>
-        </div>
-      </div>
-
-      {/* ── Right Form ── */}
-      <div className="auth-panel-split">
-        <div className="auth-card-wrapper">
-
-          {/* ════════ BƯỚC 1: FORM ĐĂNG KÝ (3 FIELDS) ════════ */}
-          {step === 'register' && (
-            <>
-              <div className="auth-header text-center">
-                <h2 className="auth-heading">Tạo tài khoản</h2>
-                <p className="auth-subtitle">Nhập email và mật khẩu để bắt đầu với UniVerse AI.</p>
-              </div>
-
-              <form onSubmit={handleSubmit} noValidate>
-                {/* Form-level Error */}
-                <Alert type="danger">
-                  {globalErr}
-                </Alert>
-
-                <Input 
-                  label="Email"
-                  icon={Mail}
-                  id="register-email"
-                  name="email" 
-                  type="email"
-                  placeholder="user@example.com"
-                  value={form.email} 
-                  onChange={handleChange}
-                  error={errors.email}
-                />
-
-                <Input 
-                  label="Mật khẩu"
-                  icon={Lock}
-                  id="register-password"
-                  name="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={form.password} 
-                  onChange={handleChange}
-                  error={errors.password}
-                />
-
-                <Input 
-                  label="Xác nhận mật khẩu"
-                  icon={Lock}
-                  id="register-confirm"
-                  name="confirm"
-                  type="password"
-                  placeholder="••••••••"
-                  value={form.confirm} 
-                  onChange={handleChange}
-                  error={errors.confirm}
-                />
-
-                <Button 
-                  type="submit" 
-                  variant="primary" 
-                  fullWidth 
-                  loading={loading}
-                  className="py-2 fw-bold mt-3"
-                >
-                  Đăng ký tài khoản
-                </Button>
-              </form>
-
-              <div className="auth-divider-row my-4">
-                <div className="auth-divider-line"></div>
-                <span style={{ padding: '0 12px' }}>HOẶC ĐĂNG KÝ VỚI</span>
-                <div className="auth-divider-line"></div>
-              </div>
-
-              <div className="w-100 d-flex justify-content-center">
-                <GoogleLogin
-                  onSuccess={async (credentialResponse) => {
-                    const res = await loginWithGoogle(credentialResponse.credential);
-                    if (!res.success) {
-                      setGlobalErr(res.error === 'Network Error' ? 'Không thể kết nối đến máy chủ.' : res.error);
-                      return;
-                    }
-                    navigate('/feed');
-                  }}
-                  onError={() => {
-                    setGlobalErr('Đăng ký bằng Google thất bại hoặc bị hủy.');
-                  }}
-                  size="large"
-                  theme="outline"
-                  width="100%"
-                />
-              </div>
-
-              <div className="auth-footer mt-4 text-center">
-                Đã có tài khoản? <Link to="/" className="auth-link auth-link-underline">Đăng nhập ngay</Link>
-              </div>
-            </>
-          )}
-
-          {/* ════════ BƯỚC 2: XÁC THỰC OTP 6 SỐ ════════ */}
-          {step === 'otp' && (
-            <>
-              <div className="auth-header text-center">
-                <h2 className="auth-heading">Xác thực Email</h2>
-                <p className="auth-subtitle">
-                  Mã OTP 6 số đã được gửi tới <strong>{form.email}</strong>. Mã có hiệu lực trong 5 phút.
-                </p>
-              </div>
-
-              <form onSubmit={handleVerifyOtp} noValidate>
-                {/* Form-level Error */}
-                <Alert type="danger">
-                  {globalErr}
-                </Alert>
-
-                {/* 6 ô nhập mã OTP */}
-                <div className="otp-box-wrapper" style={{ justifyContent: 'center', gap: '8px' }}>
-                  {otp.map((digit, index) => (
-                    <input
-                      key={index}
-                      ref={otpRefs[index]}
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={1}
-                      value={digit}
-                      onChange={(e) => handleOtpChange(index, e.target.value)}
-                      onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                      onPaste={index === 0 ? handleOtpPaste : undefined}
-                      className={`otp-box${errors.otp ? ' otp-box--error' : ''}`}
-                      style={{ width: '48px', height: '56px', fontSize: '24px' }}
-                    />
-                  ))}
-                </div>
-
-                {/* Lỗi OTP */}
-                {errors.otp && (
-                  <p className="text-danger text-center" style={{ fontSize: '13px', marginTop: '8px', marginBottom: '12px' }}>
-                    {errors.otp}
-                  </p>
-                )}
-
-                <Button 
-                  type="submit" 
-                  variant="primary" 
-                  fullWidth 
-                  loading={loading}
-                  className="py-2 fw-bold mt-4"
-                >
-                  Xác nhận mã OTP
-                </Button>
-              </form>
-
-              <div className="auth-footer mt-4 text-center d-flex justify-content-between">
-                <button 
-                  onClick={() => { setStep('register'); setErrors({}); setGlobalErr(''); }}
-                  className="auth-link auth-link-underline d-inline-flex align-items-center gap-1"
-                >
-                  <ArrowLeft size={16} /> Quay lại
-                </button>
-                <button
-                  onClick={handleResendOtp}
-                  disabled={sending}
-                  className="auth-link auth-link-underline"
-                >
-                  {sending ? 'Đang gửi...' : 'Gửi lại mã'}
-                </button>
-              </div>
-            </>
-          )}
-
-        </div>
-      </div>
+  const authFooter = step === 'register' ? (
+    <span>
+      Đã có tài khoản? <Link to="/" className="auth-link auth-link-underline">Đăng nhập ngay</Link>
+    </span>
+  ) : (
+    <div className="d-flex justify-content-between align-items-center w-100">
+      <Button 
+        variant="cancel" 
+        size="sm"
+        onClick={() => { setStep('register'); setErrors({}); setGlobalErr(''); }}
+        className="d-inline-flex align-items-center gap-1"
+      >
+        <ArrowLeft size={16} /> Quay lại
+      </Button>
+      <Button
+        variant="cancel"
+        size="sm"
+        onClick={handleResendOtp}
+        loading={sending}
+      >
+        Gửi lại mã
+      </Button>
     </div>
+  );
+
+  return (
+    <AuthLayout
+      title={step === 'register' ? 'Tạo tài khoản' : 'Xác thực Email'}
+      subtitle={
+        step === 'register'
+          ? 'Nhập email và mật khẩu để bắt đầu với UniVerse AI.'
+          : <>Mã OTP 6 số đã được gửi tới <strong>{form.email}</strong>. Mã có hiệu lực trong 5 phút.</>
+      }
+      footer={authFooter}
+    >
+      {/* ════════ BƯỚC 1: FORM ĐĂNG KÝ (3 FIELDS) ════════ */}
+      {step === 'register' && (
+        <>
+          <form onSubmit={handleSubmit} noValidate>
+            {/* Form-level Error */}
+            <Alert type="danger">
+              {globalErr}
+            </Alert>
+
+            <Input 
+              label="Email"
+              icon={Mail}
+              id="register-email"
+              name="email" 
+              type="email"
+              placeholder="user@example.com"
+              value={form.email} 
+              onChange={handleChange}
+              error={errors.email}
+            />
+
+            <Input 
+              label="Mật khẩu"
+              icon={Lock}
+              id="register-password"
+              name="password" 
+              type="password"
+              placeholder="••••••••"
+              value={form.password} 
+              onChange={handleChange}
+              error={errors.password}
+            />
+
+            <Input 
+              label="Xác nhận mật khẩu"
+              icon={Lock}
+              id="register-confirm"
+              name="confirm" 
+              type="password"
+              placeholder="••••••••"
+              value={form.confirm} 
+              onChange={handleChange}
+              error={errors.confirm}
+            />
+
+            <Button 
+              type="submit" 
+              variant="primary" 
+              fullWidth 
+              loading={loading}
+              className="py-2 fw-bold mt-3"
+            >
+              Đăng ký tài khoản
+            </Button>
+          </form>
+
+          <div className="auth-divider-row my-4">
+            <div className="auth-divider-line"></div>
+            <span style={{ padding: '0 12px' }}>HOẶC ĐĂNG KÝ VỚI</span>
+            <div className="auth-divider-line"></div>
+          </div>
+
+          <div className="w-100 d-flex justify-content-center">
+            <GoogleLogin
+              onSuccess={async (credentialResponse) => {
+                const res = await loginWithGoogle(credentialResponse.credential);
+                if (!res.success) {
+                  setGlobalErr(res.error === 'Network Error' ? 'Không thể kết nối đến máy chủ.' : res.error);
+                  return;
+                }
+                navigate('/feed');
+              }}
+              onError={() => {
+                setGlobalErr('Đăng ký bằng Google thất bại hoặc bị hủy.');
+              }}
+              size="large"
+              theme="outline"
+              width="100%"
+            />
+          </div>
+        </>
+      )}
+
+      {/* ════════ BƯỚC 2: XÁC THỰC OTP 6 SỐ ════════ */}
+      {step === 'otp' && (
+        <form onSubmit={handleVerifyOtp} noValidate>
+          {/* Form-level Error */}
+          <Alert type="danger">
+            {globalErr}
+          </Alert>
+
+          {/* 6 ô nhập mã OTP */}
+          <div className="otp-box-wrapper" style={{ justifyContent: 'center', gap: '8px' }}>
+            {otp.map((digit, index) => (
+              <input
+                key={index}
+                ref={otpRefs[index]}
+                type="text"
+                inputMode="numeric"
+                maxLength={1}
+                value={digit}
+                onChange={(e) => handleOtpChange(index, e.target.value)}
+                onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                onPaste={index === 0 ? handleOtpPaste : undefined}
+                className={`otp-box${errors.otp ? ' otp-box--error' : ''}`}
+                style={{ width: '48px', height: '56px', fontSize: '24px' }}
+              />
+            ))}
+          </div>
+
+          {/* Lỗi OTP */}
+          {errors.otp && (
+            <p className="text-danger text-center" style={{ fontSize: '13px', marginTop: '8px', marginBottom: '12px' }}>
+              {errors.otp}
+            </p>
+          )}
+
+          <Button 
+            type="submit" 
+            variant="primary" 
+            fullWidth 
+            loading={loading}
+            className="py-2 fw-bold mt-4"
+          >
+            Xác nhận mã OTP
+          </Button>
+        </form>
+      )}
+    </AuthLayout>
   );
 }
 

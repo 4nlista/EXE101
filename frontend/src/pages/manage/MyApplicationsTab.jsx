@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Badge, Dropdown, Form, InputGroup, Row, Col, Table } from 'react-bootstrap';
+import { Dropdown, Form, InputGroup, Row, Col } from 'react-bootstrap';
 import { FaSearch, FaEllipsisV, FaRegClock, FaCheckCircle, FaTimesCircle, FaStar, FaEye } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import ConfirmActionModal from '../../components/ConfirmActionModal';
 import Button from '../../components/Button';
+import Card from '../../components/Card';
+import Modal from '../../components/Modal';
 import { getMyApplications, cancelApplication, acceptInvite, declineInvite } from '../../services/applicationService';
 import { getProjectDetail } from '../../services/projectService';
 import { APPLICATION_STATUS } from '../../constants/applicationEnum';
@@ -13,7 +15,6 @@ import ProjectDetailModal from '../feed/ProjectDetailModal';
 import CustomTable from '../../components/CustomTable';
 import Pagination from '../../components/Pagination';
 import { PROJECT_STATUS } from '../../constants/projectEnum';
-import Modal from 'react-bootstrap/Modal';
 import ReviewTab from './components/ReviewTab';
 
 const ACTION_TYPES = {
@@ -206,8 +207,8 @@ export default function MyApplicationsTab() {
               <td onClick={(e) => e.stopPropagation()}>
                 <div className="d-flex align-items-center justify-content-center gap-2">
                   <Button
-                    variant="secondary text-dark"
-                    className="rounded-pill px-3 py-1"
+                    variant="cancel"
+                    className="rounded-pill px-3 py-1 text-dark"
                     style={{ fontSize: '12px' }}
                     onClick={(e) => {
                       e.stopPropagation();

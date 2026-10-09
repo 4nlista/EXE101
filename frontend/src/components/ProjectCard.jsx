@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Badge } from 'react-bootstrap';
+import { Badge } from 'react-bootstrap';
 import { Heart, Clock, Users, BookOpen, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Button from './Button';
+import Card from './Card';
 import { formatCreatedDate, calculateDaysLeft } from '../utils/formatDate';
 import { toggleLikeProject } from '../services/projectService';
 
@@ -185,14 +186,15 @@ export default function ProjectCard({
 
             {/* Phải: Nút thả tim (8) + Button Chi tiết (9) */}
             <div className="d-flex align-items-center flex-shrink-0 gap-1">
-              <button
-                className="btn btn-light rounded-circle p-1 d-flex align-items-center justify-content-center"
+              <Button
+                variant="light"
+                className="rounded-circle p-0 d-flex align-items-center justify-content-center"
                 onClick={handleSaveToggle}
                 title={isSaved ? "Bỏ lưu" : "Lưu dự án"}
                 style={{ width: '30px', height: '30px', border: '1px solid #b4b1b1ff', flexShrink: 0 }}
               >
                 {isSaved ? <Heart size={14} fill="#dc3545" className="text-danger" /> : <Heart size={14} className="text-muted" />}
-              </button>
+              </Button>
               <Button
                 variant="primary"
                 size="sm"

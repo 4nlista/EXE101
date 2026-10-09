@@ -15,6 +15,7 @@ import ProfileInfo from './components/ProfileInfo';
 import ProfileSkills from './components/ProfileSkills';
 import ProjectHistoryTable from './components/ProjectHistoryTable';
 import ProjectDetailPanel from './components/ProjectDetailPanel';
+import ConfirmActionModal from '../../components/ConfirmActionModal';
 import '../../styles/profile.css';
 import { toast } from 'react-toastify';
 import { initConversation } from '../../services/messageService';
@@ -50,6 +51,7 @@ export default function PublicProfilePage() {
   const [selectedProject, setSelectedProject] = useState(null);
   const [isAddingProject, setIsAddingProject] = useState(false);
   const [projectForm, setProjectForm] = useState({});
+  const [projectToDelete, setProjectToDelete] = useState(null);
 
   if (isLoading) {
     return (
@@ -228,13 +230,7 @@ export default function PublicProfilePage() {
   };
 
   const handleDeleteProject = (id) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa dự án này?")) {
-      deleteProjectHistoryMutation.mutate(id, {
-        onSuccess: () => {
-          if (selectedProject?._id === id) closeProjectDetail();
-        }
-      });
-    }
+    setProjectToDelete(id);
   };
 
   const isDetailOpen = selectedProject || isAddingProject;
@@ -312,6 +308,26 @@ export default function PublicProfilePage() {
           />
         )}
       </div>
+
+      <ConfirmActionModal
+        show={!!projectToDelete}
+        onHide={() => setProjectToDelete(null)}
+        onConfirm={() => {
+          if (projectToDelete) {
+            deleteProjectHistoryMutation.mutate(projectToDelete, {
+              onSuccess: () => {
+                if (selectedProject?._id === projectToDelete) closeProjectDetail();
+                setProjectToDelete(null);
+              }
+            });
+          }
+        }}
+        title="Xóa dự án"
+        message="Bạn có chắc chắn muốn xóa dự án này khỏi hồ sơ không?"
+        confirmText="Xóa"
+        variant="danger"
+        isLoading={deleteProjectHistoryMutation.isLoading}
+      />
     </Container>
   );
 }

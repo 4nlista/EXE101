@@ -1,11 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Container, Row, Col, Card, Form, Button, Table, Offcanvas, Badge } from 'react-bootstrap';
+import { Container, Row, Col, Form, Offcanvas } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import CreatableSelect from 'react-select/creatable';
 import { toast } from 'react-toastify';
 import { profileService } from '../../services/profileService';
 import { useDepartments, useMajors, useSkills } from '../../hooks/useMasterData';
 import { useOnboardingMutation } from '../../hooks/useProfile';
+import Button from '../../components/Button';
+import Card from '../../components/Card';
+import CustomTable from '../../components/CustomTable';
+import StatusBadge from '../../components/StatusBadge';
 
 const ProfileOnboarding = () => {
   const navigate = useNavigate();
@@ -462,50 +466,40 @@ const ProfileOnboarding = () => {
           Bạn chưa thêm dự án nào. Bấm nút Thêm để bắt đầu.
         </div>
       ) : (
-        <div className="border rounded-3 overflow-hidden bg-white">
-          <Table responsive hover className="mb-0 align-middle text-nowrap">
-            <thead style={{ backgroundColor: '#f8f9fa' }}>
-              <tr>
-                <th className="px-4 fw-semibold border-bottom text-muted" style={{ fontSize: '0.85rem', backgroundColor: '#f8f9fa' }}>Loại</th>
-                <th className="px-4 fw-semibold border-bottom text-muted" style={{ fontSize: '0.85rem', backgroundColor: '#f8f9fa' }}>Tên dự án</th>
-                <th className="px-4 fw-semibold border-bottom text-muted text-end" style={{ fontSize: '0.85rem', backgroundColor: '#f8f9fa' }}>Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              {formData.projectHistory.map((proj, idx) => (
-                <tr key={idx} style={{ transition: 'all 0.2s ease', cursor: 'pointer' }}>
-                  <td className="px-4 border-bottom">
-                    <span
-                      className="rounded-pill px-3 py-1 fw-medium"
-                      style={
-                        proj.type === 'personal'
-                          ? { backgroundColor: '#e0f2fe', color: '#0369a1', fontSize: '0.85rem' }
-                          : { backgroundColor: '#eef2ff', color: '#4338ca', fontSize: '0.85rem' }
-                      }
-                    >
-                      {proj.type === 'personal' ? 'Cá nhân' : 'Nhóm'}
-                    </span>
-                  </td>
-                  <td className="px-4 fw-medium text-dark border-bottom">{proj.projectName}</td>
-                  <td className="px-4 text-end border-bottom">
-                    <div className="d-flex gap-2 justify-content-end">
-                      <Button variant="light" size="sm" className="rounded border bg-white d-flex align-items-center justify-content-center text-secondary" onClick={() => handleOpenProject(idx)} title="Chỉnh sửa">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="16" height="16">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
-                        </svg>
-                      </Button>
-                      <Button variant="light" size="sm" className="rounded border bg-white d-flex align-items-center justify-content-center text-danger" onClick={() => handleDeleteProject(idx)} title="Xóa">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="16" height="16">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                        </svg>
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        </div>
+        <CustomTable
+          headers={[
+            { label: 'Loại', className: 'px-4' },
+            { label: 'Tên dự án', className: 'px-4' },
+            { label: 'Thao tác', className: 'px-4 text-end' }
+          ]}
+          className="rounded-3 overflow-hidden shadow-sm"
+        >
+          {formData.projectHistory.map((proj, idx) => (
+            <tr key={idx} style={{ transition: 'all 0.2s ease', cursor: 'pointer' }}>
+              <td className="px-4 border-bottom">
+                <StatusBadge
+                  variant={proj.type === 'personal' ? 'primary' : 'purple'}
+                  text={proj.type === 'personal' ? 'Cá nhân' : 'Nhóm'}
+                />
+              </td>
+              <td className="px-4 fw-medium text-dark border-bottom">{proj.projectName}</td>
+              <td className="px-4 text-end border-bottom">
+                <div className="d-flex gap-2 justify-content-end">
+                  <Button variant="cancel" size="sm" className="rounded p-1 d-flex align-items-center justify-content-center" onClick={() => handleOpenProject(idx)} title="Chỉnh sửa">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="16" height="16">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                    </svg>
+                  </Button>
+                  <Button variant="cancel" size="sm" className="rounded p-1 d-flex align-items-center justify-content-center text-danger border-danger border-opacity-25" onClick={() => handleDeleteProject(idx)} title="Xóa">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="16" height="16">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                    </svg>
+                  </Button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </CustomTable>
       )}
     </div>
   );
@@ -622,7 +616,7 @@ const ProfileOnboarding = () => {
                   {currentStep === 4 && renderStep4()}
                 </div>
                 <div className="d-flex justify-content-between mt-4">
-                  <Button variant="outline-secondary" onClick={handleBack} disabled={currentStep === 1 || submitting || checkingPhone}>Quay lại</Button>
+                  <Button variant="cancel" onClick={handleBack} disabled={currentStep === 1 || submitting || checkingPhone}>Quay lại</Button>
                   {currentStep < 4 ? (
                     <Button variant="primary" onClick={handleNext} disabled={checkingPhone}>
                       {checkingPhone ? 'Đang kiểm tra...' : 'Tiếp tục'}
@@ -718,7 +712,7 @@ const ProfileOnboarding = () => {
           )}
 
           <div className="d-flex gap-2 justify-content-end mt-4 pt-3">
-            <Button variant="outline-secondary" className="rounded-pill px-4" onClick={handleCloseProject}>Hủy bỏ</Button>
+            <Button variant="cancel" className="rounded-pill px-4" onClick={handleCloseProject}>Hủy bỏ</Button>
             <Button variant="primary" className="rounded-pill px-4 shadow-sm" onClick={handleSaveProject}>
               {editingProjectIndex >= 0 ? 'Cập nhật' : 'Lưu dự án'}
             </Button>

@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Card, Form, Row, Col, Spinner } from 'react-bootstrap';
+import { Container, Form, Row, Col, Spinner } from 'react-bootstrap';
 import { AlertCircle, ReceiptText, CheckCircle2, ArrowLeft, Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import paymentService from '../../services/paymentService';
 import StatusBadge from '../../components/StatusBadge';
 import CustomTable from '../../components/CustomTable';
 import Button from '../../components/Button';
+import Card from '../../components/Card';
+import Select from '../../components/Select';
 
 export default function HistoryPayment() {
   const navigate = useNavigate();
@@ -77,7 +80,7 @@ export default function HistoryPayment() {
 
   return (
     <Container className="py-4" style={{ maxWidth: '1200px' }}>
-      <Button variant="light" className="mb-4 d-flex align-items-center gap-2 rounded-pill px-3 py-2 shadow-sm border" onClick={() => navigate('/feed')}>
+      <Button variant="light" className="mb-4 d-flex align-items-center gap-2 rounded-pill px-3 py-2 shadow-sm border text-dark" onClick={() => navigate('/feed')}>
         <ArrowLeft size={16} /> Quay lại
       </Button>
 
@@ -93,8 +96,8 @@ export default function HistoryPayment() {
           <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
             {/* Box bên trái: Các bộ lọc & Nút Export */}
             <div className="d-flex align-items-center gap-3">
-              <Form.Select
-                className="shadow-none border"
+              <Select
+                className="mb-0 shadow-none border"
                 style={{ width: '160px' }}
                 value={packageFilter}
                 onChange={(e) => setPackageFilter(e.target.value)}
@@ -102,9 +105,9 @@ export default function HistoryPayment() {
                 <option value="">Gói dịch vụ</option>
                 <option value="Gói VIP">Gói VIP</option>
                 <option value="Gói PREMIUM">Gói PREMIUM</option>
-              </Form.Select>
+              </Select>
 
-              <Button variant="secondary text-dark" className="d-flex align-items-center border-2" onClick={handleExport}>
+              <Button variant="cancel" className="d-flex align-items-center gap-1 border shadow-sm text-dark" onClick={handleExport}>
                 <Download size={16} /> Export
               </Button>
             </div>

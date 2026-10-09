@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Container, Card, Spinner, Row, Col, Alert } from 'react-bootstrap';
+import { Container, Spinner, Row, Col } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AlertCircle, CheckCircle, Copy, Clock } from 'lucide-react';
 import Button from '../../components/Button';
+import Card from '../../components/Card';
 import paymentService from '../../services/paymentService';
 import StatusBadge from '../../components/StatusBadge';
 import { useAuth } from '../../contexts/AuthContext';
@@ -182,9 +183,9 @@ export default function Payment() {
                     <div className="text-dark fw-bold mb-2">Số tiền <span className="text-danger">*</span></div>
                     <div className="d-flex align-items-center justify-content-between p-3 bg-light border rounded">
                       <div className="fw-bold text-danger fs-4">{qrData.amount.toLocaleString('vi-VN')} đ</div>
-                      <button className="btn btn-sm btn-outline-secondary d-flex align-items-center" onClick={() => copyToClipboard(qrData.amount.toString())}>
+                      <Button variant="cancel" size="sm" className="d-flex align-items-center text-dark" onClick={() => copyToClipboard(qrData.amount.toString())}>
                         <Copy size={14} className="me-1" /> Copy
-                      </button>
+                      </Button>
                     </div>
                   </div>
 
@@ -193,9 +194,9 @@ export default function Payment() {
                     <div className="text-dark fw-bold mb-2">Nội dung chuyển khoản <span className="text-danger">*</span></div>
                     <div className="d-flex align-items-center justify-content-between p-3 bg-light border rounded">
                       <div className="fw-bold text-primary fs-5">{qrData.content}</div>
-                      <button className="btn btn-sm btn-outline-secondary d-flex align-items-center" onClick={() => copyToClipboard(qrData.content)}>
+                      <Button variant="cancel" size="sm" className="d-flex align-items-center text-dark" onClick={() => copyToClipboard(qrData.content)}>
                         <Copy size={14} className="me-1" /> Copy
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -209,7 +210,7 @@ export default function Payment() {
                 </div>
 
                 <div className="border-top d-flex justify-content-between align-items-center">
-                  <Button variant="dark" onClick={handleCancel} className="fw-bold">
+                  <Button variant="cancel" onClick={handleCancel} className="fw-bold text-dark">
                     Hủy giao dịch
                   </Button>
 

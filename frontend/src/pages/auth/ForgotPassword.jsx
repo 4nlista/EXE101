@@ -2,8 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, ArrowLeft } from 'lucide-react';
 import { toast } from 'react-toastify';
-import LogoImg from '../../assets/images/Logo.png';
-import IconLoginImg from '../../assets/images/Icon_login.png';
+import AuthLayout from '../../layouts/AuthLayout';
 import * as authService from '../../services/authService';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
@@ -134,127 +133,99 @@ export default function ForgotPassword() {
     otpRefs[0].current?.focus();
   };
 
-  return (
-    <div className="auth-layout-split">
-      {/* ── Left Hero ── */}
-      <div className="auth-hero-split">
-        <div className="auth-brand-wrapper">
-          <img src={LogoImg} alt="UniVerse AI Logo" className="auth-brand-logo" />
-          <span className="auth-brand-text">UniVerse AI</span>
-        </div>
-        <div className="auth-hero-content">
-          <img src={IconLoginImg} alt="Forgot Password Illustration" className="auth-hero-img" />
-          <p className="auth-hero-slogan">
-            Hệ thống hỗ trợ ghép nhóm thông minh, giúp người dùng dễ dàng tìm kiếm những người thành viên phù hợp nhất dựa trên kỹ năng và chuyên ngành để nâng cao hiệu quả.
-          </p>
-        </div>
-      </div>
-
-      {/* ── Right Form ── */}
-      <div className="auth-panel-split">
-        <div className="auth-card-wrapper">
-
-          {/* ════════ BƯỚC 1: NHẬP EMAIL ════════ */}
-          {step === 1 && (
-            <>
-              <div className="auth-header text-center">
-                <h2 className="auth-heading">Quên mật khẩu</h2>
-                <p className="auth-subtitle">
-                  Nhập email liên kết với tài khoản của bạn để nhận mã xác thực.
-                </p>
-              </div>
-
-              <form onSubmit={handleSendOtp} noValidate>
-                <Alert type="danger">{globalErr}</Alert>
-
-                <Input
-                  label="Email"
-                  icon={Mail}
-                  id="forgot-email"
-                  name="email"
-                  type="email"
-                  placeholder="user@example.com"
-                  value={email}
-                  onChange={(e) => { setEmail(e.target.value); if (errors.email) setErrors({}); if (globalErr) setGlobalErr(''); }}
-                  error={errors.email}
-                />
-
-                <Button type="submit" variant="primary" fullWidth loading={loading} className="py-2 fw-bold mt-3">
-                  Gửi mã OTP
-                </Button>
-              </form>
-
-              <div className="auth-footer mt-4 text-center">
-                <Link to="/" className="auth-link d-inline-flex align-items-center gap-1 auth-link-underline">
-                  <ArrowLeft size={16} /> Quay lại đăng nhập
-                </Link>
-              </div>
-            </>
-          )}
-
-          {/* ════════ BƯỚC 2: NHẬP OTP ════════ */}
-          {step === 2 && (
-            <>
-              <div className="auth-header text-center">
-                <h2 className="auth-heading">Nhập mã OTP</h2>
-                <p className="auth-subtitle">
-                  Mã 4 số đã được gửi tới <strong>{email}</strong>. Có hiệu lực trong 15 phút.
-                </p>
-              </div>
-
-              <form onSubmit={handleVerifyOtp} noValidate>
-                <Alert type="danger">{globalErr}</Alert>
-
-                {/* 4 ô nhập OTP */}
-                <div className="otp-box-wrapper">
-                  {otp.map((digit, index) => (
-                    <input
-                      key={index}
-                      ref={otpRefs[index]}
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={1}
-                      value={digit}
-                      onChange={(e) => handleOtpChange(index, e.target.value)}
-                      onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                      onPaste={index === 0 ? handleOtpPaste : undefined}
-                      className={`otp-box${errors.otp ? ' otp-box--error' : ''}`}
-                    />
-                  ))}
-                </div>
-
-                {/* Lỗi OTP */}
-                {errors.otp && (
-                  <p className="text-danger text-center" style={{ fontSize: '13px', marginTop: '-8px', marginBottom: '12px' }}>
-                    {errors.otp}
-                  </p>
-                )}
-
-                <Button type="submit" variant="primary" fullWidth loading={loading} className="py-2 fw-bold mt-2">
-                  Xác nhận
-                </Button>
-              </form>
-
-              <div className="auth-footer mt-4 text-center d-flex justify-content-between">
-                <button
-                  onClick={() => { setStep(1); setOtp(['', '', '', '']); setErrors({}); setGlobalErr(''); }}
-                  className="auth-link auth-link-underline d-inline-flex align-items-center gap-1"
-                >
-                  <ArrowLeft size={16} /> Nhập lại email
-                </button>
-                <button
-                  onClick={handleResendOtp}
-                  disabled={sending}
-                  className="auth-link auth-link-underline"
-                >
-                  {sending ? 'Đang gửi...' : 'Gửi lại mã'}
-                </button>
-              </div>
-            </>
-          )}
-
-        </div>
-      </div>
+  const forgotFooter = step === 1 ? (
+    <Link to="/" className="auth-link d-inline-flex align-items-center gap-1 auth-link-underline">
+      <ArrowLeft size={16} /> Quay lại đăng nhập
+    </Link>
+  ) : (
+    <div className="d-flex justify-content-between align-items-center w-100">
+      <Button
+        variant="cancel"
+        size="sm"
+        onClick={() => { setStep(1); setOtp(['', '', '', '']); setErrors({}); setGlobalErr(''); }}
+        className="d-inline-flex align-items-center gap-1"
+      >
+        <ArrowLeft size={16} /> Nhập lại email
+      </Button>
+      <Button
+        variant="cancel"
+        size="sm"
+        onClick={handleResendOtp}
+        loading={sending}
+      >
+        Gửi lại mã
+      </Button>
     </div>
+  );
+
+  return (
+    <AuthLayout
+      title={step === 1 ? 'Quên mật khẩu' : 'Nhập mã OTP'}
+      subtitle={
+        step === 1
+          ? 'Nhập email liên kết với tài khoản của bạn để nhận mã xác thực.'
+          : <>Mã 4 số đã được gửi tới <strong>{email}</strong>. Có hiệu lực trong 15 phút.</>
+      }
+      footer={forgotFooter}
+    >
+      {/* ════════ BƯỚC 1: NHẬP EMAIL ════════ */}
+      {step === 1 && (
+        <form onSubmit={handleSendOtp} noValidate>
+          <Alert type="danger">{globalErr}</Alert>
+
+          <Input
+            label="Email"
+            icon={Mail}
+            id="forgot-email"
+            name="email"
+            type="email"
+            placeholder="user@example.com"
+            value={email}
+            onChange={(e) => { setEmail(e.target.value); if (errors.email) setErrors({}); if (globalErr) setGlobalErr(''); }}
+            error={errors.email}
+          />
+
+          <Button type="submit" variant="primary" fullWidth loading={loading} className="py-2 fw-bold mt-3">
+            Gửi mã OTP
+          </Button>
+        </form>
+      )}
+
+      {/* ════════ BƯỚC 2: NHẬP OTP ════════ */}
+      {step === 2 && (
+        <form onSubmit={handleVerifyOtp} noValidate>
+          <Alert type="danger">{globalErr}</Alert>
+
+          {/* 4 ô nhập OTP */}
+          <div className="otp-box-wrapper">
+            {otp.map((digit, index) => (
+              <input
+                key={index}
+                ref={otpRefs[index]}
+                type="text"
+                inputMode="numeric"
+                maxLength={1}
+                value={digit}
+                onChange={(e) => handleOtpChange(index, e.target.value)}
+                onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                onPaste={index === 0 ? handleOtpPaste : undefined}
+                className={`otp-box${errors.otp ? ' otp-box--error' : ''}`}
+              />
+            ))}
+          </div>
+
+          {/* Lỗi OTP */}
+          {errors.otp && (
+            <p className="text-danger text-center" style={{ fontSize: '13px', marginTop: '-8px', marginBottom: '12px' }}>
+              {errors.otp}
+            </p>
+          )}
+
+          <Button type="submit" variant="primary" fullWidth loading={loading} className="py-2 fw-bold mt-2">
+            Xác nhận
+          </Button>
+        </form>
+      )}
+    </AuthLayout>
   );
 }

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Badge, Dropdown, Form, InputGroup } from 'react-bootstrap';
+import { Dropdown, Form, InputGroup } from 'react-bootstrap';
 import { FaSearch, FaEllipsisV, FaLaptopCode } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import StatsCards from './StatsCards';
 import ConfirmActionModal from '../../components/ConfirmActionModal';
 import Button from '../../components/Button';
+import Card from '../../components/Card';
 import Pagination from '../../components/Pagination';
 import { getMyProjects, getMyProjectStats, deleteProject } from '../../services/projectService';
 import { PROJECT_STATUS } from '../../constants/projectEnum';
@@ -197,8 +198,8 @@ export default function MyProjectsTab() {
                 {/* Cột 5: Nút Quản lý & Dropdown (Fix cứng 120px, căn phải) */}
                 <div style={{ width: '120px', flex: '0 0 120px' }} className="d-flex align-items-center justify-content-end gap-2 flex-shrink-0">
                   <Button
-                    variant="secondary text-dark border-2"
-                    className="rounded-pill px-3 py-1"
+                    variant="cancel"
+                    className="rounded-pill px-3 py-1 text-dark"
                     style={{ fontSize: '13px' }}
                     onClick={() => navigate(`/manage/${project._id}`)}
                   >
@@ -239,7 +240,7 @@ export default function MyProjectsTab() {
         title="Hủy dự án"
         message="Bạn có chắc chắn muốn hủy bài đăng dự án này? Thao tác này không thể hoàn tác và chỉ có thể thực hiện khi số thành viên chưa đạt mức tối thiểu (50%)."
         confirmText="Hủy dự án"
-        variant="text_dark"
+        variant="danger"
       />
     </div>
   );

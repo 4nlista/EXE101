@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import {
-  Search, Bell, Settings, LogOut, ChevronDown,
+  Search, Bell, Settings, LogOut, ChevronDown, User,
   Users, FolderGit2, MessageSquare, Zap, Plus, ArrowRight
 } from 'lucide-react';
+import Button from '../../components/Button';
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
@@ -61,8 +62,7 @@ export default function AdminDashboard() {
                   <div className="drop-user-email">Chưa cập nhật vai trò</div>
                 </div>
                 <div style={{ padding: '6px 0' }}>
-                  <button className="drop-item"><Settings size={16} /> Cài đặt tài khoản</button>
-                  <button className="drop-item" onClick={() => setShowSetup(true)}><User size={16} /> Cập nhật hồ sơ</button>
+                  <button className="drop-item" onClick={() => navigate('/profile')}><User size={16} /> Xem hồ sơ</button>
                   <div className="drop-sep" />
                   <button className="drop-item danger" onClick={handleLogout}><LogOut size={16} /> Đăng xuất</button>
                 </div>
@@ -81,9 +81,9 @@ export default function AdminDashboard() {
             <h2>Chào mừng Admin trở lại! 👋</h2>
             <p>Trang quản trị hệ thống đang được xây dựng.</p>
           </div>
-          <button className="dash-banner-btn">
+          <Button variant="light" className="text-dark fw-medium d-flex align-items-center gap-1 shadow-sm border" onClick={() => navigate('/manage')}>
             Xem chi tiết <ArrowRight size={16} />
-          </button>
+          </Button>
         </div>
 
         {/* Stats */}
@@ -152,9 +152,9 @@ export default function AdminDashboard() {
                   <div style={{ color: 'var(--text-muted)', fontSize: '0.855rem', marginBottom: 10 }}>
                     Bạn chưa tham gia dự án nào.
                   </div>
-                  <button className="add-proj-btn">
+                  <Button variant="primary" className="d-inline-flex align-items-center gap-1 text-white shadow-sm" onClick={() => navigate('/feed')}>
                     <Plus size={16} /> Tìm hoặc tạo dự án mới
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -172,9 +172,9 @@ export default function AdminDashboard() {
                 <div className="skill-chip">Figma</div>
                 <div className="skill-chip">UI Design</div>
               </div>
-              <button className="btn btn-secondary btn-sm btn-full">
+              <Button variant="cancel" size="sm" className="w-100 text-dark d-flex align-items-center justify-content-center gap-1 shadow-sm border" onClick={() => navigate('/profile')}>
                 <Plus size={14} /> Thêm kỹ năng
-              </button>
+              </Button>
             </div>
           </div>
         </div>

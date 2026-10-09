@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Badge, Nav, Table, Card, Row, Col, Form } from 'react-bootstrap';
+import { Container, Nav, Row, Col, Form } from 'react-bootstrap';
 import { FaArrowLeft, FaEdit, FaStar, FaRegFileAlt, FaDownload } from 'react-icons/fa';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import Button from '../../components/Button';
+import Card from '../../components/Card';
 import ConfirmActionModal from '../../components/ConfirmActionModal';
 import {
   getProjectDetail,
@@ -230,7 +231,7 @@ export default function ProjectManagementDetail() {
 
             <div className="d-flex justify-content-end gap-2">
               {project.status === PROJECT_STATUS.OPEN && members.length < (project.maxMembers / 2) && (
-                <Button variant="dark" className="rounded px-3 text-dark shadow-none" onClick={() => {
+                <Button variant="danger" className="rounded px-3 shadow-none fw-medium text-white" onClick={() => {
                   setConfirmAction({ type: ACTION_TYPES.CHANGE_STATUS, name: 'hủy dự án này', newStatus: PROJECT_STATUS.CANCELLED });
                   setShowConfirm(true);
                 }}>
@@ -240,7 +241,7 @@ export default function ProjectManagementDetail() {
               {project.status === PROJECT_STATUS.CLOSED && (
                 <>
                   {members.length < (project.maxMembers / 2) && (
-                    <Button variant="danger" className="rounded px-3 text-dark shadow-none" onClick={() => {
+                    <Button variant="danger" className="rounded px-3 shadow-none fw-medium text-white" onClick={() => {
                       setConfirmAction({ type: ACTION_TYPES.CHANGE_STATUS, name: 'hủy dự án này', newStatus: PROJECT_STATUS.CANCELLED });
                       setShowConfirm(true);
                     }}>
@@ -334,7 +335,7 @@ export default function ProjectManagementDetail() {
               <option value={APPLICATION_STATUS.REJECTED}>Từ chối</option>
               <option value={APPLICATION_STATUS.EXPIRED}>Đã hết hạn</option>
             </Form.Select>
-            <Button variant="secondary text-dark" size="sm" className="d-flex align-items-center gap-1 rounded px-3" onClick={exportToCSV}>
+            <Button variant="cancel" size="sm" className="d-flex align-items-center gap-1 rounded px-3 text-dark" onClick={exportToCSV}>
               <FaDownload /> Export
             </Button>
           </div>
@@ -389,7 +390,7 @@ export default function ProjectManagementDetail() {
                     </td>
                     <td className="text-muted">{formatDate(app.createdAt)}</td>
                     <td>
-                      <Button variant="outline-primary" size="sm" className="rounded-pill d-flex align-items-center gap-1" disabled title="Tính năng VIP/Premium">
+                      <Button variant="cancel" size="sm" className="rounded-pill d-flex align-items-center gap-1 text-primary" disabled title="Tính năng VIP/Premium">
                         <FaStar className="text-warning" /> Match
                       </Button>
                     </td>
@@ -455,7 +456,7 @@ export default function ProjectManagementDetail() {
             {/* Phân trang */}
             <div className="d-flex justify-content-center align-items-center gap-3 mt-3">
               <Button
-                variant="light border"
+                variant="cancel"
                 size="sm"
                 className="px-3"
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
@@ -465,7 +466,7 @@ export default function ProjectManagementDetail() {
               </Button>
               <span className="text-dark fw-semibold" style={{ fontSize: '14px' }}>{currentPage} / {totalPages}</span>
               <Button
-                variant="light border"
+                variant="cancel"
                 size="sm"
                 className="px-3"
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
@@ -498,8 +499,8 @@ export default function ProjectManagementDetail() {
                       <div className="d-flex flex-column gap-2 mt-auto w-100">
                         <div className="d-flex gap-2 w-100">
                           <Button
-                            variant="info text-white"
-                            className="w-50 rounded-pill"
+                            variant="info"
+                            className="w-50 rounded-pill text-white"
                             onClick={() => navigate(`/profile/${member.userId._id}`)}
                             style={{ fontSize: '13px' }}
                           >Profile</Button>

@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Container, Row, Col, Card, Badge, Spinner } from 'react-bootstrap';
+import { Container, Row, Col } from 'react-bootstrap';
 import { Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../components/Button';
+import Card from '../../components/Card';
+import StatusBadge from '../../components/StatusBadge';
 import paymentService from '../../services/paymentService';
 import { useAuth } from '../../contexts/AuthContext';
 import { PACKAGE_TYPE } from '../../constants/subscriptionEnum';
@@ -150,9 +152,11 @@ export default function Subscription() {
                 {/* Badge nhãn nổi bật */}
                 {pkg.badgeText && (
                   <div className="position-absolute top-0 end-0 p-3" style={{ zIndex: 2 }}>
-                    <Badge bg={pkg.badgeBg} text={pkg.badgeBg === 'warning' ? 'dark' : 'white'} className="px-2 py-1 shadow-sm">
-                      {pkg.badgeText}
-                    </Badge>
+                    <StatusBadge
+                      variant={pkg.badgeBg}
+                      text={pkg.badgeText}
+                      className="px-2 py-1 shadow-sm"
+                    />
                   </div>
                 )}
 
@@ -166,7 +170,7 @@ export default function Subscription() {
                     </div>
                     {isCurrent ? (
                       <div className="d-flex flex-column align-items-center">
-                        <Badge bg="success" className="px-3 py-1 shadow-sm mb-1">Gói hiện tại</Badge>
+                        <StatusBadge variant="success" text="Gói hiện tại" className="px-3 py-1 shadow-sm mb-1" />
                         {currentUser?.subscriptionEndDate && !isFree && (
                           <small className="text-dark" style={{ fontSize: '1.0rem' }}>
                             {calculateDaysLeft(currentUser.subscriptionEndDate)} ({formatDate(currentUser.subscriptionEndDate).split(' ')[0]})

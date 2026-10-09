@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Badge, Spinner, Button as BsButton, Pagination } from 'react-bootstrap';
+import { Container, Spinner } from 'react-bootstrap';
 import { Bell, Check, CheckCircle2, User, FileText, Zap, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import notificationService from '../../services/notificationService';
@@ -7,6 +7,9 @@ import { NOTIFICATION_TYPE } from '../../constants/notificationEnum';
 import { useSocket } from '../../contexts/SocketContext';
 import { toast } from 'react-toastify';
 import { getProjectDetail } from '../../services/projectService';
+import Button from '../../components/Button';
+import Card from '../../components/Card';
+import Pagination from '../../components/Pagination';
 
 const timeAgo = (date) => {
   const seconds = Math.floor((new Date() - new Date(date)) / 1000);
@@ -145,37 +148,39 @@ export default function Notifications() {
     <Container className="py-4" style={{ maxWidth: '1200px' }}>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div className="d-flex align-items-center gap-3">
-          <BsButton 
-            variant="light" 
+          <Button 
+            variant="cancel" 
             className="rounded-circle p-2 d-flex align-items-center justify-content-center bg-white shadow-sm border"
             onClick={() => navigate(-1)}
           >
-            <ArrowLeft size={22} className="text-dark" />
-          </BsButton>
+            <ArrowLeft size={20} className="text-dark" />
+          </Button>
           <h2 className="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
             <Bell size={26} className="text-dark" />
             Thông báo
           </h2>
         </div>
-        <BsButton variant="light" onClick={handleMarkAllRead} className="d-flex align-items-center gap-2 text-dark shadow-sm border fw-medium">
+        <Button variant="cancel" onClick={handleMarkAllRead} className="d-flex align-items-center gap-2 text-dark shadow-sm border fw-medium">
           <Check size={18} /> Đánh dấu tất cả đã đọc
-        </BsButton>
+        </Button>
       </div>
 
-      <Card className="shadow-sm rounded-2 overflow-hidden border">
+      <Card className="shadow-sm rounded-3 overflow-hidden border">
         <div className="d-flex px-4 pt-3 pb-2 border-bottom bg-white gap-3">
-          <button
-            className={`btn rounded-2 px-4 py-2 ${activeTab === 'ALL' ? 'btn-primary shadow-sm' : 'btn-light text-dark fw-medium border'}`}
+          <Button
+            variant={activeTab === 'ALL' ? 'primary' : 'cancel'}
+            className="rounded-2 px-4 py-2"
             onClick={() => setActiveTab('ALL')}
           >
             Tất cả
-          </button>
-          <button
-            className={`btn rounded-2 px-4 py-2 ${activeTab === 'UNREAD' ? 'btn-primary shadow-sm' : 'btn-light text-dark fw-medium border'}`}
+          </Button>
+          <Button
+            variant={activeTab === 'UNREAD' ? 'primary' : 'cancel'}
+            className="rounded-2 px-4 py-2"
             onClick={() => setActiveTab('UNREAD')}
           >
             Chưa đọc
-          </button>
+          </Button>
         </div>
 
         <Card.Body className="p-0">
@@ -237,26 +242,11 @@ export default function Notifications() {
 
               {totalPages > 1 && (
                 <div className="d-flex justify-content-center p-3 bg-light border-top">
-                  <Pagination className="mb-0">
-                    <Pagination.Prev 
-                      onClick={() => handlePageChange(page - 1)} 
-                      disabled={page === 1 || loading} 
-                    />
-                    {[...Array(totalPages)].map((_, idx) => (
-                      <Pagination.Item 
-                        key={idx + 1} 
-                        active={page === idx + 1}
-                        onClick={() => handlePageChange(idx + 1)}
-                        disabled={loading}
-                      >
-                        {idx + 1}
-                      </Pagination.Item>
-                    ))}
-                    <Pagination.Next 
-                      onClick={() => handlePageChange(page + 1)} 
-                      disabled={page === totalPages || loading} 
-                    />
-                  </Pagination>
+                  <Pagination
+                    currentPage={page}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                  />
                 </div>
               )}
             </>
