@@ -7,12 +7,12 @@ import Alert from '../../components/Alert';
 import { Sparkles, Send, PanelLeftOpen, PanelLeftClose, Pencil, Trash2, Check, X, Lock } from 'lucide-react';
 import { AI_SENDER } from '../../constants/aiEnum';
 
-const DEFAULT_SUGGESTIONS = [
-  'Tìm dự án phù hợp với kỹ năng của mình',
-  'Giải thích kiến trúc MVC',
-  'Tạo sơ đồ ERD',
-  'Có dự án nào cần Frontend Developer không?'
-];
+// const DEFAULT_SUGGESTIONS = [
+//   'Tìm dự án phù hợp với kỹ năng của mình',
+//   'Giải thích kiến trúc MVC',
+//   'Tạo sơ đồ ERD',
+//   'Có dự án nào cần Frontend Developer không?'
+// ];
 
 const AIChat = ({
   messages,
@@ -20,8 +20,6 @@ const AIChat = ({
   inputMessage,
   setInputMessage,
   onSendMessage,
-  onQuickSuggestion,
-  isFirstMessage,
   isFreePackage,
   currentSessionId,
   currentSession,
@@ -29,7 +27,6 @@ const AIChat = ({
   onDeleteSession,
   errorMsg,
   onViewProject,
-  isLoadingProject,
   isSidebarOpen,
   setIsSidebarOpen,
   onToggleSidebar,

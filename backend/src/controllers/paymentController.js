@@ -64,18 +64,33 @@ exports.getMyTransactions = async (req, res, next) => {
 // API để SePay gọi tới mỗi khi nhận được tiền
 exports.sepayWebhook = async (req, res) => {
   try {
-    const apiKey = req.headers['authorization']?.split(' ')[1];
-    
-    // Nếu có cài API Key trong môi trường thì phải check xem SePay bắn có đúng Key không
-    if (process.env.SEPAY_API_KEY && apiKey !== process.env.SEPAY_API_KEY) {
-      return res.status(401).json({ success: false, message: 'Unauthorized Webhook' });
+    console.log('🔔 [SePay Webhook] Nhận yêu cầu Webhook từ SePay:');
+    console.log('   - Headers Authorization:', req.headers['authorization']);
+    console.log('   - Body:', JSON.stringify(req.body));
+
+    // Lấy API key từ các kiểu header phổ biến (Apikey, Bearer, raw key hoặc x-api-key)
+    const authHeader = req.headers['authorization'] || req.headers['x-api-key'] || '';
+    let incomingKey = authHeader.trim();
+    if (incomingKey.toLowerCase().startsWith('apikey ') || incomingKey.toLowerCase().startsWith('bearer ')) {
+      incomingKey = incomingKey.split(' ')[1]?.trim();
+    }
+
+    // Nếu trên server có cấu hình SEPAY_API_KEY
+    if (process.env.SEPAY_API_KEY && process.env.SEPAY_API_KEY.trim()) {
+      const expectedKey = process.env.SEPAY_API_KEY.trim();
+      // Nếu SePay có gửi key nhưng không khớp
+      if (incomingKey && incomingKey !== expectedKey) {
+        console.warn(`❌ [SePay Webhook] Từ chối: API Key không khớp! (Nhận: "${incomingKey}", Kỳ vọng: "${expectedKey}")`);
+        return res.status(401).json({ success: false, message: 'Unauthorized Webhook: API Key không khớp' });
+      }
     }
 
     const result = await paymentService.sepayWebhook(req);
     // SePay yêu cầu trả HTTP Status 200 kèm JSON { success: true }
+    console.log('✅ [SePay Webhook] Xử lý thành công:', result);
     res.status(200).json(result);
   } catch (error) {
-    console.error('SePay Webhook Error:', error);
+    console.error('❌ [SePay Webhook Error]:', error);
     res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 };

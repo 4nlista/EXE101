@@ -8,7 +8,6 @@ import StatusBadge from '../../components/StatusBadge';
 import paymentService from '../../services/paymentService';
 import { useAuth } from '../../contexts/AuthContext';
 import { PACKAGE_TYPE } from '../../constants/subscriptionEnum';
-import { TRANSACTION_STATUS } from '../../constants/transactionEnum';
 import { formatDate, calculateDaysLeft } from '../../utils/formatDate';
 
 // Cấu hình thông tin các gói dịch vụ (Tái sử dụng dữ liệu - Clean Code)

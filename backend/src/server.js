@@ -14,12 +14,16 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 
-// Routes cơ bản
+// Route kiểm tra server hoạt động
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to EXE101 Backend!' });
 });
 
-// Import tập hợp routes (sẽ tạo sau)
+// Hỗ trợ webhook SePay ở mọi biến thể URL (kể cả khi SePay cấu hình bắn thẳng vào root domain /)
+const paymentController = require('./controllers/paymentController');
+app.post(['/', '/payment/sepay_webhook', '/payment/sepay-webhook', '/sepay_webhook', '/sepay-webhook'], paymentController.sepayWebhook);
+
+// Import tập hợp routes chính
 app.use('/api', require('./routes'));
 
 // Global Error Handler (phải nằm cuối cùng)

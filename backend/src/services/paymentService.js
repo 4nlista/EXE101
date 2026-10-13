@@ -87,25 +87,30 @@ exports.sepayWebhook = async (req) => {
 
   // Lọc lấy các giao dịch Nạp tiền (in)
   if (transferType !== 'in') {
+    console.log(`ℹ️ [SePay Webhook] Bỏ qua giao dịch không phải nạp tiền (transferType = ${transferType})`);
     return { success: true, message: 'Bỏ qua giao dịch rút tiền' };
   }
 
   // Tìm orderId trong nội dung chuyển khoản bằng Regex
-  // Hỗ trợ cả trường hợp có hoặc không có khoảng trắng: "EXE101 64e2b..." hoặc "EXE10164e2b..."
-  const match = content.match(/EXE101\s*([a-f0-9]{24})/i);
+  // Hỗ trợ linh hoạt: "EXE101 64e2b...", "EXE101_64e2b...", "EXE101-64e2b...", "EXE10164e2b..." hoặc trực tiếp mã ObjectId 24 ký tự
+  const match = content ? content.match(/(?:EXE101[\s\-_]*)?([a-f0-9]{24})/i) : null;
   if (!match) {
+    console.warn('⚠️ [SePay Webhook] Không tìm thấy orderId trong nội dung chuyển khoản:', content);
     return { success: true, message: 'Giao dịch không chứa mã Order của hệ thống' };
   }
 
   const orderId = match[1];
+  console.log(`🔍 [SePay Webhook] Đã trích xuất orderId: ${orderId} từ nội dung: "${content}"`);
 
   const transaction = await Transaction.findById(orderId);
   if (!transaction) {
+    console.warn(`⚠️ [SePay Webhook] Không tìm thấy Transaction trong DB với orderId: ${orderId}`);
     return { success: true, message: 'Order không tồn tại trên hệ thống' };
   }
 
   // Nếu giao dịch đã được xác nhận thành công trước đó thì bỏ qua (tránh xử lý trùng)
   if (transaction.status === TRANSACTION_STATUS.SUCCESS) {
+    console.log(`ℹ️ [SePay Webhook] Đơn ${orderId} đã được xác nhận thành công trước đó, bỏ qua xử lý lặp.`);
     return { success: true, message: 'Giao dịch này đã được xác nhận trước đó' };
   }
 
