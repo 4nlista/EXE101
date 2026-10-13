@@ -141,8 +141,8 @@ export default function PublicProfilePage() {
     formData.append('phone', editData.phone);
     formData.append('address', editData.address);
     formData.append('dob', editData.dob);
-    if (editData.departmentId) formData.append('departmentId', editData.departmentId);
-    if (editData.majorId) formData.append('majorId', editData.majorId);
+    formData.append('departmentId', editData.departmentId || '');
+    formData.append('majorId', editData.majorId || '');
     formData.append('semester', editData.semester);
     formData.append('gpa', editData.gpa);
 

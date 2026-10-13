@@ -39,6 +39,7 @@ export default function ProfileHeader({
     || (departments.find(d => String(d._id) === String(profileData.departmentId))?.name)
     || 'Chưa cập nhật ngành';
   const currentMajorName = profileData.majorId?.name
+    || (majors.find(m => String(m._id) === String(profileData.majorId))?.name)
     || (profileData.departmentId && majors.length === 0 ? 'Không phân chuyên ngành' : 'Chưa cập nhật chuyên ngành');
 
   return (
