@@ -1,5 +1,5 @@
 import React from 'react';
-import { Camera, SquarePen, Check, X, MessageSquare, UserPlus, Building, GraduationCap, CalendarDays } from 'lucide-react';
+import { Camera, SquarePen, Check, X, MessageSquare, Building, GraduationCap, CalendarDays } from 'lucide-react';
 import { Form } from 'react-bootstrap';
 import Button from '../../../components/Button';
 import { useDepartments, useMajors } from '../../../hooks/useMasterData';
@@ -190,10 +190,9 @@ export default function ProfileHeader({
               </Button>
             )
           ) : (
-            <>
-              <Button variant="primary" className="fw-semibold d-flex align-items-center gap-1 px-3 py-2" onClick={handleStartChat}><MessageSquare size={16} /> Gửi tin nhắn</Button>
-              <Button variant="secondary" className="fw-semibold d-flex align-items-center gap-1 px-3 py-2"><UserPlus size={16} /> Kết nối</Button>
-            </>
+            <Button variant="primary" className="fw-semibold d-flex align-items-center gap-1 px-3 py-2" onClick={handleStartChat}>
+              <MessageSquare size={16} /> Gửi tin nhắn
+            </Button>
           )}
         </div>
 
