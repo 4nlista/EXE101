@@ -108,16 +108,48 @@ export default function ProjectCard({
         </Card.Title>
 
         {/* Ngành tuyển dụng của dự án */}
-        {(project.departmentIds?.[0]?.name || project.ownerId?.departmentId?.name) && (
+        {project.departmentTargets && project.departmentTargets.length > 0 ? (
+          <div className="mb-2 d-flex flex-wrap gap-1">
+            {project.departmentTargets.map((target, idx) => (
+              <Badge
+                key={target._id || idx}
+                bg="light"
+                text="secondary"
+                className="d-flex align-items-center px-2 py-1 border fw-normal rounded-2"
+                style={{ fontSize: '0.72rem' }}
+              >
+                <BookOpen size={11} className="me-1 flex-shrink-0" />
+                <span>
+                  {target.departmentId?.name || 'Ngành'}: <strong className="text-dark">{target.neededCount}</strong>
+                </span>
+              </Badge>
+            ))}
+          </div>
+        ) : (project.departmentIds && project.departmentIds.length > 0) ? (
+          <div className="mb-2 d-flex flex-wrap gap-1">
+            {project.departmentIds.map((dept, idx) => (
+              <Badge
+                key={dept._id || idx}
+                bg="light"
+                text="secondary"
+                className="d-flex align-items-center px-2 py-1 border fw-normal rounded-2"
+                style={{ fontSize: '0.72rem' }}
+              >
+                <BookOpen size={11} className="me-1 flex-shrink-0" />
+                <span>{dept.name || dept}</span>
+              </Badge>
+            ))}
+          </div>
+        ) : project.ownerId?.departmentId?.name ? (
           <div className="mb-2">
             <Badge bg="light" text="secondary" className="d-flex align-items-center d-inline-flex px-2 py-1 border fw-normal rounded-2 text-truncate" style={{ maxWidth: '100%' }}>
               <BookOpen size={11} className="me-1 flex-shrink-0" />
               <span className="text-truncate" style={{ fontSize: '0.72rem' }}>
-                {project.departmentIds?.[0]?.name || project.ownerId?.departmentId?.name}
+                {project.ownerId?.departmentId?.name}
               </span>
             </Badge>
           </div>
-        )}
+        ) : null}
 
         {/* Hàng 3: Mô tả */}
         <Card.Text

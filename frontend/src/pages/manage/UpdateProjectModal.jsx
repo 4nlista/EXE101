@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col } from 'react-bootstrap';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Row, Col, Form } from 'react-bootstrap';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Modal from '../../components/Modal';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
-import Select from '../../components/Select';
 import Alert from '../../components/Alert';
-import { masterDataService } from '../../services/masterDataService';
+import { Plus, Trash2 } from 'lucide-react';
 import { useDepartments } from '../../hooks/useMasterData';
 import { updateProject } from '../../services/projectService';
 import { toast } from 'react-toastify';
@@ -19,9 +18,8 @@ export default function UpdateProjectModal({ show, onHide, project, onSuccess })
     title: '',
     description: '',
     candidateRequirements: '',
-    departmentIds: '', 
+    departmentTargets: [{ departmentId: '', neededCount: 1 }],
     gradeTarget: '',
-    maxMembers: '',
     deadline: ''
   });
 
@@ -36,19 +34,37 @@ export default function UpdateProjectModal({ show, onHide, project, onSuccess })
   // Initialize form with project data
   useEffect(() => {
     if (project && show) {
+      let initTargets = [{ departmentId: '', neededCount: 1 }];
+      if (project.departmentTargets && project.departmentTargets.length > 0) {
+        initTargets = project.departmentTargets.map((t) => ({
+          departmentId: t.departmentId?._id || t.departmentId || '',
+          neededCount: t.neededCount || 1
+        }));
+      } else if (project.departmentIds && project.departmentIds.length > 0) {
+        initTargets = project.departmentIds.map((deptId, idx) => ({
+          departmentId: deptId?._id || deptId || '',
+          neededCount: idx === 0 ? (project.maxMembers || 1) : 1
+        }));
+      }
+
       setFormData({
         title: project.title || '',
         description: project.description || '',
         candidateRequirements: project.candidateRequirements || '',
-        departmentIds: project.departmentIds?.[0]?._id || project.departmentIds?.[0] || '',
+        departmentTargets: initTargets,
         gradeTarget: project.gradeTarget !== undefined ? project.gradeTarget : '',
-        maxMembers: project.maxMembers || '',
         deadline: project.deadline ? new Date(project.deadline).toISOString().split('T')[0] : ''
       });
       setErrors({});
       setServerError('');
     }
   }, [project, show]);
+
+  // Tính tổng số lượng tuyển tự động từ các ngành
+  const totalNeededMembers = formData.departmentTargets.reduce(
+    (sum, item) => sum + (parseInt(item.neededCount, 10) || 0),
+    0
+  );
 
   // Mutation
   const updateMutation = useMutation({
@@ -74,9 +90,50 @@ export default function UpdateProjectModal({ show, onHide, project, onSuccess })
     if (serverError) setServerError('');
   };
 
+  // Thêm một ngành cần tuyển
+  const handleAddDepartmentTarget = () => {
+    setFormData((prev) => ({
+      ...prev,
+      departmentTargets: [...prev.departmentTargets, { departmentId: '', neededCount: 1 }]
+    }));
+  };
+
+  // Xóa một ngành cần tuyển
+  const handleRemoveDepartmentTarget = (index) => {
+    setFormData((prev) => ({
+      ...prev,
+      departmentTargets: prev.departmentTargets.filter((_, idx) => idx !== index)
+    }));
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next[`departmentTarget_${index}`];
+      delete next[`departmentTargetCount_${index}`];
+      delete next.departmentTargets;
+      return next;
+    });
+  };
+
+  // Cập nhật thông tin ngành hoặc số lượng trong hàng tuyển dụng
+  const handleDepartmentTargetChange = (index, field, value) => {
+    setFormData((prev) => {
+      const updated = [...prev.departmentTargets];
+      updated[index] = { ...updated[index], [field]: value };
+      return { ...prev, departmentTargets: updated };
+    });
+    if (errors[`departmentTarget_${index}`] || errors[`departmentTargetCount_${index}`] || errors.departmentTargets) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[`departmentTarget_${index}`];
+        delete next[`departmentTargetCount_${index}`];
+        delete next.departmentTargets;
+        return next;
+      });
+    }
+  };
+
   const validate = () => {
     const newErrors = {};
-    const { title, description, candidateRequirements, departmentIds, gradeTarget, maxMembers, deadline } = formData;
+    const { title, description, candidateRequirements, departmentTargets, gradeTarget, deadline } = formData;
 
     if (!title.trim()) newErrors.title = 'Vui lòng nhập tiêu đề dự án.';
     else if (title.length > 150) newErrors.title = 'Tiêu đề dự án không vượt quá 150 ký tự.';
@@ -87,13 +144,28 @@ export default function UpdateProjectModal({ show, onHide, project, onSuccess })
     if (!candidateRequirements.trim()) newErrors.candidateRequirements = 'Vui lòng nhập yêu cầu ứng viên.';
     else if (candidateRequirements.length > 2000) newErrors.candidateRequirements = 'Yêu cầu ứng viên không vượt quá 2000 ký tự.';
 
-    if (!departmentIds) newErrors.departmentIds = 'Vui lòng chọn ngành học liên quan.';
+    // Kiểm tra danh sách ngành tuyển dụng
+    if (!departmentTargets || departmentTargets.length === 0) {
+      newErrors.departmentTargets = 'Vui lòng chọn ít nhất một ngành học cần tuyển.';
+    } else {
+      const selectedDeptIds = new Set();
+      departmentTargets.forEach((target, index) => {
+        if (!target.departmentId) {
+          newErrors[`departmentTarget_${index}`] = 'Vui lòng chọn ngành học.';
+        } else if (selectedDeptIds.has(target.departmentId)) {
+          newErrors[`departmentTarget_${index}`] = 'Ngành học này đã được chọn ở dòng trên.';
+        } else {
+          selectedDeptIds.add(target.departmentId);
+        }
+
+        if (!target.neededCount || Number(target.neededCount) < 1) {
+          newErrors[`departmentTargetCount_${index}`] = 'Tối thiểu 1 người.';
+        }
+      });
+    }
 
     if (gradeTarget === '') newErrors.gradeTarget = 'Vui lòng nhập mục tiêu điểm.';
     else if (Number(gradeTarget) < 0 || Number(gradeTarget) > 10) newErrors.gradeTarget = 'Mục tiêu điểm từ 0 đến 10.';
-
-    if (!maxMembers) newErrors.maxMembers = 'Vui lòng chọn số lượng cần tuyển.';
-    else if (Number(maxMembers) < 1) newErrors.maxMembers = 'Số lượng tuyển tối thiểu là 1.';
 
     if (!deadline) newErrors.deadline = 'Vui lòng chọn hạn ứng tuyển.';
     else {
@@ -113,10 +185,17 @@ export default function UpdateProjectModal({ show, onHide, project, onSuccess })
     e.preventDefault();
     if (validate()) {
       const payload = {
-        ...formData,
-        departmentIds: [formData.departmentIds],
+        title: formData.title.trim(),
+        description: formData.description.trim(),
+        candidateRequirements: formData.candidateRequirements.trim(),
         gradeTarget: Number(formData.gradeTarget),
-        maxMembers: Number(formData.maxMembers)
+        deadline: formData.deadline,
+        departmentTargets: formData.departmentTargets.map((item) => ({
+          departmentId: item.departmentId,
+          neededCount: Number(item.neededCount)
+        })),
+        departmentIds: Array.from(new Set(formData.departmentTargets.map((item) => item.departmentId))),
+        maxMembers: totalNeededMembers
       };
       updateMutation.mutate(payload);
     }
@@ -192,25 +271,104 @@ export default function UpdateProjectModal({ show, onHide, project, onSuccess })
             </div>
           </div>
 
+          {/* Danh sách ngành cần tuyển & Số lượng */}
+          <div className="mb-3 p-3 bg-light rounded-3 border">
+            <div className="d-flex justify-content-between align-items-center mb-2">
+              <span className="fw-semibold small text-dark">
+                Ngành cần tuyển & Chỉ tiêu <span className="text-danger">*</span>
+              </span>
+              <span className="badge bg-white text-secondary border px-2 py-1 small">
+                Tổng cần tuyển: <strong style={{ color: '#ea580c' }}>{totalNeededMembers}</strong> ứng viên
+              </span>
+            </div>
+
+            {errors.departmentTargets && (
+              <div className="text-danger small mb-2">{errors.departmentTargets}</div>
+            )}
+
+            <div className="d-flex flex-column gap-2">
+              {formData.departmentTargets.map((target, idx) => {
+                const deptError = errors[`departmentTarget_${idx}`];
+                const countError = errors[`departmentTargetCount_${idx}`];
+
+                return (
+                  <div key={idx} className="d-flex align-items-start gap-2">
+                    {/* Chọn ngành */}
+                    <div className="flex-grow-1">
+                      <Form.Select
+                        size="sm"
+                        value={target.departmentId}
+                        onChange={(e) => handleDepartmentTargetChange(idx, 'departmentId', e.target.value)}
+                        isInvalid={!!deptError}
+                      >
+                        <option value="">-- Chọn ngành học --</option>
+                        {departments.map((dept) => (
+                          <option key={dept._id} value={dept._id}>
+                            {dept.name}
+                          </option>
+                        ))}
+                      </Form.Select>
+                      {deptError && (
+                        <Form.Control.Feedback type="invalid" className="d-block small" style={{ fontSize: '0.75rem' }}>
+                          {deptError}
+                        </Form.Control.Feedback>
+                      )}
+                    </div>
+
+                    {/* Số lượng */}
+                    <div style={{ width: '135px' }}>
+                      <div className="input-group input-group-sm">
+                        <input
+                          type="number"
+                          min="1"
+                          step="1"
+                          className={`form-control ${countError ? 'is-invalid' : ''}`}
+                          placeholder="Số lượng"
+                          value={target.neededCount}
+                          onChange={(e) => handleDepartmentTargetChange(idx, 'neededCount', e.target.value)}
+                        />
+                        <span className="input-group-text text-muted" style={{ fontSize: '0.75rem' }}>người</span>
+                      </div>
+                      {countError && (
+                        <div className="text-danger small mt-1" style={{ fontSize: '0.75rem' }}>
+                          {countError}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Nút xóa dòng (chỉ hiện khi có từ 2 dòng trở lên) */}
+                    {formData.departmentTargets.length > 1 && (
+                      <button
+                        type="button"
+                        className="btn btn-outline-danger btn-sm p-1 d-flex align-items-center justify-content-center"
+                        style={{ width: '31px', height: '31px' }}
+                        onClick={() => handleRemoveDepartmentTarget(idx)}
+                        title="Xóa ngành này"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Nút thêm ngành */}
+            <div className="mt-2 pt-1">
+              <button
+                type="button"
+                className="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1"
+                onClick={handleAddDepartmentTarget}
+                style={{ fontSize: '0.8rem' }}
+              >
+                <Plus size={14} />
+                <span>Thêm ngành cần tuyển</span>
+              </button>
+            </div>
+          </div>
+
           <Row className="g-3">
             <Col md={6}>
-              {/* Ngành học */}
-              <div className="mb-2">
-                <Select
-                  label={<span>Ngành học <span className="text-danger">*</span></span>}
-                  name="departmentIds"
-                  value={formData.departmentIds}
-                  onChange={handleChange}
-                  error={errors.departmentIds}
-                  className="mb-0"
-                >
-                  <option value="">Chọn ngành học...</option>
-                  {departments.map((dept) => (
-                    <option key={dept._id} value={dept._id}>{dept.name}</option>
-                  ))}
-                </Select>
-              </div>
-
               {/* Mục tiêu điểm */}
               <div className="mb-1">
                 <Input
@@ -229,22 +387,6 @@ export default function UpdateProjectModal({ show, onHide, project, onSuccess })
             </Col>
 
             <Col md={6}>
-              {/* Số lượng tuyển */}
-              <div className="mb-2">
-                <Input
-                  type="number"
-                  min="1"
-                  step="1"
-                  label={<span>Số lượng tuyển <span className="text-danger">*</span></span>}
-                  name="maxMembers"
-                  placeholder="Nhập số lượng ứng viên..."
-                  value={formData.maxMembers}
-                  onChange={handleChange}
-                  error={errors.maxMembers}
-                  className="mb-0"
-                />
-              </div>
-
               {/* Hạn ứng tuyển */}
               <div className="mb-1">
                 <Input

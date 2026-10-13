@@ -89,6 +89,7 @@ const getProjects = async (query, userId = null) => {
       populate: { path: 'departmentId', select: 'name' }
     })
     .populate('departmentIds', 'name')
+    .populate('departmentTargets.departmentId', 'name')
     .sort(sortOrder)
     .skip(skip)
     .limit(parseInt(limit));
@@ -164,6 +165,7 @@ const createProject = async (projectData, ownerId) => {
     description,
     candidateRequirements,
     departmentIds,
+    departmentTargets,
     gradeTarget,
     maxMembers,
     deadline
@@ -186,14 +188,26 @@ const createProject = async (projectData, ownerId) => {
     throw err;
   }
 
+  // 3. Tự động chuẩn hóa ngành tuyển dụng và tổng số thành viên
+  let finalDepartmentIds = departmentIds || [];
+  let finalMaxMembers = maxMembers;
+
+  if (departmentTargets && Array.isArray(departmentTargets) && departmentTargets.length > 0) {
+    // Trích xuất danh sách ID ngành (không trùng lặp) để tương thích bộ lọc
+    finalDepartmentIds = Array.from(new Set(departmentTargets.map(t => t.departmentId.toString())));
+    // Tự động tính tổng số lượng tuyển
+    finalMaxMembers = departmentTargets.reduce((sum, t) => sum + Number(t.neededCount || 0), 0);
+  }
+
   const newProject = new Project({
     ownerId,
     title,
     description,
     candidateRequirements,
-    departmentIds,
+    departmentIds: finalDepartmentIds,
+    departmentTargets: departmentTargets || [],
     gradeTarget,
-    maxMembers,
+    maxMembers: finalMaxMembers,
     deadline
   });
 
@@ -221,6 +235,7 @@ const getMyProjects = async (ownerId, query) => {
   const [projects, total] = await Promise.all([
     Project.find(filter)
       .populate('departmentIds', 'name')
+      .populate('departmentTargets.departmentId', 'name')
       .sort(sortOrder)
       .skip(skip)
       .limit(parseInt(limit)),
@@ -265,6 +280,7 @@ const getMyProjectStats = async (ownerId) => {
 const getProjectDetail = async (projectId) => {
   const project = await Project.findById(projectId)
     .populate('departmentIds', 'name')
+    .populate('departmentTargets.departmentId', 'name')
     .populate('ownerId', 'name avatar');
   
   if (!project) throw new Error('Không tìm thấy dự án.');
@@ -276,6 +292,12 @@ const updateProject = async (projectId, ownerId, updateData) => {
   if (!project) throw new Error('Không tìm thấy dự án hoặc bạn không có quyền sửa.');
   if (project.status !== PROJECT_STATUS.OPEN) {
     throw new Error('Chỉ có thể chỉnh sửa khi dự án đang mở tuyển (OPEN).');
+  }
+
+  // Tự động chuẩn hóa ngành tuyển dụng và tổng số thành viên nếu có departmentTargets
+  if (updateData.departmentTargets && Array.isArray(updateData.departmentTargets) && updateData.departmentTargets.length > 0) {
+    updateData.departmentIds = Array.from(new Set(updateData.departmentTargets.map(t => t.departmentId.toString())));
+    updateData.maxMembers = updateData.departmentTargets.reduce((sum, t) => sum + Number(t.neededCount || 0), 0);
   }
 
   Object.assign(project, updateData);

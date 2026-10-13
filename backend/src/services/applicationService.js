@@ -139,8 +139,11 @@ const getMyApplications = async (applicantId, query) => {
     Application.find(filter)
       .populate({
         path: 'projectId',
-        select: 'title departmentIds deadline status maxMembers members ownerId gradeTarget',
-        populate: { path: 'departmentIds', select: 'name' }
+        select: 'title departmentIds departmentTargets deadline status maxMembers members ownerId gradeTarget',
+        populate: [
+          { path: 'departmentIds', select: 'name' },
+          { path: 'departmentTargets.departmentId', select: 'name' }
+        ]
       })
       .sort({ createdAt: -1 })
       .skip(skip)

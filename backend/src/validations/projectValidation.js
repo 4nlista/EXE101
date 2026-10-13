@@ -19,10 +19,26 @@ const createProjectSchema = Joi.object({
     'string.max': 'Yêu cầu ứng viên không vượt quá 2000 ký tự.',
     'any.required': 'Vui lòng nhập yêu cầu ứng viên.'
   }),
-  departmentIds: Joi.array().items(Joi.string().regex(/^[0-9a-fA-F]{24}$/).message('ID ngành học không hợp lệ.')).min(1).required().messages({
+  departmentIds: Joi.array().items(Joi.string().regex(/^[0-9a-fA-F]{24}$/).message('ID ngành học không hợp lệ.')).min(1).optional().messages({
     'array.base': 'Ngành học phải là một danh sách.',
-    'array.min': 'Vui lòng chọn ít nhất một ngành học.',
-    'any.required': 'Vui lòng chọn ngành học liên quan.'
+    'array.min': 'Vui lòng chọn ít nhất một ngành học.'
+  }),
+  departmentTargets: Joi.array().items(
+    Joi.object({
+      departmentId: Joi.string().regex(/^[0-9a-fA-F]{24}$/).required().messages({
+        'string.pattern.base': 'ID ngành học không hợp lệ.',
+        'any.required': 'Vui lòng chọn ngành học.'
+      }),
+      neededCount: Joi.number().integer().min(1).required().messages({
+        'number.base': 'Số lượng tuyển phải là một số.',
+        'number.integer': 'Số lượng tuyển phải là số nguyên.',
+        'number.min': 'Số lượng tuyển tối thiểu cho mỗi ngành là 1 người.',
+        'any.required': 'Vui lòng nhập số lượng cần tuyển.'
+      })
+    })
+  ).min(1).optional().messages({
+    'array.base': 'Danh sách ngành cần tuyển phải là một mảng.',
+    'array.min': 'Vui lòng chọn ít nhất một ngành học cần tuyển.'
   }),
   gradeTarget: Joi.number().min(0).max(10).required().messages({
     'number.base': 'Mục tiêu điểm phải là một số.',
@@ -30,11 +46,10 @@ const createProjectSchema = Joi.object({
     'number.max': 'Mục tiêu điểm không được lớn hơn 10.',
     'any.required': 'Vui lòng nhập mục tiêu điểm dự án.'
   }),
-  maxMembers: Joi.number().integer().min(1).required().messages({
+  maxMembers: Joi.number().integer().min(1).optional().messages({
     'number.base': 'Số lượng tuyển phải là một số.',
     'number.integer': 'Số lượng tuyển phải là số nguyên.',
-    'number.min': 'Số lượng tuyển tối thiểu là 1 người.',
-    'any.required': 'Vui lòng nhập số lượng cần tuyển.'
+    'number.min': 'Số lượng tuyển tối thiểu là 1 người.'
   }),
   deadline: Joi.date().iso().greater('now').required().messages({
     'date.base': 'Hạn ứng tuyển không đúng định dạng ngày tháng.',
@@ -42,13 +57,19 @@ const createProjectSchema = Joi.object({
     'date.greater': 'Hạn ứng tuyển phải là ngày trong tương lai (không tính ngày hiện tại hay quá khứ).',
     'any.required': 'Vui lòng nhập hạn ứng tuyển.'
   })
-});
+}).or('departmentIds', 'departmentTargets');
 
 const updateProjectSchema = Joi.object({
   title: Joi.string().trim().max(150),
   description: Joi.string().trim().max(3000),
   candidateRequirements: Joi.string().trim().max(2000),
   departmentIds: Joi.array().items(Joi.string().regex(/^[0-9a-fA-F]{24}$/)).min(1),
+  departmentTargets: Joi.array().items(
+    Joi.object({
+      departmentId: Joi.string().regex(/^[0-9a-fA-F]{24}$/).required(),
+      neededCount: Joi.number().integer().min(1).required()
+    })
+  ).min(1),
   gradeTarget: Joi.number().min(0).max(10),
   maxMembers: Joi.number().integer().min(1),
   deadline: Joi.date().iso().greater('now')

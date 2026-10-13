@@ -164,11 +164,37 @@ export default function ProjectDetailModal({ project, show, onHide }) {
       {/* ── Header ── */}
       <Modal.Header closeButton className="border-0 pb-0">
         <div className="w-100">
-          <div className="d-flex align-items-center mb-2 gap-2">
-            <Badge bg="warning" text="dark" className="px-2 py-1 fw-bold" style={{ backgroundColor: '#fed7aa', color: '#ea580c' }}>
-              {departmentName}
-            </Badge>
-            <span className="text-muted small d-flex align-items-center gap-1">
+          <div className="d-flex align-items-center mb-2 gap-2 flex-wrap">
+            {project.departmentTargets && project.departmentTargets.length > 0 ? (
+              project.departmentTargets.map((target, idx) => (
+                <Badge
+                  key={target._id || idx}
+                  bg="warning"
+                  text="dark"
+                  className="px-2 py-1 fw-bold"
+                  style={{ backgroundColor: '#fed7aa', color: '#ea580c' }}
+                >
+                  {target.departmentId?.name || 'Ngành'}: {target.neededCount} người
+                </Badge>
+              ))
+            ) : project.departmentIds && project.departmentIds.length > 0 ? (
+              project.departmentIds.map((dept, idx) => (
+                <Badge
+                  key={dept._id || idx}
+                  bg="warning"
+                  text="dark"
+                  className="px-2 py-1 fw-bold"
+                  style={{ backgroundColor: '#fed7aa', color: '#ea580c' }}
+                >
+                  {dept.name || dept}
+                </Badge>
+              ))
+            ) : (
+              <Badge bg="warning" text="dark" className="px-2 py-1 fw-bold" style={{ backgroundColor: '#fed7aa', color: '#ea580c' }}>
+                {departmentName}
+              </Badge>
+            )}
+            <span className="text-muted small d-flex align-items-center gap-1 ms-auto">
               <Clock size={14} /> {timeAgo}
             </span>
           </div>
@@ -233,7 +259,7 @@ export default function ProjectDetailModal({ project, show, onHide }) {
               >
                 <Col className="text-center border-end border-secondary border-opacity-25">
                   <div className="fw-bold text-dark fs-5">{project.maxMembers}</div>
-                  <div className="text-muted small fw-bold">Số lượng tuyển <span className="text-danger">*</span></div>
+                  <div className="text-muted small fw-bold">Tổng số lượng tuyển <span className="text-danger">*</span></div>
                 </Col>
                 <Col className={`text-center ${project.gradeTarget ? 'border-end border-secondary border-opacity-25' : ''}`}>
                   <div className="fw-bold text-primary fs-5">{remainingSlots}</div>
@@ -246,6 +272,20 @@ export default function ProjectDetailModal({ project, show, onHide }) {
                   </Col>
                 )}
               </Row>
+
+              {/* Chỉ tiêu tuyển dụng chi tiết theo ngành (nếu có) */}
+              {project.departmentTargets && project.departmentTargets.length > 0 && (
+                <div className="mb-3 p-3 bg-light rounded-3 border">
+                  <div className="fw-semibold small text-dark mb-2">Chỉ tiêu tuyển dụng theo từng ngành:</div>
+                  <div className="d-flex flex-wrap gap-2">
+                    {project.departmentTargets.map((target, idx) => (
+                      <span key={target._id || idx} className="badge bg-white text-secondary border px-2 py-1 small">
+                        {target.departmentId?.name || 'Ngành'}: <strong style={{ color: '#ea580c' }}>{target.neededCount} người</strong>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="text-secondary mt-2" style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
                 {project.description}

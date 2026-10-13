@@ -57,6 +57,19 @@ const projectSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Department'
     }],
+    // Danh sách ngành cần tuyển kèm số lượng cụ thể (hỗ trợ tuyển nhiều ngành)
+    departmentTargets: [{
+      departmentId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Department',
+        required: true
+      },
+      neededCount: {
+        type: Number,
+        required: true,
+        min: 1
+      }
+    }],
     // Mục tiêu điểm dự án (range 0 - 10)
     gradeTarget: {
       type: Number,
