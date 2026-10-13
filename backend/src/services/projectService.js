@@ -16,7 +16,7 @@ const getProjects = async (query, userId = null) => {
   // Quét cập nhật tự động các dự án quá hạn
   await checkAndUpdateExpiredProjects();
 
-  const { page = 1, limit = 10, search, departmentId, status, minGrade, maxGrade, sort = 'newest', onlyLiked } = query;
+  const { page = 1, limit = 10, search, departmentId, departmentIds, status, minGrade, maxGrade, sort = 'newest', onlyLiked } = query;
   const skip = (page - 1) * limit;
 
   // Xây dựng query filter

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Form } from 'react-bootstrap';
+import { Form, Badge } from 'react-bootstrap';
 import { useDepartments } from '../hooks/useMasterData';
 import Button from './Button';
-import { Heart } from 'lucide-react';
+import { Heart, X } from 'lucide-react';
 
 export default function ProjectFilter({ filters, setFilters }) {
   // Lấy danh sách ngành (Department)
@@ -25,24 +25,31 @@ export default function ProjectFilter({ filters, setFilters }) {
     }));
   };
 
+  // Danh sách ID các ngành đang chọn
   const selectedDeptIds = Array.isArray(localFilters.departmentIds)
     ? localFilters.departmentIds
     : (localFilters.departmentId ? [localFilters.departmentId] : []);
 
-  const handleDeptToggle = (deptId) => {
-    setLocalFilters(prev => {
-      const current = Array.isArray(prev.departmentIds)
-        ? [...prev.departmentIds]
-        : (prev.departmentId ? [prev.departmentId] : []);
-      const next = current.includes(deptId)
-        ? current.filter(id => id !== deptId)
-        : [...current, deptId];
-      return {
+  // Khi chọn một ngành từ dropdown -> thêm vào mảng ngành đang lọc
+  const handleSelectDepartment = (e) => {
+    const deptId = e.target.value;
+    if (!deptId) return;
+    if (!selectedDeptIds.includes(deptId)) {
+      setLocalFilters(prev => ({
         ...prev,
-        departmentIds: next,
+        departmentIds: [...selectedDeptIds, deptId],
         departmentId: ''
-      };
-    });
+      }));
+    }
+  };
+
+  // Xóa một ngành khỏi danh sách đang lọc
+  const handleRemoveDepartment = (deptId) => {
+    setLocalFilters(prev => ({
+      ...prev,
+      departmentIds: selectedDeptIds.filter(id => id !== deptId),
+      departmentId: ''
+    }));
   };
 
   const handleApply = () => {
@@ -87,46 +94,70 @@ export default function ProjectFilter({ filters, setFilters }) {
           />
         </Form.Group>
 
-        {/* Bộ lọc nhiều ngành học (Many-to-Many) */}
+        {/* Ngành học (Chọn qua select và gom vào danh sách tags) */}
         <Form.Group className="mb-4">
           <div className="d-flex justify-content-between align-items-center mb-1">
             <Form.Label className="fw-bold mb-0">Ngành học</Form.Label>
             {selectedDeptIds.length > 0 && (
               <span
                 role="button"
-                className="text-primary small"
+                className="text-muted small"
                 style={{ cursor: 'pointer', fontSize: '0.75rem' }}
                 onClick={() => setLocalFilters(prev => ({ ...prev, departmentIds: [], departmentId: '' }))}
               >
-                Bỏ chọn ({selectedDeptIds.length})
+                Xóa hết ({selectedDeptIds.length})
               </span>
             )}
           </div>
-          <div
-            className="p-2 border rounded bg-light"
-            style={{ maxHeight: '160px', overflowY: 'auto' }}
+
+          <Form.Select
+            value=""
+            onChange={handleSelectDepartment}
+            disabled={isDeptLoading}
+            className="text-secondary mb-2"
           >
-            {isDeptLoading ? (
-              <div className="text-muted small py-2 text-center">Đang tải ngành...</div>
-            ) : departments.length === 0 ? (
-              <div className="text-muted small py-2 text-center">Không có dữ liệu ngành</div>
-            ) : (
-              departments.map(dep => {
-                const isChecked = selectedDeptIds.includes(dep._id);
+            <option value="">-- Chọn ngành cần lọc --</option>
+            {departments.map(dep => {
+              const isSelected = selectedDeptIds.includes(dep._id);
+              return (
+                <option key={dep._id} value={dep._id} disabled={isSelected}>
+                  {isSelected ? `✓ ${dep.name}` : dep.name}
+                </option>
+              );
+            })}
+          </Form.Select>
+
+          {/* Các ngành đã chọn hiển thị dưới dạng tag badge */}
+          {selectedDeptIds.length > 0 ? (
+            <div className="d-flex flex-wrap gap-1">
+              {selectedDeptIds.map(id => {
+                const dep = departments.find(d => d._id === id);
+                const deptName = dep ? dep.name : id;
                 return (
-                  <Form.Check
-                    key={dep._id}
-                    type="checkbox"
-                    id={`filter-dept-${dep._id}`}
-                    label={<span className="small text-dark">{dep.name}</span>}
-                    checked={isChecked}
-                    onChange={() => handleDeptToggle(dep._id)}
-                    className="mb-1"
-                  />
+                  <Badge
+                    key={id}
+                    bg="light"
+                    text="dark"
+                    className="border d-inline-flex align-items-center gap-1 py-1 px-2 fw-normal"
+                    style={{ fontSize: '0.75rem' }}
+                  >
+                    <span>{deptName}</span>
+                    <X
+                      size={12}
+                      role="button"
+                      className="text-danger ms-1"
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => handleRemoveDepartment(id)}
+                    />
+                  </Badge>
                 );
-              })
-            )}
-          </div>
+              })}
+            </div>
+          ) : (
+            <div className="text-muted small" style={{ fontSize: '0.75rem' }}>
+              Mặc định: Tất cả ngành học
+            </div>
+          )}
         </Form.Group>
 
         <Form.Group className="mb-4">
