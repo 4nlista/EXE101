@@ -66,7 +66,13 @@ export default function Navbar() {
 
         <div className="drop-wrap">
           <button className="user-pill" onClick={() => setShowDrop(!showDrop)}>
-            <div className="user-av">T</div>
+            <div className="user-av">
+              {currentUser?.avatar ? (
+                <img src={currentUser.avatar} alt="Avatar" />
+              ) : (
+                currentUser?.name ? currentUser.name.trim().charAt(0).toUpperCase() : 'U'
+              )}
+            </div>
             <ChevronDown size={14} style={{ color: 'var(--text-muted)' }} />
           </button>
 
