@@ -5,7 +5,16 @@ import axiosClient from '../utils/axiosClient';
  * @param {Object} params - Các tham số query (page, limit, departmentId, status, search...)
  */
 export const getProjects = async (params = {}) => {
-  return await axiosClient.get('/projects', { params });
+  const queryParams = { ...params };
+  // Chuẩn hóa mảng departmentIds thành chuỗi query để gửi lên backend
+  if (Array.isArray(queryParams.departmentIds)) {
+    if (queryParams.departmentIds.length > 0) {
+      queryParams.departmentIds = queryParams.departmentIds.join(',');
+    } else {
+      delete queryParams.departmentIds;
+    }
+  }
+  return await axiosClient.get('/projects', { params: queryParams });
 };
 
 /**

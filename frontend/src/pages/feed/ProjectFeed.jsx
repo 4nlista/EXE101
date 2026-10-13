@@ -29,6 +29,7 @@ export default function ProjectFeed() {
     limit: 9,
     search: '',
     departmentId: '',
+    departmentIds: [],
     role: '',
     minGrade: '',
     maxGrade: '',

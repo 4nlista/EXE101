@@ -26,7 +26,18 @@ const getProjects = async (query, userId = null) => {
     filter.title = { $regex: search, $options: 'i' };
   }
   
-  if (departmentId) {
+  // Lọc theo ngành học: Hỗ trợ cả lọc nhiều ngành cùng lúc hoặc một ngành đơn lẻ
+  if (departmentIds) {
+    let ids = [];
+    if (Array.isArray(departmentIds)) {
+      ids = departmentIds;
+    } else if (typeof departmentIds === 'string') {
+      ids = departmentIds.split(',').map(id => id.trim()).filter(Boolean);
+    }
+    if (ids.length > 0) {
+      filter.departmentIds = { $in: ids };
+    }
+  } else if (departmentId) {
     filter.departmentIds = departmentId;
   }
 

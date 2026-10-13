@@ -25,6 +25,26 @@ export default function ProjectFilter({ filters, setFilters }) {
     }));
   };
 
+  const selectedDeptIds = Array.isArray(localFilters.departmentIds)
+    ? localFilters.departmentIds
+    : (localFilters.departmentId ? [localFilters.departmentId] : []);
+
+  const handleDeptToggle = (deptId) => {
+    setLocalFilters(prev => {
+      const current = Array.isArray(prev.departmentIds)
+        ? [...prev.departmentIds]
+        : (prev.departmentId ? [prev.departmentId] : []);
+      const next = current.includes(deptId)
+        ? current.filter(id => id !== deptId)
+        : [...current, deptId];
+      return {
+        ...prev,
+        departmentIds: next,
+        departmentId: ''
+      };
+    });
+  };
+
   const handleApply = () => {
     setFilters({ ...localFilters, page: 1 });
   };
@@ -34,6 +54,7 @@ export default function ProjectFilter({ filters, setFilters }) {
       ...filters,
       search: '',
       departmentId: '',
+      departmentIds: [],
       status: '',
       minGrade: '',
       maxGrade: '',
@@ -66,20 +87,46 @@ export default function ProjectFilter({ filters, setFilters }) {
           />
         </Form.Group>
 
+        {/* Bộ lọc nhiều ngành học (Many-to-Many) */}
         <Form.Group className="mb-4">
-          <Form.Label className="fw-bold">Ngành học<span className="text-danger ms-1">*</span></Form.Label>
-          <Form.Select
-            name="departmentId"
-            value={localFilters.departmentId}
-            onChange={handleFilterChange}
-            disabled={isDeptLoading}
-            className="text-secondary"
+          <div className="d-flex justify-content-between align-items-center mb-1">
+            <Form.Label className="fw-bold mb-0">Ngành học</Form.Label>
+            {selectedDeptIds.length > 0 && (
+              <span
+                role="button"
+                className="text-primary small"
+                style={{ cursor: 'pointer', fontSize: '0.75rem' }}
+                onClick={() => setLocalFilters(prev => ({ ...prev, departmentIds: [], departmentId: '' }))}
+              >
+                Bỏ chọn ({selectedDeptIds.length})
+              </span>
+            )}
+          </div>
+          <div
+            className="p-2 border rounded bg-light"
+            style={{ maxHeight: '160px', overflowY: 'auto' }}
           >
-            <option value="">Tất cả ngành học</option>
-            {departments.map(dep => (
-              <option key={dep._id} value={dep._id}>{dep.name}</option>
-            ))}
-          </Form.Select>
+            {isDeptLoading ? (
+              <div className="text-muted small py-2 text-center">Đang tải ngành...</div>
+            ) : departments.length === 0 ? (
+              <div className="text-muted small py-2 text-center">Không có dữ liệu ngành</div>
+            ) : (
+              departments.map(dep => {
+                const isChecked = selectedDeptIds.includes(dep._id);
+                return (
+                  <Form.Check
+                    key={dep._id}
+                    type="checkbox"
+                    id={`filter-dept-${dep._id}`}
+                    label={<span className="small text-dark">{dep.name}</span>}
+                    checked={isChecked}
+                    onChange={() => handleDeptToggle(dep._id)}
+                    className="mb-1"
+                  />
+                );
+              })
+            )}
+          </div>
         </Form.Group>
 
         <Form.Group className="mb-4">
