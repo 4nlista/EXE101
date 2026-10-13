@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Row, Col, Spinner } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 import Button from '../../components/Button';
 import ProjectCard from '../../components/ProjectCard';
 import Alert from '../../components/Alert';
-import { Sparkles, Send, PanelLeftOpen, PanelLeftClose, Pencil, Trash2, Check, X } from 'lucide-react';
+import { Sparkles, Send, PanelLeftOpen, PanelLeftClose, Pencil, Trash2, Check, X, Lock } from 'lucide-react';
 import { AI_SENDER } from '../../constants/aiEnum';
 
 const DEFAULT_SUGGESTIONS = [
@@ -34,6 +35,7 @@ const AIChat = ({
   onToggleSidebar,
   messagesEndRef
 }) => {
+  const navigate = useNavigate();
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editTitleValue, setEditTitleValue] = useState('');
 
@@ -158,10 +160,10 @@ const AIChat = ({
                 const hasMultipleProjects = msg.projects && msg.projects.length >= 2;
                 const hasSingleProject = msg.projects && msg.projects.length === 1;
 
-                const layoutClass = hasMultipleProjects 
-                  ? 'multiple-projects' 
-                  : hasSingleProject 
-                    ? 'single-project' 
+                const layoutClass = hasMultipleProjects
+                  ? 'multiple-projects'
+                  : hasSingleProject
+                    ? 'single-project'
                     : 'text-only';
 
                 return (
@@ -247,28 +249,53 @@ const AIChat = ({
 
       {/* ── Khung nhập tin nhắn & Gợi ý (Composer Wrap) ── */}
       <div className="aihub-composer-wrap">
-        <form onSubmit={onSendMessage}>
-          <div className="aihub-composer">
-            <input
-              type="text"
-              className="aihub-prompt"
-              placeholder="Nhập câu hỏi của bạn..."
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              disabled={isLoading || isFreePackage || !currentSessionId}
-              autoComplete="off"
-            />
+        {isFreePackage ? (
+          <div className="d-flex flex-column flex-sm-row align-items-center justify-content-between p-3 rounded-3 shadow-sm border bg-white gap-3">
+            <div className="d-flex align-items-center gap-3">
+              <div className="d-flex align-items-center justify-content-center rounded-circle bg-warning bg-opacity-10 p-2 flex-shrink-0" style={{ width: '40px', height: '40px' }}>
+                <Lock size={20} className="text-warning" />
+              </div>
+              <div>
+                <div className="fw-bold text-dark fs-6 mb-1">
+                  Tính năng Trợ lý AI chỉ dành cho gói VIP &amp; PREMIUM
+                </div>
+                <div className="text-muted small">
+                  Tài khoản của bạn hiện là gói Cơ bản (Free). Nâng cấp để nhận tư vấn, thiết kế và đề xuất dự án từ UniVerse AI.
+                </div>
+              </div>
+            </div>
             <Button
-              type="submit"
-              className="aihub-send border-0 p-0"
-              disabled={isLoading || isFreePackage || !currentSessionId || !inputMessage.trim()}
-              title="Gửi câu hỏi"
+              variant="warning"
+              className="fw-bold px-3 py-2 text-nowrap shadow-sm rounded-pill border-0 text-white flex-shrink-0"
+              style={{ backgroundColor: 'var(--orange)' }}
+              onClick={() => navigate('/subscription')}
             >
-              <Send size={18} />
+              Nâng cấp ngay →
             </Button>
           </div>
-        </form>
-
+        ) : (
+          <form onSubmit={onSendMessage}>
+            <div className="aihub-composer">
+              <input
+                type="text"
+                className="aihub-prompt"
+                placeholder="Nhập câu hỏi của bạn..."
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                disabled={isLoading || !currentSessionId}
+                autoComplete="off"
+              />
+              <Button
+                type="submit"
+                className="aihub-send border-0 p-0"
+                disabled={isLoading || !currentSessionId || !inputMessage.trim()}
+                title="Gửi câu hỏi"
+              >
+                <Send size={18} />
+              </Button>
+            </div>
+          </form>
+        )}
       </div>
     </section>
   );

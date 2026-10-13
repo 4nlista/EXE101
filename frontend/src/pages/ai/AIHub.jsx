@@ -10,6 +10,7 @@ import { AI_SENDER } from '../../constants/aiEnum';
 import ProjectDetailModal from '../feed/ProjectDetailModal';
 import SidebarAI from './SidebarAI';
 import AIChat from './AIChat';
+import { toast } from 'react-toastify';
 import './AIHub.css';
 
 const AIHub = () => {
@@ -90,6 +91,10 @@ const AIHub = () => {
   };
 
   const handleCreateNewSession = async () => {
+    if (isFreePackage) {
+      toast.info('Vui lòng nâng cấp gói VIP hoặc PREMIUM để bắt đầu đoạn chat AI mới.');
+      return;
+    }
     if (messages.length === 0 && currentSessionId) return;
 
     setIsLoading(true);
