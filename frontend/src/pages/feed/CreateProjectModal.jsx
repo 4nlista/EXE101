@@ -368,15 +368,17 @@ export default function CreateProjectModal({ show, onHide }) {
 
                         {/* Nút xóa dòng (chỉ hiện khi có từ 2 dòng trở lên) */}
                         {formData.departmentTargets.length > 1 && (
-                          <button
+                          <Button
                             type="button"
-                            className="btn btn-outline-danger btn-sm p-1 d-flex align-items-center justify-content-center"
+                            variant="light"
+                            size="sm"
+                            className="p-1 d-flex align-items-center justify-content-center text-danger border shadow-sm"
                             style={{ width: '31px', height: '31px' }}
                             onClick={() => handleRemoveDepartmentTarget(idx)}
                             title="Xóa ngành này"
                           >
                             <Trash2 size={14} />
-                          </button>
+                          </Button>
                         )}
                       </div>
                     );
@@ -385,15 +387,17 @@ export default function CreateProjectModal({ show, onHide }) {
 
                 {/* Nút thêm ngành */}
                 <div className="mt-2 pt-1">
-                  <button
+                  <Button
                     type="button"
-                    className="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1"
+                    variant="light"
+                    size="sm"
+                    className="d-inline-flex align-items-center gap-1 border shadow-sm px-3"
                     onClick={handleAddDepartmentTarget}
                     style={{ fontSize: '0.8rem' }}
                   >
                     <Plus size={14} />
                     <span>Thêm ngành cần tuyển</span>
-                  </button>
+                  </Button>
                 </div>
               </div>
 

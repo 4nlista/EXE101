@@ -120,7 +120,7 @@ export default function ProjectCard({
               >
                 <BookOpen size={11} className="me-1 flex-shrink-0" />
                 <span>
-                  {target.departmentId?.name || 'Ngành'}: <strong className="text-dark">{target.neededCount}</strong>
+                  {target.departmentId?.name || 'Ngành'}
                 </span>
               </Badge>
             ))}
