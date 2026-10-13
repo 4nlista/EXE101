@@ -195,11 +195,9 @@ const ProfileOnboarding = () => {
       }
     }
 
-    // Validate Bước 3
+    // Bước 3: Kỹ năng và Lịch sử dự án không bắt buộc khi Onboarding (có thể cập nhật sau)
     if (currentStep === 3) {
-      if (formData.mainSkills.length === 0) {
-        newErrors.mainSkills = "Vui lòng thêm ít nhất 1 kỹ năng";
-      }
+      // Cho phép tiếp tục mà không cần nhập kỹ năng hoặc dự án
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -240,10 +238,12 @@ const ProfileOnboarding = () => {
     if (formData.majorId) payload.append('majorId', formData.majorId);
     payload.append('gpa', numGpa);
 
-    // Mảng phức tạp cần stringify khi ném vào FormData
-    const skillArray = formData.mainSkills.map(opt => opt.value);
+    // Mảng kỹ năng và dự án (không bắt buộc khi onboarding, có thể cập nhật sau)
+    const skillArray = Array.isArray(formData.mainSkills)
+      ? formData.mainSkills.map(opt => (typeof opt === 'object' && opt !== null) ? opt.value : opt).filter(Boolean)
+      : [];
     payload.append('mainSkills', JSON.stringify(skillArray));
-    payload.append('projectHistory', JSON.stringify(formData.projectHistory));
+    payload.append('projectHistory', JSON.stringify(Array.isArray(formData.projectHistory) ? formData.projectHistory : []));
 
     if (avatarFile) {
       payload.append('avatar', avatarFile);
@@ -482,8 +482,8 @@ const ProfileOnboarding = () => {
       <h4 className="mb-4 text-center">Hồ sơ năng lực</h4>
 
       <Form.Group className="mb-4">
-        <Form.Label className="fw-bold">Các kỹ năng chuyên môn <span className="text-danger">*</span></Form.Label>
-        <p className="text-muted small mb-2">Gõ để tìm kiếm. Nhấn Enter để tạo mới.</p>
+        <Form.Label className="fw-bold">Các kỹ năng chuyên môn <span className="text-muted fw-normal fs-7">(Không bắt buộc)</span></Form.Label>
+        <p className="text-muted small mb-2">Gõ để tìm kiếm hoặc thêm mới. Bạn cũng có thể bỏ qua và cập nhật sau.</p>
         <div style={errors.mainSkills ? { border: '1px solid #dc3545', borderRadius: '5px' } : {}}>
           <CreatableSelect
             isMulti
@@ -502,7 +502,7 @@ const ProfileOnboarding = () => {
       </Form.Group>
 
       <div className="d-flex justify-content-between align-items-center mb-3 mt-5">
-        <Form.Label className="fw-bold mb-0">Lịch sử dự án <span className="text-danger">*</span></Form.Label>
+        <Form.Label className="fw-bold mb-0">Lịch sử dự án <span className="text-muted fw-normal fs-7">(Không bắt buộc)</span></Form.Label>
         <Button variant="primary" className="rounded-pill shadow-sm px-3 fw-medium" size="sm" onClick={() => handleOpenProject(-1)}>
           + Thêm dự án
         </Button>
@@ -510,7 +510,7 @@ const ProfileOnboarding = () => {
 
       {formData.projectHistory.length === 0 ? (
         <div className="text-center p-5 bg-light rounded-4 text-muted border border-dashed">
-          Bạn chưa thêm dự án nào. Bấm nút Thêm để bắt đầu.
+          Bạn chưa thêm dự án nào. Bạn có thể thêm ngay hoặc bấm Tiếp tục để cập nhật sau trong trang cá nhân.
         </div>
       ) : (
         <CustomTable

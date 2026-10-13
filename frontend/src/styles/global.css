@@ -539,8 +539,8 @@ textarea.input {
 }
 .btn-ghost:hover:not(:disabled) { background: var(--bg-subtle); color: var(--text-primary); }
 
-.btn-danger { background: var(--error-bg); color: var(--error); border-color: var(--error-border); }
-.btn-danger:hover:not(:disabled) { background: #FEE2E2; }
+.btn-danger { background: #dc2626; color: #ffffff; border-color: #dc2626; }
+.btn-danger:hover:not(:disabled) { background: #b91c1c; border-color: #b91c1c; }
 
 .spinner {
   width: 16px; height: 16px; flex-shrink: 0;

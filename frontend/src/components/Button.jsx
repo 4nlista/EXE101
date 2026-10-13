@@ -14,38 +14,44 @@ export default function Button({
 }) {
   const isSpinning = loading || isLoading || false;
 
-  // Quy ước tương phản:
-  // - Nút Hủy ('cancel') hoặc Nút nền sáng ('light'): nền sáng rõ ràng (#f8fafc hoặc bg-light) kèm viền, chữ PHẢI TỐI (text-dark fw-medium). Tuyệt đối không dùng outline trong suốt.
-  // - Nút Hành động ('primary', 'success', 'danger', 'dark', 'secondary'): nền đậm, chữ PHẢI TRẮNG/SÁNG (text-white).
-  // - Nút Cảnh báo ('warning'): nền vàng, chữ PHẢI TỐI (text-dark).
-  let normalizedVariant = variant;
+  // Xử lý variant: Loại bỏ hoàn toàn outline để mọi nút luôn có nền solid rõ ràng
+  let rawVariant = variant || 'primary';
+  let extraClasses = [];
+
+  // Tách nếu variant bị truyền kèm class (ví dụ "danger text-dark")
+  if (typeof rawVariant === 'string' && rawVariant.includes(' ')) {
+    const parts = rawVariant.split(' ');
+    rawVariant = parts[0];
+    extraClasses.push(...parts.slice(1));
+  }
+
+  // Triệt tiêu hoàn toàn outline-* sang solid tương ứng (không dùng outline trong suốt)
+  if (typeof rawVariant === 'string' && rawVariant.startsWith('outline-')) {
+    rawVariant = rawVariant.replace('outline-', '');
+    if (rawVariant === 'secondary') rawVariant = 'light';
+  }
+
+  let normalizedVariant = rawVariant;
   let contrastClass = '';
 
-  // Tự động chuẩn hóa nếu có code cũ truyền 'outline-*' để tránh nút trong suốt khó nhìn
-  if (typeof normalizedVariant === 'string' && normalizedVariant.startsWith('outline-')) {
-    const baseVariant = normalizedVariant.replace('outline-', '');
-    if (baseVariant === 'secondary' || baseVariant === 'light') {
-      normalizedVariant = 'light';
-      contrastClass = 'text-dark border bg-light fw-medium shadow-sm';
-    } else {
-      normalizedVariant = baseVariant;
-      contrastClass = ['warning', 'light'].includes(baseVariant) ? 'text-dark fw-medium' : 'text-white fw-medium';
-    }
-  } else if (variant === 'cancel') {
+  // Kiểm tra xem class truyền vào có yêu cầu chữ đen (text-dark) không
+  const hasDarkText = (className && className.includes('text-dark')) || extraClasses.includes('text-dark');
+
+  if (normalizedVariant === 'cancel' || normalizedVariant === 'light') {
     normalizedVariant = 'light';
     contrastClass = 'text-dark border bg-light fw-medium shadow-sm';
-  } else if (variant === 'light') {
-    contrastClass = 'text-dark border bg-light fw-medium';
-  } else if (variant === 'warning') {
+  } else if (normalizedVariant === 'warning') {
     contrastClass = 'text-dark fw-medium';
-  } else if (['primary', 'success', 'danger', 'dark', 'secondary'].includes(variant)) {
+  } else if (hasDarkText) {
+    contrastClass = 'text-dark fw-medium';
+  } else if (['primary', 'success', 'danger', 'dark', 'secondary'].includes(normalizedVariant)) {
     contrastClass = 'text-white fw-medium';
   }
 
   return (
     <BootstrapButton
       variant={normalizedVariant}
-      className={clsx(fullWidth && 'w-100', contrastClass, className)}
+      className={clsx(fullWidth && 'w-100', contrastClass, extraClasses, className)}
       disabled={isSpinning || props.disabled}
       type={props.type || 'button'}
       {...props}

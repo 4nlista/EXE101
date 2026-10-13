@@ -240,7 +240,7 @@ export default function MyProjectsTab() {
         title="Hủy dự án"
         message="Bạn có chắc chắn muốn hủy bài đăng dự án này? Thao tác này không thể hoàn tác và chỉ có thể thực hiện khi số thành viên chưa đạt mức tối thiểu (50%)."
         confirmText="Hủy dự án"
-        variant="danger text-dark"
+        variant="danger"
       />
     </div>
   );

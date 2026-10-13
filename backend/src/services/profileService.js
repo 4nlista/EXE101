@@ -63,6 +63,30 @@ const updateOnboardingProfile = async (userId, bodyData, avatarUrl) => {
     gpa
   } = bodyData;
 
+  // Lấy và phân tích lịch sử dự án
+  let projectHistory = [];
+  if (bodyData.projectHistory) {
+    try {
+      projectHistory = typeof bodyData.projectHistory === 'string'
+        ? JSON.parse(bodyData.projectHistory)
+        : bodyData.projectHistory;
+    } catch (e) {
+      projectHistory = [];
+    }
+  }
+
+  // Lấy và phân tích kỹ năng
+  let mainSkills = [];
+  if (bodyData.mainSkills) {
+    try {
+      mainSkills = typeof bodyData.mainSkills === 'string'
+        ? JSON.parse(bodyData.mainSkills)
+        : bodyData.mainSkills;
+    } catch (e) {
+      mainSkills = [];
+    }
+  }
+
   // Kiểm tra tính duy nhất của số điện thoại nếu có
   if (phone) {
     const existingPhone = await User.findOne({ phone: phone.trim(), _id: { $ne: userId } });
@@ -89,19 +113,27 @@ const updateOnboardingProfile = async (userId, bodyData, avatarUrl) => {
   await ProjectHistory.deleteMany({ userId });
 
   let projectHistoryIds = [];
-  if (projectHistory && projectHistory.length > 0) {
-    const projectsToInsert = projectHistory.map(p => {
-      const obj = { ...p, userId };
-      if (!obj.startDate) delete obj.startDate;
-      if (!obj.endDate) delete obj.endDate;
-      if (obj.type === 'personal') {
-        delete obj.role;
-        delete obj.task;
-      }
-      return obj;
-    });
-    const inserted = await ProjectHistory.insertMany(projectsToInsert);
-    projectHistoryIds = inserted.map(p => p._id);
+  if (Array.isArray(projectHistory) && projectHistory.length > 0) {
+    const projectsToInsert = projectHistory
+      .filter(p => p && p.projectName && p.projectName.trim())
+      .map(p => {
+        const obj = { ...p, userId, projectName: p.projectName.trim() };
+        if (!obj.type) obj.type = 'personal';
+        if (!obj.startDate) delete obj.startDate;
+        if (!obj.endDate) delete obj.endDate;
+        if (obj.type === 'personal') {
+          delete obj.role;
+          delete obj.task;
+        } else if (obj.type === 'group' && !obj.role) {
+          obj.role = 'member';
+        }
+        return obj;
+      });
+
+    if (projectsToInsert.length > 0) {
+      const inserted = await ProjectHistory.insertMany(projectsToInsert);
+      projectHistoryIds = inserted.map(p => p._id);
+    }
   }
 
   // 2. Xử lý Auto-Moderation Skills (Fuzzy Matching)
@@ -132,7 +164,11 @@ const updateOnboardingProfile = async (userId, bodyData, avatarUrl) => {
     updateData.avatar = avatarUrl;
   }
 
-  const updatedUser = await User.findByIdAndUpdate(userId, updateData, { returnDocument: 'after', runValidators: true });
+  const updatedUser = await User.findByIdAndUpdate(userId, updateData, { returnDocument: 'after', runValidators: true })
+    .populate('departmentId', 'name')
+    .populate('majorId', 'name')
+    .populate('projectHistory')
+    .select('-password -googleId');
 
   return updatedUser;
 };
@@ -217,7 +253,16 @@ const updateMyProfile = async (userId, bodyData, avatarUrl) => {
     validGpa = numGpa;
   }
 
-  let mainSkills = bodyData.mainSkills ? JSON.parse(bodyData.mainSkills) : [];
+  let mainSkills = [];
+  if (bodyData.mainSkills) {
+    try {
+      mainSkills = typeof bodyData.mainSkills === 'string'
+        ? JSON.parse(bodyData.mainSkills)
+        : bodyData.mainSkills;
+    } catch (e) {
+      mainSkills = [];
+    }
+  }
   const finalSkills = await processSkills(mainSkills);
 
   const validMajorId = (majorId && mongoose.Types.ObjectId.isValid(majorId)) ? majorId : null;
@@ -233,7 +278,11 @@ const updateMyProfile = async (userId, bodyData, avatarUrl) => {
   }
 
   if (privacySettings) {
-    updateData.privacySettings = JSON.parse(privacySettings);
+    try {
+      updateData.privacySettings = typeof privacySettings === 'string'
+        ? JSON.parse(privacySettings)
+        : privacySettings;
+    } catch (e) { }
   }
   if (avatarUrl) {
     updateData.avatar = avatarUrl;
