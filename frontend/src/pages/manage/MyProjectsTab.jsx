@@ -147,7 +147,7 @@ export default function MyProjectsTab() {
                     <div className="d-flex align-items-center gap-1 text-muted text-truncate mt-1" style={{ fontSize: '12px' }}>
                       <span>•</span>
                       <span className="text-truncate">
-                        {project.departmentIds?.map(d => d.name).join(' · ')}
+                        {project.departmentIds?.map(d => d?.name || d).filter(Boolean).join(' · ')}
                       </span>
                     </div>
                   </div>

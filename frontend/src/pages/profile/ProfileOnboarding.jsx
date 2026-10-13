@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Container, Row, Col, Form, Offcanvas } from 'react-bootstrap';
+import { Container, Row, Col, Form, Offcanvas, Badge } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, ArrowRight } from 'lucide-react';
 import CreatableSelect from 'react-select/creatable';
@@ -30,10 +30,10 @@ const ProfileOnboarding = () => {
   // ----------------------------------------
   // LẤY DỮ LIỆU TỪ REACT QUERY
   // ----------------------------------------
-  const { data: depsData } = useDepartments();
-  const departments = depsData || [];
+  const { data: depsData, isLoading: loadingDeps } = useDepartments();
+  const departments = Array.isArray(depsData) ? depsData : [];
   const { data: skillsData } = useSkills();
-  const skillOptions = skillsData || [];
+  const skillOptions = Array.isArray(skillsData) ? skillsData : [];
 
   const [formData, setFormData] = useState(() => {
     const saved = sessionStorage.getItem('onboardingForm');
@@ -41,7 +41,15 @@ const ProfileOnboarding = () => {
       try {
         const parsed = JSON.parse(saved);
         return {
-          ...parsed,
+          name: parsed.name || '',
+          phone: parsed.phone || '',
+          dob: parsed.dob || '',
+          address: parsed.address || '',
+          semester: parsed.semester || 1,
+          departmentId: parsed.departmentId || '',
+          majorId: parsed.majorId || '',
+          mainSkills: Array.isArray(parsed.mainSkills) ? parsed.mainSkills : [],
+          projectHistory: Array.isArray(parsed.projectHistory) ? parsed.projectHistory : [],
           // Xóa giá trị mặc định 0 hoặc 0.0 cũ nếu người dùng chưa thực sự nhập
           gpa: (parsed.gpa !== undefined && parsed.gpa !== null && parsed.gpa !== 0 && parsed.gpa !== '0' && parsed.gpa !== 0.0)
             ? parsed.gpa
@@ -73,8 +81,8 @@ const ProfileOnboarding = () => {
     sessionStorage.setItem('onboardingStep', currentStep.toString());
   }, [currentStep]);
 
-  const { data: majorsData } = useMajors(formData.departmentId);
-  const majors = majorsData || [];
+  const { data: majorsData, isLoading: loadingMajors } = useMajors(formData.departmentId);
+  const majors = Array.isArray(majorsData) ? majorsData : [];
 
   // ----------------------------------------
   // HANDLERS FORM CHÍNH
@@ -107,6 +115,9 @@ const ProfileOnboarding = () => {
     // Clear error khi user gõ lại
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: null }));
+    }
+    if (name === 'departmentId' && errors.majorId) {
+      setErrors(prev => ({ ...prev, majorId: null }));
     }
   };
 
@@ -176,8 +187,10 @@ const ProfileOnboarding = () => {
     if (currentStep === 2) {
       if (!formData.departmentId) {
         newErrors.departmentId = "Vui lòng chọn Ngành học";
-      }
-      if (!formData.majorId) {
+      } else if (loadingMajors) {
+        newErrors.majorId = "Đang tải dữ liệu chuyên ngành, vui lòng đợi giây lát...";
+      } else if (majors.length > 0 && !formData.majorId) {
+        // Chỉ bắt buộc nếu ngành học có chuyên ngành
         newErrors.majorId = "Vui lòng chọn Chuyên ngành";
       }
     }
@@ -410,9 +423,13 @@ const ProfileOnboarding = () => {
         <Form.Label>Ngành học <span className="text-danger">*</span></Form.Label>
         <Form.Select name="departmentId" value={formData.departmentId} onChange={handleChange} isInvalid={!!errors.departmentId}>
           <option value="">-- Chọn ngành học --</option>
-          {departments.map(d => (
-            <option key={d._id} value={d._id}>{d.name}</option>
-          ))}
+          {loadingDeps ? (
+            <option disabled>Đang tải danh sách ngành học...</option>
+          ) : (
+            departments.map(d => (
+              <option key={d._id} value={d._id}>{d.name}</option>
+            ))
+          )}
         </Form.Select>
         <Form.Control.Feedback type="invalid">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" className="me-1 mb-1" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" /><path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z" /></svg> {errors.departmentId}
@@ -420,13 +437,39 @@ const ProfileOnboarding = () => {
       </Form.Group>
 
       <Form.Group className="mb-3 p-3 bg-light rounded border">
-        <Form.Label className="text-primary fw-bold">Chuyên ngành <span className="text-danger">*</span></Form.Label>
-        <Form.Select name="majorId" value={formData.majorId} onChange={handleChange} isInvalid={!!errors.majorId}>
-          <option value="">-- Chọn chuyên ngành --</option>
-          {majors.map(m => (
-            <option key={m._id} value={m._id}>{m.name}</option>
-          ))}
+        <Form.Label className="text-primary fw-bold">
+          Chuyên ngành {formData.departmentId && majors.length > 0 && <span className="text-danger">*</span>}
+        </Form.Label>
+        <Form.Select
+          name="majorId"
+          value={formData.majorId}
+          onChange={handleChange}
+          isInvalid={!!errors.majorId}
+          disabled={!formData.departmentId || loadingMajors || (formData.departmentId && !loadingMajors && majors.length === 0)}
+        >
+          {!formData.departmentId ? (
+            <option value="">-- Vui lòng chọn ngành học trước --</option>
+          ) : loadingMajors ? (
+            <option value="">Đang tải danh sách chuyên ngành...</option>
+          ) : majors.length === 0 ? (
+            <option value="">-- Ngành này không phân chuyên ngành hẹp --</option>
+          ) : (
+            <>
+              <option value="">-- Chọn chuyên ngành --</option>
+              {majors.map(m => (
+                <option key={m._id} value={m._id}>{m.name}</option>
+              ))}
+            </>
+          )}
         </Form.Select>
+        {formData.departmentId && !loadingMajors && majors.length === 0 && (
+          <div className="text-muted small mt-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" className="me-1 mb-1" viewBox="0 0 16 16">
+              <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+            </svg>
+            Ngành học này không phân chia chuyên ngành hẹp. Bạn có thể nhấn Tiếp tục để sang bước kế tiếp.
+          </div>
+        )}
         <Form.Control.Feedback type="invalid">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" className="me-1 mb-1" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" /><path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z" /></svg> {errors.majorId}
         </Form.Control.Feedback>

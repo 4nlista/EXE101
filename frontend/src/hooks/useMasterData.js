@@ -17,7 +17,8 @@ export const useDepartments = () => {
       const res = await masterDataService.getDepartments();
       return extractData(res);
     },
-    staleTime: Infinity, // Dữ liệu này gần như không bao giờ đổi
+    staleTime: 1000 * 60 * 30, // 30 phút
+    placeholderData: [],
   });
 };
 
@@ -30,7 +31,8 @@ export const useMajors = (departmentId) => {
       return extractData(res);
     },
     enabled: !!departmentId, // Chỉ chạy khi có departmentId
-    staleTime: Infinity,
+    staleTime: 1000 * 60 * 30,
+    placeholderData: [],
   });
 };
 
@@ -43,6 +45,7 @@ export const useSkills = () => {
       // Chuyển đổi sang format react-select
       return data.map(skill => ({ value: skill, label: skill }));
     },
-    staleTime: Infinity,
+    staleTime: 1000 * 60 * 30,
+    placeholderData: [],
   });
 };

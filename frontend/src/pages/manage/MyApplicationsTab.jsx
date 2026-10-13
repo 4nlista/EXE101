@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Dropdown, Form, InputGroup, Row, Col } from 'react-bootstrap';
+import { Dropdown, Form, InputGroup, Row, Col, Badge } from 'react-bootstrap';
 import { FaSearch, FaEllipsisV, FaRegClock, FaCheckCircle, FaTimesCircle, FaStar, FaEye } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import ConfirmActionModal from '../../components/ConfirmActionModal';
@@ -191,8 +191,8 @@ export default function MyApplicationsTab() {
                 </div>
                 <div className="d-flex flex-wrap gap-1 mt-1">
                   {app.projectId?.departmentIds?.map(d => (
-                    <Badge key={d._id} bg="secondary" className="bg-opacity-50 text-dark fw-normal px-2 py-1">
-                      {d.name}
+                    <Badge key={d?._id || d} bg="secondary" className="bg-opacity-50 text-dark fw-normal px-2 py-1">
+                      {d?.name || 'Ngành'}
                     </Badge>
                   ))}
                 </div>
@@ -238,8 +238,8 @@ export default function MyApplicationsTab() {
                         </>
                       )}
                       {app.status === APPLICATION_STATUS.APPROVED && app.projectId?.status === PROJECT_STATUS.COMPLETED && (
-                        <Dropdown.Item 
-                          onClick={() => { setReviewProjectId(app.projectId._id); setShowReviewModal(true); }} 
+                        <Dropdown.Item
+                          onClick={() => { setReviewProjectId(app.projectId._id); setShowReviewModal(true); }}
                           className="text-primary py-1 fw-bold"
                         >
                           <FaStar className="me-1" /> Đánh giá đồng đội

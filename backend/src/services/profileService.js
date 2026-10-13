@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const User = require('../models/User');
 const ProjectHistory = require('../models/ProjectHistory');
 const Skill = require('../models/Skill');
@@ -106,6 +107,9 @@ const updateOnboardingProfile = async (userId, bodyData, avatarUrl) => {
   // 2. Xử lý Auto-Moderation Skills (Fuzzy Matching)
   const finalSkills = await processSkills(mainSkills);
 
+  // Chuẩn hóa majorId: Hỗ trợ các ngành không có chuyên ngành (lưu null thay vì chuỗi rỗng gây lỗi Cast to ObjectId)
+  const validMajorId = (majorId && mongoose.Types.ObjectId.isValid(majorId)) ? majorId : null;
+
   // 3. Cập nhật User Profile
   const updateData = {
     name,
@@ -114,7 +118,7 @@ const updateOnboardingProfile = async (userId, bodyData, avatarUrl) => {
     address,
     semester,
     departmentId,
-    majorId,
+    majorId: validMajorId,
     mainSkills: [...new Set(finalSkills)],
     projectHistory: projectHistoryIds,
     onboardingCompleted: true
@@ -216,8 +220,11 @@ const updateMyProfile = async (userId, bodyData, avatarUrl) => {
   let mainSkills = bodyData.mainSkills ? JSON.parse(bodyData.mainSkills) : [];
   const finalSkills = await processSkills(mainSkills);
 
+  const validMajorId = (majorId && mongoose.Types.ObjectId.isValid(majorId)) ? majorId : null;
+
   const updateData = {
-    name, phone, dob, address, semester, departmentId, majorId,
+    name, phone, dob, address, semester, departmentId,
+    majorId: validMajorId,
     mainSkills: finalSkills
   };
 

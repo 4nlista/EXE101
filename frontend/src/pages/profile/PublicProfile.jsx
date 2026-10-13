@@ -19,6 +19,7 @@ import ConfirmActionModal from '../../components/ConfirmActionModal';
 import '../../styles/profile.css';
 import { toast } from 'react-toastify';
 import { initConversation } from '../../services/messageService';
+import { profileService } from '../../services/profileService';
 
 export default function PublicProfilePage() {
   const { id } = useParams();

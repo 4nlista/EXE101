@@ -28,7 +28,8 @@ export default function ProfileHeader({
   const majors = Array.isArray(rawMajors) ? rawMajors : [];
 
   const currentDeptName = profileData.departmentId?.name || 'Chưa cập nhật ngành';
-  const currentMajorName = profileData.majorId?.name || 'Chưa cập nhật chuyên ngành';
+  const currentMajorName = profileData.majorId?.name
+    || (profileData.departmentId && majors.length === 0 ? 'Không phân chuyên ngành' : 'Chưa cập nhật chuyên ngành');
 
   return (
     <div className="profile-header">
@@ -93,21 +94,30 @@ export default function ProfileHeader({
             )}
 
             {/* Chuyên ngành */}
-            {(isOwner || profileData.majorId) && (
+            {(isOwner || profileData.majorId || (profileData.departmentId && majors.length === 0)) && (
               <div className="d-flex align-items-center gap-1 text-dark small border-end pe-4">
                 <GraduationCap size={15} className="text-secondary flex-shrink-0" />
-                <span className="fw-semibold text-dark">Chuyên ngành <span className="text-danger">*</span>:</span>
+                <span className="fw-semibold text-dark">
+                  Chuyên ngành {majors.length > 0 && <span className="text-danger">*</span>}:
+                </span>
                 {isEditMode ? (
                   <Form.Select
                     size="sm"
                     value={editData.majorId}
                     onChange={e => setEditData({ ...editData, majorId: e.target.value })}
                     style={{ maxWidth: '200px' }}
+                    disabled={majors.length === 0}
                   >
-                    <option value="">-- Chọn chuyên ngành --</option>
-                    {majors.map(m => (
-                      <option key={m._id} value={m._id}>{m.name}</option>
-                    ))}
+                    {majors.length === 0 ? (
+                      <option value="">Không phân chuyên ngành</option>
+                    ) : (
+                      <>
+                        <option value="">-- Chọn chuyên ngành --</option>
+                        {majors.map(m => (
+                          <option key={m._id} value={m._id}>{m.name}</option>
+                        ))}
+                      </>
+                    )}
                   </Form.Select>
                 ) : (
                   <span className="text-muted">{currentMajorName}</span>
