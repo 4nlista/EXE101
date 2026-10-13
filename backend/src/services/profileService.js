@@ -316,36 +316,107 @@ const checkPhoneAvailability = async (phone, currentUserId) => {
 };
 
 /**
+ * Tạo biểu thức chính quy (Regex) cho một ký tự hoặc từ tiếng Việt:
+ * Không phân biệt hoa/thường (lowercase), không phân biệt có dấu / không dấu.
+ * @param {string} token - Từ khóa cần tạo regex
+ */
+const createVietnameseTokenRegex = (token) => {
+  if (!token) return null;
+
+  const charMap = {
+    'a': '[aàáảãạăằắẳẵặâầấẩẫậ]',
+    'd': '[dđ]',
+    'e': '[eèéẻẽẹêềếểễệ]',
+    'i': '[iìíỉĩị]',
+    'o': '[oòóỏõọôồốổỗộơờớởỡợ]',
+    'u': '[uùúủũụưừứửữự]',
+    'y': '[yỳýỷỹỵ]'
+  };
+
+  const removeAccents = (str) => {
+    return str.normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd')
+      .replace(/Đ/g, 'd')
+      .toLowerCase();
+  };
+
+  let pattern = '';
+  for (let i = 0; i < token.length; i++) {
+    const char = token[i];
+    const lower = char.toLowerCase();
+    const baseChar = removeAccents(lower);
+    if (charMap[baseChar]) {
+      pattern += charMap[baseChar];
+    } else {
+      pattern += lower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+  }
+
+  return new RegExp(pattern, 'i');
+};
+
+/**
+ * Xây dựng điều kiện tìm kiếm bao phủ rộng (Broad Matching):
+ * - Hỗ trợ hoa/thường (lowercase), không dấu, có dấu tiếng Việt
+ * - Chuẩn hóa loại bỏ khoảng trắng thừa
+ * - Khớp tất cả các từ trong tên bất kể thứ tự (ví dụ: gõ "Long Nguyen" vẫn tìm ra "Nguyễn Văn Long")
+ * - Khớp cả phần tên email / username
+ * @param {string} searchString - Chuỗi tìm kiếm nhập từ client
+ */
+const buildBroadSearchQuery = (searchString) => {
+  if (!searchString || !searchString.trim()) return null;
+
+  const clean = searchString.trim().replace(/\s+/g, ' ');
+  const tokens = clean.split(' ').filter(t => t.length > 0);
+
+  if (tokens.length === 0) return null;
+
+  // Tìm theo tên: tất cả các từ khóa nhập vào đều phải xuất hiện trong tên
+  const nameConditions = tokens.map(token => ({
+    name: { $regex: createVietnameseTokenRegex(token) }
+  }));
+
+  const nameMatch = nameConditions.length === 1 ? nameConditions[0] : { $and: nameConditions };
+
+  // Tìm theo email (hỗ trợ khi người dùng nhập email hoặc tiền tố email)
+  const escapedSearch = clean.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const emailMatch = { email: { $regex: new RegExp(escapedSearch, 'i') } };
+
+  return {
+    $or: [nameMatch, emailMatch]
+  };
+};
+
+/**
  * Tìm kiếm và lấy danh sách sinh viên / thành viên trong cộng đồng
  * @param {Object} query - Tham số tìm kiếm (search, departmentId, page, limit)
- * @param {string} currentUserId - ID người dùng hiện tại để loại trừ
+ * @param {string} currentUserId - ID người dùng hiện tại
  */
 const searchCommunityUsers = async (query = {}, currentUserId = null) => {
   const { search, departmentId, page = 1, limit = 20 } = query;
   const skip = (parseInt(page) - 1) * parseInt(limit);
 
-  const filter = {
-    isActive: { $ne: 2 } // Loại trừ tài khoản bị khóa
-  };
+  const andFilters = [
+    { isActive: { $ne: 2 } } // Loại trừ tài khoản bị khóa
+  ];
 
-  // Loại trừ chính mình khỏi kết quả tìm kiếm
-  if (currentUserId) {
-    filter._id = { $ne: currentUserId };
-  }
-
-  // Tìm kiếm theo tên
-  if (search && search.trim()) {
-    filter.name = { $regex: search.trim(), $options: 'i' };
+  // Tìm kiếm bao phủ rộng (họ tên tiếng Việt không dấu/có dấu, lowercase, email, dọn khoảng trắng)
+  const searchCondition = buildBroadSearchQuery(search);
+  if (searchCondition) {
+    andFilters.push(searchCondition);
   }
 
   // Lọc theo ngành học nếu có
   if (departmentId) {
-    filter.departmentId = departmentId;
+    andFilters.push({ departmentId });
   }
+
+  const filter = andFilters.length === 1 ? andFilters[0] : { $and: andFilters };
 
   const [users, total] = await Promise.all([
     User.find(filter)
-      .select('name avatar departmentId majorId semester mainSkills onboardingCompleted averageRating totalReviewsReceived currentPackage lastActiveAt')
+      .select('name email avatar departmentId majorId semester mainSkills onboardingCompleted averageRating totalReviewsReceived currentPackage lastActiveAt')
       .populate('departmentId', 'name')
       .populate('majorId', 'name')
       .sort({ lastActiveAt: -1, createdAt: -1 })

@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Search, X, Clock, Users, ChevronRight, GraduationCap } from 'lucide-react';
 import { profileService } from '../../services/profileService';
 import { useDepartments } from '../../hooks/useMasterData';
+import { useAuth } from '../../contexts/AuthContext';
 import Button from '../../components/Button';
 import Pagination from '../../components/Pagination';
 
@@ -12,6 +13,7 @@ const RECENT_KEY = 'universe_recent_community_searches';
 
 export default function Community() {
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
 
   // Search state
   const [searchTerm, setSearchTerm] = useState('');
@@ -114,7 +116,7 @@ export default function Community() {
                 type="text"
                 className="form-control rounded-pill ps-5 pe-5 py-2 border-0 bg-light"
                 style={{ fontSize: '0.95rem' }}
-                placeholder="Tìm kiếm sinh viên, bạn bè theo họ tên..."
+                placeholder="Tìm kiếm sinh viên theo họ tên (có dấu hoặc không dấu)..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 autoFocus
@@ -253,6 +255,7 @@ export default function Community() {
               {users.map((user) => {
                 const deptName = user.departmentId?.name || '';
                 const majorName = user.majorId?.name || '';
+                const isMe = currentUser && (String(user._id) === String(currentUser._id || currentUser.id));
 
                 return (
                   <div
@@ -279,8 +282,13 @@ export default function Community() {
                       )}
 
                       <div>
-                        <div className="fw-semibold text-dark" style={{ fontSize: '0.95rem' }}>
-                          {user.name}
+                        <div className="fw-semibold text-dark d-flex align-items-center gap-2" style={{ fontSize: '0.95rem' }}>
+                          <span>{user.name}</span>
+                          {isMe && (
+                            <span className="badge bg-secondary-subtle text-secondary border fw-normal" style={{ fontSize: '0.7rem' }}>
+                              Bạn
+                            </span>
+                          )}
                         </div>
                         <div className="text-muted small d-flex align-items-center gap-1 flex-wrap" style={{ fontSize: '0.8rem' }}>
                           {deptName && (
@@ -334,7 +342,7 @@ export default function Community() {
                           handleUserClick(user);
                         }}
                       >
-                        Xem hồ sơ
+                        {isMe ? 'Trang cá nhân' : 'Xem hồ sơ'}
                       </Button>
                       <ChevronRight size={18} className="text-muted d-sm-none" />
                     </div>
