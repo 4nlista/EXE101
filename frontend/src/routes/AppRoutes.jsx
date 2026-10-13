@@ -10,6 +10,7 @@ import Feed from '../pages/feed/ProjectFeed';
 import ManageProjects from '../pages/manage/ManageProjects';
 import ProjectManagementDetail from '../pages/manage/ProjectManagementDetail';
 import PublicProfile from '../pages/profile/PublicProfile';
+import Community from '../pages/community/Community';
 
 import Messages from '../pages/messages/Messages';
 import AIHub from '../pages/ai/AIHub';
@@ -90,6 +91,7 @@ export default function AppRoutes() {
       {/* Các trang cho phép người dùng xem ngay cả khi chưa hoàn tất hồ sơ */}
       <Route element={<ProtectedRoute requireOnboarding={false}><AppLayout /></ProtectedRoute>}>
         <Route path="/feed" element={<Feed />} />
+        <Route path="/community" element={<Community />} />
         <Route path="/notifications" element={<Notifications />} />
       </Route>
 

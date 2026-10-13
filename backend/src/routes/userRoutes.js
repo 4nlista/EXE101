@@ -10,6 +10,9 @@ router.get('/check-phone', verifyToken, profileController.checkPhone);
 // [GET] Lấy hồ sơ cá nhân của mình
 router.get('/my-profile', verifyToken, profileController.getMyProfile);
 
+// [GET] Tìm kiếm danh sách sinh viên / thành viên trong cộng đồng
+router.get('/community', verifyToken, profileController.getCommunityUsers);
+
 // [GET] Lấy hồ sơ công khai của người dùng khác
 router.get('/:id/profile', verifyToken, profileController.getPublicProfile);
 

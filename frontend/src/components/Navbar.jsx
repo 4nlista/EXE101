@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
 import { Badge } from 'react-bootstrap';
-import { Bell, Settings, LogOut, ChevronDown, User, Home, Briefcase, MessageSquareMore, Sparkles, Crown, ReceiptText } from 'lucide-react';
+import { Bell, Settings, LogOut, ChevronDown, User, Home, Briefcase, MessageSquareMore, Sparkles, Crown, ReceiptText, Users } from 'lucide-react';
 import LogoImg from '../assets/images/Logo.png';
 import NotificationDropdown from './NotificationDropdown';
 
@@ -21,6 +21,7 @@ export default function Navbar() {
 
   const navs = [
     { name: 'Bảng tin', path: '/feed', icon: Home },
+    { name: 'Cộng đồng', path: '/community', icon: Users },
     { name: 'Dự án', path: '/manage', icon: Briefcase },
     { name: 'Tin nhắn', path: '/messages', icon: MessageSquareMore, badge: totalUnreadCount > 0 ? totalUnreadCount : null },
     { name: 'AI Hub', path: '/ai-hub', icon: Sparkles }
@@ -33,7 +34,7 @@ export default function Navbar() {
         <div className="layout-logo-text fw-bold text-dark fs-5">UniVerse AI</div>
       </Link>
 
-      <div className="layout-nav-links" style={{ position: 'absolute', left: '40%', transform: 'translateX(-50%)' }}>
+      <div className="layout-nav-links" style={{ position: 'absolute', left: '42%', transform: 'translateX(-50%)' }}>
         {navs.map(n => {
           const isActive = location.pathname.startsWith(n.path);
           const Icon = n.icon;

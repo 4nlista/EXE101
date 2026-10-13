@@ -36,6 +36,14 @@ export const profileService = {
   },
 
   /**
+   * Tìm kiếm danh sách sinh viên / thành viên trong cộng đồng
+   * @param {Object} params - { search, departmentId, page, limit }
+   */
+  getCommunityUsers: async (params = {}) => {
+    return await axiosClient.get('/users/community', { params });
+  },
+
+  /**
    * Cập nhật hồ sơ cá nhân
    */
   updateMyProfile: async (payload) => {

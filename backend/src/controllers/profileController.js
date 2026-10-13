@@ -101,10 +101,28 @@ const checkPhone = async (req, res, next) => {
   }
 };
 
+/**
+ * GET /api/users/community
+ * Tìm kiếm danh sách sinh viên / thành viên trong cộng đồng
+ */
+const getCommunityUsers = async (req, res, next) => {
+  try {
+    const currentUserId = req.user ? req.user.id : null;
+    const result = await profileService.searchCommunityUsers(req.query, currentUserId);
+    res.status(200).json({
+      success: true,
+      data: result
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   updateOnboardingProfile,
   getMyProfile,
   getPublicProfile,
   updateMyProfile,
-  checkPhone
+  checkPhone,
+  getCommunityUsers
 };

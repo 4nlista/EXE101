@@ -315,10 +315,61 @@ const checkPhoneAvailability = async (phone, currentUserId) => {
   return !existingUser;
 };
 
+/**
+ * Tìm kiếm và lấy danh sách sinh viên / thành viên trong cộng đồng
+ * @param {Object} query - Tham số tìm kiếm (search, departmentId, page, limit)
+ * @param {string} currentUserId - ID người dùng hiện tại để loại trừ
+ */
+const searchCommunityUsers = async (query = {}, currentUserId = null) => {
+  const { search, departmentId, page = 1, limit = 20 } = query;
+  const skip = (parseInt(page) - 1) * parseInt(limit);
+
+  const filter = {
+    isActive: { $ne: 2 } // Loại trừ tài khoản bị khóa
+  };
+
+  // Loại trừ chính mình khỏi kết quả tìm kiếm
+  if (currentUserId) {
+    filter._id = { $ne: currentUserId };
+  }
+
+  // Tìm kiếm theo tên
+  if (search && search.trim()) {
+    filter.name = { $regex: search.trim(), $options: 'i' };
+  }
+
+  // Lọc theo ngành học nếu có
+  if (departmentId) {
+    filter.departmentId = departmentId;
+  }
+
+  const [users, total] = await Promise.all([
+    User.find(filter)
+      .select('name avatar departmentId majorId semester mainSkills onboardingCompleted averageRating totalReviewsReceived currentPackage lastActiveAt')
+      .populate('departmentId', 'name')
+      .populate('majorId', 'name')
+      .sort({ lastActiveAt: -1, createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit)),
+    User.countDocuments(filter)
+  ]);
+
+  return {
+    users,
+    pagination: {
+      total,
+      page: parseInt(page),
+      limit: parseInt(limit),
+      totalPages: Math.ceil(total / parseInt(limit))
+    }
+  };
+};
+
 module.exports = {
   updateOnboardingProfile,
   getMyProfile,
   getPublicProfile,
   updateMyProfile,
-  checkPhoneAvailability
+  checkPhoneAvailability,
+  searchCommunityUsers
 };
