@@ -17,6 +17,7 @@ export const useDepartments = () => {
       const res = await masterDataService.getDepartments();
       return extractData(res);
     },
+    select: (data) => extractData(data),
     staleTime: 1000 * 60 * 30, // 30 phút
     placeholderData: [],
   });
@@ -30,6 +31,7 @@ export const useMajors = (departmentId) => {
       const res = await masterDataService.getMajors(departmentId);
       return extractData(res);
     },
+    select: (data) => extractData(data),
     enabled: !!departmentId, // Chỉ chạy khi có departmentId
     staleTime: 1000 * 60 * 30,
     placeholderData: [],

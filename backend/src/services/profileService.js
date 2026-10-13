@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const User = require('../models/User');
+const Department = require('../models/Department');
+const Major = require('../models/Major');
 const ProjectHistory = require('../models/ProjectHistory');
 const Skill = require('../models/Skill');
 const Subscription = require('../models/Subscription');
@@ -265,10 +267,12 @@ const updateMyProfile = async (userId, bodyData, avatarUrl) => {
   }
   const finalSkills = await processSkills(mainSkills);
 
+  const validDepartmentId = (departmentId && mongoose.Types.ObjectId.isValid(departmentId)) ? departmentId : null;
   const validMajorId = (majorId && mongoose.Types.ObjectId.isValid(majorId)) ? majorId : null;
 
   const updateData = {
-    name, phone, dob, address, semester, departmentId,
+    name, phone, dob, address, semester,
+    departmentId: validDepartmentId,
     majorId: validMajorId,
     mainSkills: finalSkills
   };

@@ -1,18 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Form } from 'react-bootstrap';
-import { useQuery } from '@tanstack/react-query';
-import { masterDataService } from '../services/masterDataService';
+import { useDepartments } from '../hooks/useMasterData';
 import Button from './Button';
 import { Heart } from 'lucide-react';
 
 export default function ProjectFilter({ filters, setFilters }) {
   // Lấy danh sách ngành (Department)
-  const { data: deptRes, isLoading: isDeptLoading } = useQuery({
-    queryKey: ['departments'],
-    queryFn: masterDataService.getDepartments
-  });
-
-  const departments = deptRes?.data || [];
+  const { data: rawDepartments, isLoading: isDeptLoading } = useDepartments();
+  const departments = Array.isArray(rawDepartments) ? rawDepartments : (rawDepartments?.data || []);
 
   // State local để giữ giá trị tạm trước khi bấm Lọc
   const [localFilters, setLocalFilters] = useState(filters);

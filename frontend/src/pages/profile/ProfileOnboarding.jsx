@@ -31,7 +31,7 @@ const ProfileOnboarding = () => {
   // LẤY DỮ LIỆU TỪ REACT QUERY
   // ----------------------------------------
   const { data: depsData, isLoading: loadingDeps } = useDepartments();
-  const departments = Array.isArray(depsData) ? depsData : [];
+  const departments = Array.isArray(depsData) ? depsData : (Array.isArray(depsData?.data) ? depsData.data : []);
   const { data: skillsData } = useSkills();
   const skillOptions = Array.isArray(skillsData) ? skillsData : [];
 

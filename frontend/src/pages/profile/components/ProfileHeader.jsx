@@ -21,13 +21,23 @@ export default function ProfileHeader({
   isSaving,
   handleStartChat
 }) {
+  const activeDeptId = isEditMode
+    ? (editData.departmentId || '')
+    : (profileData.departmentId?._id || profileData.departmentId || '');
+
   const { data: rawDepartments } = useDepartments();
-  const { data: rawMajors } = useMajors(editData.departmentId || profileData.departmentId?._id);
+  const { data: rawMajors } = useMajors(activeDeptId);
 
-  const departments = Array.isArray(rawDepartments) ? rawDepartments : [];
-  const majors = Array.isArray(rawMajors) ? rawMajors : [];
+  const departments = Array.isArray(rawDepartments)
+    ? rawDepartments
+    : (Array.isArray(rawDepartments?.data) ? rawDepartments.data : []);
+  const majors = Array.isArray(rawMajors)
+    ? rawMajors
+    : (Array.isArray(rawMajors?.data) ? rawMajors.data : []);
 
-  const currentDeptName = profileData.departmentId?.name || 'Chưa cập nhật ngành';
+  const currentDeptName = profileData.departmentId?.name
+    || (departments.find(d => String(d._id) === String(profileData.departmentId))?.name)
+    || 'Chưa cập nhật ngành';
   const currentMajorName = profileData.majorId?.name
     || (profileData.departmentId && majors.length === 0 ? 'Không phân chuyên ngành' : 'Chưa cập nhật chuyên ngành');
 
@@ -75,13 +85,13 @@ export default function ProfileHeader({
                 {isEditMode ? (
                   <Form.Select
                     size="sm"
-                    value={editData.departmentId}
+                    value={editData.departmentId ? String(editData.departmentId) : ''}
                     onChange={e => setEditData({ ...editData, departmentId: e.target.value, majorId: '' })}
                     style={{ maxWidth: '200px' }}
                   >
                     <option value="">-- Chọn ngành --</option>
                     {departments.map(d => (
-                      <option key={d._id} value={d._id}>{d.name}</option>
+                      <option key={d._id} value={String(d._id)}>{d.name}</option>
                     ))}
                   </Form.Select>
                 ) : (
@@ -103,18 +113,20 @@ export default function ProfileHeader({
                 {isEditMode ? (
                   <Form.Select
                     size="sm"
-                    value={editData.majorId}
+                    value={editData.majorId ? String(editData.majorId) : ''}
                     onChange={e => setEditData({ ...editData, majorId: e.target.value })}
                     style={{ maxWidth: '200px' }}
-                    disabled={majors.length === 0}
+                    disabled={!activeDeptId || majors.length === 0}
                   >
-                    {majors.length === 0 ? (
+                    {!activeDeptId ? (
+                      <option value="">-- Vui lòng chọn ngành trước --</option>
+                    ) : majors.length === 0 ? (
                       <option value="">Không phân chuyên ngành</option>
                     ) : (
                       <>
                         <option value="">-- Chọn chuyên ngành --</option>
                         {majors.map(m => (
-                          <option key={m._id} value={m._id}>{m.name}</option>
+                          <option key={m._id} value={String(m._id)}>{m.name}</option>
                         ))}
                       </>
                     )}

@@ -7,6 +7,7 @@ import Input from '../../components/Input';
 import Select from '../../components/Select';
 import Alert from '../../components/Alert';
 import { masterDataService } from '../../services/masterDataService';
+import { useDepartments } from '../../hooks/useMasterData';
 import { updateProject } from '../../services/projectService';
 import { toast } from 'react-toastify';
 
@@ -29,12 +30,8 @@ export default function UpdateProjectModal({ show, onHide, project, onSuccess })
   const [serverError, setServerError] = useState('');
 
   // Fetch Departments
-  const { data: deptRes } = useQuery({
-    queryKey: ['departments'],
-    queryFn: masterDataService.getDepartments,
-    staleTime: Infinity,
-  });
-  const departments = deptRes?.data || [];
+  const { data: rawDepartments } = useDepartments();
+  const departments = Array.isArray(rawDepartments) ? rawDepartments : (rawDepartments?.data || []);
 
   // Initialize form with project data
   useEffect(() => {

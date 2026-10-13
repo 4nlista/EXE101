@@ -72,13 +72,16 @@ export default function PublicProfilePage() {
 
   // --- Handlers for Main Profile ---
   const handleEditClick = () => {
+    const rawDeptId = profileData.departmentId?._id || profileData.departmentId || '';
+    const rawMajorId = profileData.majorId?._id || profileData.majorId || '';
+
     setEditData({
       name: profileData.name || '',
       phone: profileData.phone || '',
       address: profileData.address || '',
       dob: profileData.dob ? new Date(profileData.dob).toISOString().split('T')[0] : '',
-      departmentId: profileData.departmentId?._id || profileData.departmentId || '',
-      majorId: profileData.majorId?._id || profileData.majorId || '',
+      departmentId: rawDeptId ? String(rawDeptId) : '',
+      majorId: rawMajorId ? String(rawMajorId) : '',
       semester: profileData.semester || '',
       gpa: profileData.gpa !== undefined ? profileData.gpa : '',
       mainSkills: Array.isArray(profileData.mainSkills) ? profileData.mainSkills : []

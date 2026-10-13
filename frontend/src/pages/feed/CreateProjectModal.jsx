@@ -9,6 +9,7 @@ import Select from '../../components/Select';
 import Alert from '../../components/Alert';
 import { Hourglass } from 'lucide-react';
 import { masterDataService } from '../../services/masterDataService';
+import { useDepartments } from '../../hooks/useMasterData';
 import { createProject, checkProjectLimit } from '../../services/projectService';
 import { toast } from 'react-toastify';
 import { Spinner } from 'react-bootstrap';
@@ -34,12 +35,8 @@ export default function CreateProjectModal({ show, onHide }) {
   const [isLimitReached, setIsLimitReached] = useState(false);
 
   // Fetch Departments
-  const { data: deptRes } = useQuery({
-    queryKey: ['departments'],
-    queryFn: masterDataService.getDepartments,
-    staleTime: Infinity,
-  });
-  const departments = deptRes?.data || [];
+  const { data: rawDepartments } = useDepartments();
+  const departments = Array.isArray(rawDepartments) ? rawDepartments : (rawDepartments?.data || []);
 
   // Check Limit
   const { data: limitRes, isLoading: isCheckingLimit, isFetching } = useQuery({
