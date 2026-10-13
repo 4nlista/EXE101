@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Spinner, Form } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Search, X, Clock, Users, ChevronRight, GraduationCap } from 'lucide-react';
+import { Search, X, Clock, Users, ChevronRight, ArrowLeft } from 'lucide-react';
 import { profileService } from '../../services/profileService';
 import { useDepartments } from '../../hooks/useMasterData';
 import { useAuth } from '../../contexts/AuthContext';
@@ -48,19 +48,23 @@ export default function Community() {
   const { data: rawDepartments } = useDepartments();
   const departments = Array.isArray(rawDepartments) ? rawDepartments : (rawDepartments?.data || []);
 
-  // Query danh sách người dùng trong cộng đồng
+  // Query danh sách người dùng trong cộng đồng (10 người / trang)
   const { data: response, isLoading } = useQuery({
     queryKey: ['communityUsers', debouncedSearch, selectedDept, currentPage],
     queryFn: () => profileService.getCommunityUsers({
       search: debouncedSearch,
       departmentId: selectedDept || undefined,
       page: currentPage,
-      limit: 12
+      limit: 10
     }),
     keepPreviousData: true
   });
 
-  const users = response?.data?.users || response?.data?.data?.users || response?.users || [];
+  const rawUsers = response?.data?.users || response?.data?.data?.users || response?.users || [];
+  // Loại trừ tài khoản quản trị viên và chính mình (nếu có)
+  const users = rawUsers.filter(u => 
+    u.roleCode !== 0 && String(u._id) !== String(currentUser?._id || currentUser?.id)
+  );
   const pagination = response?.data?.pagination || response?.data?.data?.pagination || response?.pagination || null;
 
   // Xử lý khi click vào người dùng -> Lưu vào lịch sử & chuyển đến Profile
@@ -70,8 +74,7 @@ export default function Community() {
         _id: user._id,
         name: user.name,
         avatar: user.avatar,
-        deptName: user.departmentId?.name || '',
-        semester: user.semester || ''
+        majorOrDept: user.majorId?.name || user.departmentId?.name || ''
       };
       const filtered = recentUsers.filter(u => u._id !== user._id);
       const updated = [userSummary, ...filtered].slice(0, 8);
@@ -102,6 +105,17 @@ export default function Community() {
   return (
     <div className="min-vh-100 py-4" style={{ backgroundColor: '#f0f2f5' }}>
       <Container style={{ maxWidth: '720px' }}>
+        {/* Nút quay lại Bảng tin (/feed) */}
+        <div className="d-flex align-items-center mb-3">
+          <Button
+            variant="light"
+            size="sm"
+            className="d-inline-flex align-items-center gap-2 border shadow-sm px-3 text-secondary fw-medium"
+            onClick={() => navigate('/feed')}
+          >
+            <ArrowLeft size={16} /> Quay lại Bảng tin
+          </Button>
+        </div>
         {/* Card khung tìm kiếm chính phong cách Facebook */}
         <div className="bg-white rounded-3 shadow-sm border p-3 mb-3">
           {/* Thanh tìm kiếm */}
@@ -203,9 +217,13 @@ export default function Community() {
                         <div className="fw-semibold text-dark" style={{ fontSize: '0.95rem' }}>
                           {user.name}
                         </div>
-                        <div className="text-muted small" style={{ fontSize: '0.8rem' }}>
-                          {user.deptName || 'Thành viên'} {user.semester ? `• Kỳ ${user.semester}` : ''}
-                        </div>
+                        {user.majorOrDept && (
+                          <div className="mt-1">
+                            <span className="badge bg-light text-secondary border fw-normal" style={{ fontSize: '0.78rem' }}>
+                              {user.majorOrDept}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -253,9 +271,7 @@ export default function Community() {
           ) : (
             <div className="d-flex flex-column gap-1">
               {users.map((user) => {
-                const deptName = user.departmentId?.name || '';
-                const majorName = user.majorId?.name || '';
-                const isMe = currentUser && (String(user._id) === String(currentUser._id || currentUser.id));
+                const majorOrDept = user.majorId?.name || user.departmentId?.name || '';
 
                 return (
                   <div
@@ -270,61 +286,26 @@ export default function Community() {
                           src={user.avatar}
                           alt={user.name}
                           className="rounded-circle"
-                          style={{ width: '48px', height: '48px', objectFit: 'cover' }}
+                          style={{ width: '46px', height: '46px', objectFit: 'cover' }}
                         />
                       ) : (
                         <div
                           className="rounded-circle d-flex align-items-center justify-content-center bg-secondary text-white fw-bold"
-                          style={{ width: '48px', height: '48px', fontSize: '1.2rem' }}
+                          style={{ width: '46px', height: '46px', fontSize: '1.2rem' }}
                         >
                           {user.name ? user.name.trim().charAt(0).toUpperCase() : 'U'}
                         </div>
                       )}
 
                       <div>
-                        <div className="fw-semibold text-dark d-flex align-items-center gap-2" style={{ fontSize: '0.95rem' }}>
-                          <span>{user.name}</span>
-                          {isMe && (
-                            <span className="badge bg-secondary-subtle text-secondary border fw-normal" style={{ fontSize: '0.7rem' }}>
-                              Bạn
+                        <div className="fw-semibold text-dark" style={{ fontSize: '0.95rem' }}>
+                          {user.name}
+                        </div>
+                        {majorOrDept && (
+                          <div className="mt-1">
+                            <span className="badge bg-light text-secondary border fw-normal" style={{ fontSize: '0.78rem' }}>
+                              {majorOrDept}
                             </span>
-                          )}
-                        </div>
-                        <div className="text-muted small d-flex align-items-center gap-1 flex-wrap" style={{ fontSize: '0.8rem' }}>
-                          {deptName && (
-                            <span>{deptName}</span>
-                          )}
-                          {majorName && (
-                            <>
-                              <span>•</span>
-                              <span>{majorName}</span>
-                            </>
-                          )}
-                          {user.semester && (
-                            <>
-                              <span>•</span>
-                              <span>Kỳ {user.semester}</span>
-                            </>
-                          )}
-                        </div>
-
-                        {/* Kỹ năng nếu có */}
-                        {user.mainSkills && user.mainSkills.length > 0 && (
-                          <div className="d-flex flex-wrap gap-1 mt-1">
-                            {user.mainSkills.slice(0, 3).map((skill, idx) => (
-                              <span
-                                key={idx}
-                                className="badge bg-light text-secondary border fw-normal"
-                                style={{ fontSize: '0.7rem' }}
-                              >
-                                {skill}
-                              </span>
-                            ))}
-                            {user.mainSkills.length > 3 && (
-                              <span className="text-muted small" style={{ fontSize: '0.7rem' }}>
-                                +{user.mainSkills.length - 3}
-                              </span>
-                            )}
                           </div>
                         )}
                       </div>
@@ -342,7 +323,7 @@ export default function Community() {
                           handleUserClick(user);
                         }}
                       >
-                        {isMe ? 'Trang cá nhân' : 'Xem hồ sơ'}
+                        Xem hồ sơ
                       </Button>
                       <ChevronRight size={18} className="text-muted d-sm-none" />
                     </div>

@@ -391,15 +391,21 @@ const buildBroadSearchQuery = (searchString) => {
 /**
  * Tìm kiếm và lấy danh sách sinh viên / thành viên trong cộng đồng
  * @param {Object} query - Tham số tìm kiếm (search, departmentId, page, limit)
- * @param {string} currentUserId - ID người dùng hiện tại
+ * @param {string} currentUserId - ID người dùng hiện tại (để loại trừ khỏi danh sách)
  */
 const searchCommunityUsers = async (query = {}, currentUserId = null) => {
-  const { search, departmentId, page = 1, limit = 20 } = query;
+  const { search, departmentId, page = 1, limit = 10 } = query;
   const skip = (parseInt(page) - 1) * parseInt(limit);
 
   const andFilters = [
-    { isActive: { $ne: 2 } } // Loại trừ tài khoản bị khóa
+    { isActive: { $ne: 2 } },      // Loại trừ tài khoản bị khóa
+    { roleCode: { $ne: 0 } }       // Không hiển thị Quản trị viên (Admin)
   ];
+
+  // Không hiển thị chính bản thân người dùng đang xem
+  if (currentUserId) {
+    andFilters.push({ _id: { $ne: currentUserId } });
+  }
 
   // Tìm kiếm bao phủ rộng (họ tên tiếng Việt không dấu/có dấu, lowercase, email, dọn khoảng trắng)
   const searchCondition = buildBroadSearchQuery(search);
