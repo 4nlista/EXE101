@@ -64,9 +64,8 @@ exports.getMyTransactions = async (req, res, next) => {
 // API để SePay gọi tới mỗi khi nhận được tiền
 exports.sepayWebhook = async (req, res) => {
   try {
-    console.log('🔔 [SePay Webhook] Nhận yêu cầu Webhook từ SePay:');
-    console.log('   - Headers Authorization:', req.headers['authorization']);
-    console.log('   - Body:', JSON.stringify(req.body));
+    // Ghi log an toàn: Chỉ ghi nhận các thông tin cơ bản, tuyệt đối không in Authorization header hay req.body (chứa số dư tài khoản accumulated)
+    console.log(`🔔 [SePay Webhook] Nhận yêu cầu: Gateway=${req.body?.gateway || 'N/A'}, Amount=${req.body?.transferAmount || 0}`);
 
     // Lấy API key từ các kiểu header phổ biến (Apikey, Bearer, raw key hoặc x-api-key)
     const authHeader = req.headers['authorization'] || req.headers['x-api-key'] || '';
@@ -78,9 +77,9 @@ exports.sepayWebhook = async (req, res) => {
     // Nếu trên server có cấu hình SEPAY_API_KEY
     if (process.env.SEPAY_API_KEY && process.env.SEPAY_API_KEY.trim()) {
       const expectedKey = process.env.SEPAY_API_KEY.trim();
-      // Nếu SePay có gửi key nhưng không khớp
+      // Nếu SePay có gửi key nhưng không khớp (không in raw secret key ra log để bảo mật)
       if (incomingKey && incomingKey !== expectedKey) {
-        console.warn(`❌ [SePay Webhook] Từ chối: API Key không khớp! (Nhận: "${incomingKey}", Kỳ vọng: "${expectedKey}")`);
+        console.warn('❌ [SePay Webhook] Từ chối: API Key không khớp hoặc không hợp lệ!');
         return res.status(401).json({ success: false, message: 'Unauthorized Webhook: API Key không khớp' });
       }
     }

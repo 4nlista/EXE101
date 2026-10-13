@@ -195,21 +195,116 @@ exports.sepayWebhook = async (req) => {
     content: `Chúc mừng bạn đã nâng cấp tài khoản ${packageType.toUpperCase()}!`
   });
 
-  // Gửi Email
+  // Mã tham chiếu đối soát ngân hàng (khắc phục lỗi code bị null từ SePay webhook)
+  const bankRefCode = transaction.sepayTransactionId || sepayTxId || req.body.referenceCode || req.body.id?.toString() || 'N/A';
+  const formattedAmount = (transferAmount || transaction.amount || 0).toLocaleString('vi-VN');
+  const formattedEndDate = moment(endDate).format('DD/MM/YYYY HH:mm');
+  const bankName = gateway || 'Chuyển khoản QR Ngân hàng';
+  // Mã hiển thị đơn hàng: Rút gọn 8 ký tự cuối và viết hoa để che giấu MongoDB ObjectId nội bộ
+  const displayOrderId = `ORD-${orderId.toString().slice(-8).toUpperCase()}`;
+
+  // Template email xác nhận thanh toán hiện đại, chuẩn nhận diện UniVerse AI
   const emailHtml = `
-    <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
-      <h2 style="color: #2e6c80;">Thanh toán thành công!</h2>
-      <p>Xin chào <strong>${user.name || user.email}</strong>,</p>
-      <p>Cảm ơn bạn đã tin tưởng dịch vụ nâng cấp tài khoản qua mã QR ngân hàng.</p>
-      <ul>
-        <li><strong>Gói dịch vụ:</strong> ${packageType.toUpperCase()}</li>
-        <li><strong>Mã đối soát (Ngân hàng):</strong> ${code}</li>
-        <li><strong>Thời hạn đến:</strong> ${moment(endDate).format('DD/MM/YYYY-HH:mm')}</li>
-      </ul>
-      <p>Hãy trải nghiệm các tính năng cao cấp bắt đầu ngay hôm nay!</p>
-    </div>
+    <!DOCTYPE html>
+    <html lang="vi">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Xác nhận thanh toán thành công - UniVerse AI</title>
+    </head>
+    <body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b;">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f1f5f9; padding: 30px 10px;">
+        <tr>
+          <td align="center">
+            <!-- Khung Email chính -->
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05);">
+              
+              <!-- Header Gradient -->
+              <tr>
+                <td style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 35px 30px; text-align: center;">
+                  <h1 style="margin: 0 0 8px 0; color: #ffffff; font-size: 26px; font-weight: 800; letter-spacing: -0.5px;">UniVerse AI</h1>
+                  <p style="margin: 0; color: #e0e7ff; font-size: 15px; font-weight: 500;">Xác nhận nâng cấp dịch vụ thành công</p>
+                </td>
+              </tr>
+
+              <!-- Nội dung chính -->
+              <tr>
+                <td style="padding: 35px 30px;">
+                  <!-- Thông báo thành công -->
+                  <div style="text-align: center; margin-bottom: 25px;">
+                    <div style="display: inline-block; width: 56px; height: 56px; line-height: 56px; border-radius: 50%; background-color: #ecfdf5; color: #10b981; font-size: 28px; font-weight: bold; margin-bottom: 12px;">✓</div>
+                    <h2 style="margin: 0 0 8px 0; color: #0f172a; font-size: 22px; font-weight: 700;">Thanh toán thành công!</h2>
+                    <p style="margin: 0; color: #64748b; font-size: 14px; line-height: 1.5;">
+                      Xin chào <strong style="color: #0f172a;">${user.name || user.email}</strong>, cảm ơn bạn đã nâng cấp gói dịch vụ. Tài khoản của bạn đã được kích hoạt đầy đủ quyền lợi cao cấp.
+                    </p>
+                  </div>
+
+                  <!-- Bảng chi tiết hóa đơn giao dịch -->
+                  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 25px;">
+                    <tr>
+                      <td style="padding: 14px 18px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #64748b; width: 40%;">Gói dịch vụ</td>
+                      <td style="padding: 14px 18px; border-bottom: 1px solid #e2e8f0; font-size: 14px; font-weight: 700; color: #4f46e5; text-align: right;">
+                        <span style="background-color: #e0e7ff; color: #4338ca; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; letter-spacing: 0.5px;">${packageType.toUpperCase()}</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 14px 18px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #64748b;">Số tiền thanh toán</td>
+                      <td style="padding: 14px 18px; border-bottom: 1px solid #e2e8f0; font-size: 15px; font-weight: 700; color: #0f172a; text-align: right;">${formattedAmount} đ</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 14px 18px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #64748b;">Mã đối soát (Ngân hàng)</td>
+                      <td style="padding: 14px 18px; border-bottom: 1px solid #e2e8f0; font-size: 13px; font-weight: 600; color: #0f172a; text-align: right; font-family: monospace;">${bankRefCode}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 14px 18px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #64748b;">Mã đơn hàng</td>
+                      <td style="padding: 14px 18px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #475569; text-align: right; font-family: monospace;">${displayOrderId}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 14px 18px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #64748b;">Cổng thanh toán</td>
+                      <td style="padding: 14px 18px; border-bottom: 1px solid #e2e8f0; font-size: 13px; font-weight: 500; color: #0f172a; text-align: right;">${bankName}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 14px 18px; font-size: 13px; color: #64748b;">Thời hạn sử dụng đến</td>
+                      <td style="padding: 14px 18px; font-size: 13px; font-weight: 600; color: #10b981; text-align: right;">${formattedEndDate}</td>
+                    </tr>
+                  </table>
+
+                  <!-- Lời nhắc quyền lợi -->
+                  <div style="background-color: #eef2ff; border-left: 4px solid #6366f1; padding: 14px 16px; border-radius: 4px; margin-bottom: 25px;">
+                    <p style="margin: 0; font-size: 13px; color: #3730a3; line-height: 1.5;">
+                      ✨ Bạn hiện có thể truy cập toàn bộ các mô hình AI tiên tiến, tạo trợ lý chuyên sâu và tận hưởng toàn bộ tiện ích không giới hạn của UniVerse AI.
+                    </p>
+                  </div>
+
+                  <!-- Nút hành động -->
+                  <div style="text-align: center; margin-top: 10px;">
+                    <a href="https://exe101-frontend.onrender.com" target="_blank" style="display: inline-block; background-color: #4f46e5; color: #ffffff; text-decoration: none; padding: 13px 28px; border-radius: 8px; font-size: 14px; font-weight: 600; box-shadow: 0 2px 4px rgba(79, 70, 229, 0.3);">
+                      Bắt đầu trải nghiệm ngay &rarr;
+                    </a>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Footer -->
+              <tr>
+                <td style="background-color: #f8fafc; padding: 20px 30px; text-align: center; border-top: 1px solid #e2e8f0;">
+                  <p style="margin: 0 0 6px 0; color: #94a3b8; font-size: 12px;">
+                    Email này được gửi tự động từ hệ thống thanh toán UniVerse AI.
+                  </p>
+                  <p style="margin: 0; color: #94a3b8; font-size: 12px;">
+                    Nếu cần hỗ trợ, vui lòng phản hồi email này hoặc liên hệ bộ phận CSKH.
+                  </p>
+                </td>
+              </tr>
+
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
   `;
-  await sendEmail(user.email, 'Xác nhận thanh toán gói dịch vụ thành công', emailHtml);
+  await sendEmail(user.email, 'Xác nhận thanh toán gói dịch vụ thành công - UniVerse AI', emailHtml);
 
   // Trả về JSON thành công cho webhook của SePay
   return { success: true, message: 'Xử lý thành công giao dịch SePay' };
