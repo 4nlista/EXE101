@@ -60,8 +60,8 @@ export default function Community() {
     keepPreviousData: true
   });
 
-  const users = response?.data?.data?.users || [];
-  const pagination = response?.data?.data?.pagination || null;
+  const users = response?.data?.users || response?.data?.data?.users || response?.users || [];
+  const pagination = response?.data?.pagination || response?.data?.data?.pagination || response?.pagination || null;
 
   // Xử lý khi click vào người dùng -> Lưu vào lịch sử & chuyển đến Profile
   const handleUserClick = (user) => {
