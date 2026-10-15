@@ -1,189 +1,132 @@
 import React, { useState } from 'react';
+import { Container, Nav } from 'react-bootstrap';
 import { useAuth } from '../../contexts/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import {
-  Search, Bell, Settings, LogOut, ChevronDown, User,
-  Users, FolderGit2, MessageSquare, Zap, Plus, ArrowRight
+  BarChart3, Users, FolderGit2, GraduationCap, Bot, LogOut, ShieldCheck
 } from 'lucide-react';
+import { adminService } from '../../services/adminService';
 import Button from '../../components/Button';
+import OverviewTab from './components/OverviewTab';
+import UserManagementTab from './components/UserManagementTab';
+import ProjectModerationTab from './components/ProjectModerationTab';
+import MasterDataTab from './components/MasterDataTab';
+import AiAssistantTab from './components/AiAssistantTab';
 
 export default function AdminDashboard() {
-  const { user, logout } = useAuth();
+  const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('overview');
 
-  const [showDrop, setShowDrop] = useState(false);
+  // Lấy dữ liệu thống kê chung cho toàn bộ Dashboard
+  const { data: statsResponse, isLoading: isStatsLoading } = useQuery({
+    queryKey: ['adminStats'],
+    queryFn: () => adminService.getStats()
+  });
+
+  const stats = statsResponse?.data || statsResponse || null;
 
   const handleLogout = () => {
     logout();
     navigate('/');
   };
 
+  const navItems = [
+    { key: 'overview', label: 'Tổng quan', icon: BarChart3 },
+    { key: 'users', label: 'Quản lý người dùng', icon: Users },
+    { key: 'projects', label: 'Kiểm duyệt dự án', icon: FolderGit2 },
+    { key: 'master-data', label: 'Chuyên ngành & Kỹ năng', icon: GraduationCap },
+    { key: 'ai-assistant', label: 'Trợ lý Gemini AI', icon: Bot }
+  ];
+
   return (
-    <div className="app-shell">
-      {/* ── Navbar ── */}
-      <nav className="app-nav">
-        <Link to="/dashboard" className="app-nav-logo">
-          <div className="app-nav-logo-mark">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-            </svg>
-          </div>
-          <div className="app-nav-logo-text">UniVerse <span className="brand">AI</span></div>
-        </Link>
-
-        <div className="nav-sep" />
-
-        <div className="app-nav-links">
-          <button className="nav-link active">Bảng điều khiển</button>
-          <button className="nav-link">Tìm dự án</button>
-          <button className="nav-link">Mạng lưới</button>
-        </div>
-
-        <div className="app-nav-right">
-          <button className="nav-icon-btn">
-            <Search size={18} />
-          </button>
-          <button className="nav-icon-btn">
-            <Bell size={18} />
-            <span className="notif-dot" />
-          </button>
-
-          <div className="drop-wrap">
-            <button className="user-pill" onClick={() => setShowDrop(!showDrop)}>
-              <div className="user-av">T</div>
-              <span className="user-pill-name">Tài khoản</span>
-              <ChevronDown size={14} style={{ marginLeft: 2, color: 'var(--text-muted)' }} />
-            </button>
-
-            {showDrop && (
-              <div className="drop-menu">
-                <div className="drop-user">
-                  <div className="drop-user-name">{user?.email || 'Người dùng'}</div>
-                  <div className="drop-user-email">Chưa cập nhật vai trò</div>
-                </div>
-                <div style={{ padding: '6px 0' }}>
-                  <button className="drop-item" onClick={() => navigate('/profile')}><User size={16} /> Xem hồ sơ</button>
-                  <div className="drop-sep" />
-                  <button className="drop-item danger" onClick={handleLogout}><LogOut size={16} /> Đăng xuất</button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </nav>
-
-      {/* ── Content ── */}
-      <main className="dash-content">
-
-        {/* Banner */}
-        <div className="dash-banner">
-          <div className="dash-banner-left">
-            <h2>Chào mừng Admin trở lại! 👋</h2>
-            <p>Trang quản trị hệ thống đang được xây dựng.</p>
-          </div>
-          <Button variant="light" className="text-dark fw-medium d-flex align-items-center gap-1 shadow-sm border" onClick={() => navigate('/manage')}>
-            Xem chi tiết <ArrowRight size={16} />
-          </Button>
-        </div>
-
-        {/* Stats */}
-        <div className="stat-row">
-          <div className="stat-c">
-            <div className="n">12</div>
-            <div className="l">Lượt xem hồ sơ tuần này</div>
-          </div>
-          <div className="stat-c">
-            <div className="n"><span className="accent">3</span></div>
-            <div className="l">Lời mời tham gia nhóm</div>
-          </div>
-          <div className="stat-c">
-            <div className="n">1</div>
-            <div className="l">Dự án đang tham gia</div>
-          </div>
-          <div className="stat-c">
-            <div className="n">85%</div>
-            <div className="l">Điểm hoàn thiện hồ sơ</div>
-          </div>
-        </div>
-
-        <div className="sec-head">
-          <h3>Hành động nhanh</h3>
-          <p>Truy cập nhanh các tính năng chính của hệ thống.</p>
-        </div>
-
-        <div className="feat-grid">
-          <div className="feat-card">
-            <div className="feat-icon"><FolderGit2 size={18} /></div>
-            <h4>Tạo dự án mới</h4>
-            <p>Đăng tải ý tưởng hoặc bài tập lớn để tìm kiếm thành viên cùng tham gia.</p>
-            <div className="feat-cta">Bắt đầu <ArrowRight size={14} /></div>
-          </div>
-
-          <div className="feat-card">
-            <div className="feat-icon"><Users size={18} /></div>
-            <h4>Tìm kiếm đồng đội</h4>
-            <p>Duyệt qua danh sách các lập trình viên, designer, và chuyên gia đang rảnh.</p>
-            <div className="feat-cta">Khám phá <ArrowRight size={14} /></div>
-          </div>
-
-          <div className="feat-card">
-            <div className="feat-icon"><MessageSquare size={18} /></div>
-            <h4>Tin nhắn & Lời mời</h4>
-            <p>Kiểm tra các yêu cầu kết nối và thảo luận với nhóm của bạn.</p>
-            <div className="feat-cta">Mở hộp thư <ArrowRight size={14} /></div>
-          </div>
-
-          <div className="feat-card">
-            <div className="feat-icon"><Zap size={18} /></div>
-            <h4>Gợi ý từ AI (Mới)</h4>
-            <p>Xem các dự án hoặc ứng viên mà AI đánh giá là phù hợp nhất với bạn.</p>
-            <div className="feat-cta">Xem gợi ý <ArrowRight size={14} /></div>
-          </div>
-        </div>
-
-        <div className="g2">
-          <div>
-            <div className="sec-head">
-              <h3>Dự án hiện tại</h3>
+    <div className="min-vh-100" style={{ backgroundColor: '#f0f2f5' }}>
+      {/* ── Topbar Quản trị ── */}
+      <header className="bg-white border-bottom shadow-sm sticky-top" style={{ zIndex: 1020 }}>
+        <Container fluid className="px-4 py-2 d-flex justify-content-between align-items-center">
+          <div className="d-flex align-items-center gap-2">
+            <div className="p-2 rounded-2 bg-primary text-white fw-bold d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px' }}>
+              U
             </div>
-            <div className="proj-list">
-              <div className="add-proj-form">
-                <div style={{ textAlign: 'center', padding: '10px 0' }}>
-                  <div style={{ color: 'var(--text-muted)', fontSize: '0.855rem', marginBottom: 10 }}>
-                    Bạn chưa tham gia dự án nào.
-                  </div>
-                  <Button variant="primary" className="d-inline-flex align-items-center gap-1 text-white shadow-sm" onClick={() => navigate('/feed')}>
-                    <Plus size={16} /> Tìm hoặc tạo dự án mới
-                  </Button>
-                </div>
-              </div>
+            <div>
+              <span className="fw-bold fs-6 text-dark">UniVerse AI</span>
+              <span className="badge bg-secondary-subtle text-secondary border ms-2 small fw-normal d-inline-flex align-items-center gap-1">
+                <ShieldCheck size={12} /> Cổng Quản trị viên
+              </span>
             </div>
           </div>
 
-          <div>
-            <div className="sec-head">
-              <h3>Kỹ năng của bạn</h3>
+          <div className="d-flex align-items-center gap-3">
+            <div className="text-end d-none d-sm-block">
+              <div className="fw-semibold text-dark small">{currentUser?.name || 'Quản trị viên'}</div>
+              <div className="text-muted small" style={{ fontSize: '0.75rem' }}>{currentUser?.email}</div>
             </div>
-            <div className="skill-widget">
-              <h3 style={{ marginBottom: 12 }}>Kỹ năng nổi bật</h3>
-              <div className="skill-chips" style={{ marginBottom: 20 }}>
-                <div className="skill-chip">React</div>
-                <div className="skill-chip">Node.js</div>
-                <div className="skill-chip">Figma</div>
-                <div className="skill-chip">UI Design</div>
-              </div>
-              <Button variant="cancel" size="sm" className="w-100 text-dark d-flex align-items-center justify-content-center gap-1 shadow-sm border" onClick={() => navigate('/profile')}>
-                <Plus size={14} /> Thêm kỹ năng
-              </Button>
-            </div>
-          </div>
-        </div>
 
-        <div className="dash-footer">
-          © 2024 UniVerse AI. All rights reserved.
+            <Button
+              variant="light"
+              size="sm"
+              className="border text-danger shadow-sm d-inline-flex align-items-center gap-1"
+              onClick={handleLogout}
+              title="Đăng xuất khỏi hệ thống"
+            >
+              <LogOut size={14} />
+              <span className="d-none d-sm-inline">Đăng xuất</span>
+            </Button>
+          </div>
+        </Container>
+
+        {/* ── Thanh chuyển Tab (Monochrome Icons) ── */}
+        <div className="bg-white border-top px-4">
+          <Container fluid className="p-0">
+            <Nav variant="tabs" className="border-0 flex-nowrap overflow-auto">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.key;
+
+                return (
+                  <Nav.Item key={item.key}>
+                    <Nav.Link
+                      active={isActive}
+                      onClick={() => setActiveTab(item.key)}
+                      className={`d-inline-flex align-items-center gap-2 py-3 px-3 border-0 border-bottom border-2 text-nowrap fw-medium small ${isActive ? 'border-primary text-primary active' : 'border-transparent text-secondary'}`}
+                      style={{ cursor: 'pointer', background: 'transparent' }}
+                    >
+                      <Icon size={16} />
+                      {item.label}
+                    </Nav.Link>
+                  </Nav.Item>
+                );
+              })}
+            </Nav>
+          </Container>
         </div>
+      </header>
+
+      {/* ── Vùng nội dung chính của Tab ── */}
+      <main className="py-4">
+        <Container fluid className="px-4" style={{ maxWidth: '1400px' }}>
+          {activeTab === 'overview' && (
+            <OverviewTab stats={stats} isLoading={isStatsLoading} />
+          )}
+
+          {activeTab === 'users' && (
+            <UserManagementTab />
+          )}
+
+          {activeTab === 'projects' && (
+            <ProjectModerationTab />
+          )}
+
+          {activeTab === 'master-data' && (
+            <MasterDataTab />
+          )}
+
+          {activeTab === 'ai-assistant' && (
+            <AiAssistantTab />
+          )}
+        </Container>
       </main>
-
     </div>
   );
 }

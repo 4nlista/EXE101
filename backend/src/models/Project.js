@@ -92,11 +92,27 @@ const projectSchema = new mongoose.Schema(
 
     // ===== TRẠNG THÁI =====
 
-    // 'open' (đang tuyển) | 'closed' (đã đóng)
+    // 'open' (đang tuyển) | 'closed' (đã đóng) | 'suspended' (bị đình chỉ)
     status: {
       type: String,
       enum: Object.values(PROJECT_STATUS),
       default: PROJECT_STATUS.OPEN
+    },
+    // Lý do kiểm duyệt/đình chỉ từ Admin
+    moderationReason: {
+      type: String,
+      default: null
+    },
+    // Thời điểm kiểm duyệt
+    moderatedAt: {
+      type: Date,
+      default: null
+    },
+    // ID Quản trị viên thực hiện kiểm duyệt
+    moderatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null
     },
 
     // ===== THÀNH VIÊN ĐÃ DUYỆT =====

@@ -35,6 +35,16 @@ const userSchema = new mongoose.Schema(
       enum: Object.values(IS_ACTIVE),
       default: IS_ACTIVE.ONLINE
     },
+    // Lý do bị khóa bởi Admin (nếu có)
+    lockReason: {
+      type: String,
+      default: null
+    },
+    // Thời điểm bị khóa
+    lockedAt: {
+      type: Date,
+      default: null
+    },
     // Thời điểm hoạt động gần nhất (online / ngắt kết nối)
     lastActiveAt: {
       type: Date,

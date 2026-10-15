@@ -255,6 +255,16 @@ const loginGoogle = async (googleToken) => {
       isActive: IS_ACTIVE.ONLINE
     });
   } else {
+    // Chặn đăng nhập nếu tài khoản đã bị khóa bởi Quản trị viên
+    if (user.isActive === IS_ACTIVE.LOCKED) {
+      const lockMsg = user.lockReason
+        ? `Tài khoản của bạn đã bị khóa bởi Quản trị viên. Lý do: ${user.lockReason}`
+        : 'Tài khoản của bạn đã bị khóa bởi Quản trị viên. Vui lòng liên hệ bộ phận hỗ trợ.';
+      const error = new Error(lockMsg);
+      error.statusCode = 403;
+      throw error;
+    }
+
     // Nếu user đã tồn tại (đăng ký bằng email thường) nhưng giờ login google, ta link googleId lại
     if (!user.googleId) {
       user.googleId = googleId;

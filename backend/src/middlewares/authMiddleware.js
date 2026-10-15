@@ -1,10 +1,12 @@
 const jwt = require('jsonwebtoken');
 const { ROLE_CODE } = require('../constants/roleEnum');
+const { IS_ACTIVE } = require('../constants/userEnum');
+const User = require('../models/User');
 
 /**
- * Middleware kiểm tra JWT token hợp lệ
+ * Middleware kiểm tra JWT token hợp lệ và tài khoản không bị khóa
  */
-const verifyToken = (req, res, next) => {
+const verifyToken = async (req, res, next) => {
   try {
     const authHeader = req.header('Authorization');
     
@@ -18,7 +20,24 @@ const verifyToken = (req, res, next) => {
 
     // Xác thực token
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'universe-secret-key');
-    req.user = decoded; // Gán thông tin user vào request (id, roleCode)
+    
+    // Kiểm tra trạng thái tài khoản trong Database để chặn ngay nếu vừa bị Admin khóa
+    const dbUser = await User.findById(decoded.id).select('isActive roleCode lockReason');
+    if (!dbUser) {
+      return res.status(401).json({ success: false, message: 'Tài khoản không tồn tại hoặc đã bị xóa.' });
+    }
+
+    if (dbUser.isActive === IS_ACTIVE.LOCKED) {
+      const lockMsg = dbUser.lockReason
+        ? `Tài khoản của bạn đã bị khóa bởi Quản trị viên. Lý do: ${dbUser.lockReason}`
+        : 'Tài khoản của bạn đã bị khóa bởi Quản trị viên.';
+      return res.status(403).json({ success: false, message: lockMsg });
+    }
+
+    req.user = {
+      id: decoded.id,
+      roleCode: dbUser.roleCode
+    };
     
     next();
   } catch (error) {
