@@ -7,6 +7,7 @@ const Department = require('../models/Department');
 const Major = require('../models/Major');
 const Skill = require('../models/Skill');
 const Notification = require('../models/Notification');
+const sendEmail = require('../utils/emailSender');
 const { IS_ACTIVE } = require('../constants/userEnum');
 const { ROLE_CODE } = require('../constants/roleEnum');
 const { PROJECT_STATUS } = require('../constants/projectEnum');
@@ -262,6 +263,40 @@ const lockUser = async (targetUserId, reason, currentAdminId) => {
     console.error('[Admin] Lỗi khi tạo thông báo khóa tài khoản:', err);
   }
 
+  // 6. Gửi Email thông báo chính thức qua Brevo
+  try {
+    const emailSubject = 'Thông báo tạm khóa tài khoản - UniVerse AI';
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 8px; background-color: #ffffff;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <h2 style="color: #111827; margin: 0;">UniVerse AI</h2>
+          <p style="color: #6b7280; font-size: 13px; margin-top: 4px;">Cổng kết nối dự án sinh viên</p>
+        </div>
+        <div style="border-top: 2px solid #ef4444; padding-top: 16px;">
+          <h3 style="color: #dc2626; margin-top: 0;">Thông báo tạm khóa tài khoản</h3>
+          <p>Xin chào <strong>${targetUser.name || targetUser.email}</strong>,</p>
+          <p>Chúng tôi rất tiếc phải thông báo rằng tài khoản UniVerse AI của bạn (<strong>${targetUser.email}</strong>) đã bị tạm khóa bởi Ban quản trị hệ thống.</p>
+          <div style="background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; padding: 14px; margin: 18px 0;">
+            <p style="margin: 0; color: #991b1b; font-weight: bold; font-size: 14px;">Lý do khóa tài khoản:</p>
+            <p style="margin: 6px 0 0 0; color: #7f1d1d; font-size: 15px;">${reason.trim()}</p>
+          </div>
+          <p style="color: #4b5563; font-size: 14px; line-height: 1.5;">
+            Trong thời gian bị khóa, bạn sẽ không thể đăng nhập vào hệ thống (kể cả phương thức đăng nhập bằng Google hoặc Email). Toàn bộ các bài tuyển dụng dự án đang mở của bạn đã được tạm đình chỉ để bảo vệ cộng đồng.
+          </p>
+          <p style="color: #4b5563; font-size: 14px; line-height: 1.5;">
+            Nếu bạn nhận thấy có sự nhầm lẫn hoặc cần hỗ trợ khiếu nại mở lại tài khoản, vui lòng phản hồi trực tiếp email này hoặc liên hệ Ban quản trị qua địa chỉ: <strong>nguyenan182167@gmail.com</strong>.
+          </p>
+          <div style="border-top: 1px solid #e5e7eb; margin-top: 24px; padding-top: 12px; text-align: center; color: #9ca3af; font-size: 12px;">
+            UniVerse AI Support Team
+          </div>
+        </div>
+      </div>
+    `;
+    sendEmail(targetUser.email, emailSubject, emailHtml).catch(e => console.error('[Brevo Lock Email Error]:', e));
+  } catch (emailErr) {
+    console.error('[Admin] Lỗi khi kích hoạt gửi email khóa tài khoản:', emailErr);
+  }
+
   return {
     message: 'Khóa tài khoản thành công.',
     user: {
@@ -313,6 +348,38 @@ const unlockUser = async (targetUserId, currentAdminId) => {
     });
   } catch (err) {
     console.error('[Admin] Lỗi khi tạo thông báo mở khóa:', err);
+  }
+
+  // Gửi Email thông báo mở khóa thành công qua Brevo
+  try {
+    const emailSubject = 'Tài khoản của bạn đã được mở khóa - UniVerse AI';
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 8px; background-color: #ffffff;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <h2 style="color: #111827; margin: 0;">UniVerse AI</h2>
+          <p style="color: #6b7280; font-size: 13px; margin-top: 4px;">Cổng kết nối dự án sinh viên</p>
+        </div>
+        <div style="border-top: 2px solid #10b981; padding-top: 16px;">
+          <h3 style="color: #059669; margin-top: 0;">Tài khoản đã được kích hoạt lại</h3>
+          <p>Xin chào <strong>${targetUser.name || targetUser.email}</strong>,</p>
+          <p>Ban quản trị UniVerse AI xin thông báo: Tài khoản của bạn (<strong>${targetUser.email}</strong>) đã được mở khóa và phục hồi trạng thái hoạt động bình thường.</p>
+          <p style="color: #4b5563; font-size: 14px; line-height: 1.5;">
+            Bạn có thể đăng nhập ngay bây giờ để tiếp tục tham gia các dự án và sử dụng đầy đủ các tính năng của nền tảng.
+          </p>
+          <div style="text-align: center; margin: 24px 0;">
+            <a href="https://exeuniverseai.vercel.app/auth/login" style="display: inline-block; background-color: #111827; color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 6px; font-weight: bold; font-size: 14px;">
+              Đăng nhập ngay
+            </a>
+          </div>
+          <div style="border-top: 1px solid #e5e7eb; margin-top: 24px; padding-top: 12px; text-align: center; color: #9ca3af; font-size: 12px;">
+            UniVerse AI Support Team
+          </div>
+        </div>
+      </div>
+    `;
+    sendEmail(targetUser.email, emailSubject, emailHtml).catch(e => console.error('[Brevo Unlock Email Error]:', e));
+  } catch (emailErr) {
+    console.error('[Admin] Lỗi khi kích hoạt gửi email mở khóa tài khoản:', emailErr);
   }
 
   return {

@@ -106,7 +106,7 @@ export default function LockUserModal({ user, show, onClose, onSuccess }) {
               </Form.Control.Feedback>
             )}
             <Form.Text className="text-muted small">
-              Lý do này sẽ được gửi trực tiếp đến chuông thông báo của người dùng.
+              Lý do này sẽ được gửi thông báo qua Email (Brevo) và lưu vào hệ thống thông báo của người dùng.
             </Form.Text>
           </Form.Group>
         </Modal.Body>
