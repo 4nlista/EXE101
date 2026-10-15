@@ -12,13 +12,17 @@ if (!apiKey) {
 const genAI = new GoogleGenerativeAI(apiKey);
 
 // Danh sách các mô hình Gemini theo thứ tự ưu tiên (Model Fallback)
-// Ưu tiên gemini-2.5-flash (tốc độ nhanh, ổn định cao), dự phòng gemini-3.6-flash, gemini-3.5-flash, gemini-flash-latest
+// Ưu tiên gemini-2.5-flash (tốc độ nhanh, ổn định cao), dự phòng gemini-1.5-flash, gemini-2.0-flash, gemini-1.5-pro, gemini-flash-latest, gemini-3.5-flash, gemini-3.6-flash
 const GEMINI_MODELS = [
   'gemini-2.5-flash',
-  'gemini-3.6-flash',
+  'gemini-1.5-flash',
+  'gemini-2.0-flash',
+  'gemini-1.5-pro',
+  'gemini-flash-latest',
   'gemini-3.5-flash',
-  'gemini-flash-latest'
+  'gemini-3.6-flash'
 ];
+
 
 /**
  * Hàm helper gọi Gemini với cơ chế tự động chuyển đổi mô hình dự phòng (Fallback)

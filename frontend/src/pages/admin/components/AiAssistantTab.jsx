@@ -15,7 +15,7 @@ export default function AiAssistantTab() {
   const [messages, setMessages] = useState([
     {
       sender: 'ai',
-      text: 'Xin chào Quản trị viên! Tôi là trợ lý AI được trang bị công cụ Function Calling kết nối trực tiếp với Database của UniVerse AI. Bạn có thể hỏi tôi bất kỳ số liệu thống kê hoặc phân tích nào về người dùng, dự án và doanh thu.'
+      text: 'Xin chào Quản trị viên! Tôi là trợ lý AI được tích hợp trực tiếp với cơ sở dữ liệu thời gian thực của UniVerse AI. Bạn có thể yêu cầu tôi báo cáo tổng quan, phân tích tăng trưởng người dùng, trạng thái các dự án hoặc tình hình doanh thu bất kỳ lúc nào.'
     }
   ]);
   const [inputPrompt, setInputPrompt] = useState('');
@@ -59,14 +59,14 @@ export default function AiAssistantTab() {
       {/* Header */}
       <div className="d-flex align-items-center justify-content-between pb-3 border-bottom mb-3">
         <div className="d-flex align-items-center gap-2">
-          <div className="p-2 rounded-circle bg-light text-primary">
-            <Bot size={22} />
+          <div className="p-2 rounded-circle bg-light text-dark border">
+            <Bot size={20} />
           </div>
           <div>
             <h6 className="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
               Trợ lý Quản trị viên Gemini AI
-              <span className="badge bg-primary-subtle text-primary border border-primary-subtle fw-normal" style={{ fontSize: '0.7rem' }}>
-                Function Calling Realtime
+              <span className="badge bg-light text-secondary border fw-normal" style={{ fontSize: '0.7rem' }}>
+                Dữ liệu Realtime
               </span>
             </h6>
             <div className="text-muted small" style={{ fontSize: '0.8rem' }}>
@@ -104,7 +104,7 @@ export default function AiAssistantTab() {
             onClick={() => handleSend(promptText)}
             disabled={isLoading}
           >
-            <Sparkles size={12} className="text-primary flex-shrink-0" />
+            <Sparkles size={12} className="text-secondary flex-shrink-0" />
             <span>{promptText}</span>
           </button>
         ))}
@@ -122,14 +122,14 @@ export default function AiAssistantTab() {
               className={`d-flex gap-2 ${isAi ? 'align-items-start' : 'align-items-start flex-row-reverse'}`}
             >
               <div
-                className={`rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 ${isAi ? 'bg-primary text-white' : 'bg-secondary text-white'}`}
+                className={`rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 ${isAi ? 'bg-dark text-white' : 'bg-secondary text-white'}`}
                 style={{ width: '32px', height: '32px' }}
               >
-                {isAi ? <Bot size={18} /> : <User size={18} />}
+                {isAi ? <Bot size={16} /> : <User size={16} />}
               </div>
 
               <div
-                className={`p-3 rounded-3 shadow-sm text-break ${isAi ? 'bg-light border text-dark' : 'bg-primary text-white'}`}
+                className={`p-3 rounded-3 shadow-sm text-break ${isAi ? 'bg-light border text-dark' : 'bg-dark text-white'}`}
                 style={{ maxWidth: '80%', fontSize: '0.9rem', lineHeight: '1.5', whiteSpace: 'pre-line' }}
               >
                 {msg.text}
@@ -140,7 +140,7 @@ export default function AiAssistantTab() {
 
         {isLoading && (
           <div className="d-flex align-items-center gap-2 text-muted small py-2">
-            <Spinner animation="border" size="sm" variant="primary" />
+            <Spinner animation="border" size="sm" variant="secondary" />
             <span>AI đang truy vấn database và phân tích số liệu...</span>
           </div>
         )}

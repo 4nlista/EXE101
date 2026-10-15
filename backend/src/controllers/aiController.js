@@ -176,8 +176,8 @@ const adminChat = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Vui lòng nhập câu hỏi' });
     }
 
-    // Kiểm tra quyền Admin (roleCode)
-    if (req.user.roleCode !== 'ADMIN') {
+    // Kiểm tra quyền Admin (roleCode: 0 hoặc 'ADMIN')
+    if (req.user.roleCode !== 0 && req.user.roleCode !== 'ADMIN') {
       return res.status(403).json({ success: false, message: 'Bạn không có quyền truy cập.' });
     }
 
