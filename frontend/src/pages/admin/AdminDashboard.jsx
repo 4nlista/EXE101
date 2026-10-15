@@ -46,12 +46,12 @@ export default function AdminDashboard() {
       <header className="bg-white border-bottom shadow-sm sticky-top" style={{ zIndex: 1020 }}>
         <Container fluid className="px-4 py-2 d-flex justify-content-between align-items-center">
           <div className="d-flex align-items-center gap-2">
-            <div className="p-2 rounded-2 bg-primary text-white fw-bold d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px' }}>
+            <div className="p-2 rounded-2 bg-dark text-white fw-bold d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px' }}>
               U
             </div>
             <div>
               <span className="fw-bold fs-6 text-dark">UniVerse AI</span>
-              <span className="badge bg-secondary-subtle text-secondary border ms-2 small fw-normal d-inline-flex align-items-center gap-1">
+              <span className="badge bg-light text-secondary border ms-2 small fw-normal d-inline-flex align-items-center gap-1">
                 <ShieldCheck size={12} /> Cổng Quản trị viên
               </span>
             </div>
@@ -66,7 +66,7 @@ export default function AdminDashboard() {
             <Button
               variant="light"
               size="sm"
-              className="border text-danger shadow-sm d-inline-flex align-items-center gap-1"
+              className="border text-secondary shadow-sm d-inline-flex align-items-center gap-1"
               onClick={handleLogout}
               title="Đăng xuất khỏi hệ thống"
             >
@@ -89,7 +89,7 @@ export default function AdminDashboard() {
                     <Nav.Link
                       active={isActive}
                       onClick={() => setActiveTab(item.key)}
-                      className={`d-inline-flex align-items-center gap-2 py-3 px-3 border-0 border-bottom border-2 text-nowrap fw-medium small ${isActive ? 'border-primary text-primary active' : 'border-transparent text-secondary'}`}
+                      className={`d-inline-flex align-items-center gap-2 py-3 px-3 border-0 border-bottom border-2 text-nowrap fw-medium small ${isActive ? 'border-dark text-dark fw-semibold active' : 'border-transparent text-secondary'}`}
                       style={{ cursor: 'pointer', background: 'transparent' }}
                     >
                       <Icon size={16} />
