@@ -128,6 +128,8 @@ export default function ProjectManagementDetail() {
         return <StatusBadge variant="primary" text="Được mời" />;
       case APPLICATION_STATUS.EXPIRED:
         return <StatusBadge variant="secondary" text="Đã hết hạn" />;
+      case APPLICATION_STATUS.CANCELLED:
+        return <StatusBadge variant="secondary" text="Đã hủy" />;
       default:
         return null;
     }
@@ -334,6 +336,7 @@ export default function ProjectManagementDetail() {
               <option value={APPLICATION_STATUS.APPROVED}>Đã duyệt</option>
               <option value={APPLICATION_STATUS.REJECTED}>Từ chối</option>
               <option value={APPLICATION_STATUS.EXPIRED}>Đã hết hạn</option>
+              <option value={APPLICATION_STATUS.CANCELLED}>Đã hủy</option>
             </Form.Select>
             <Button variant="cancel" size="sm" className="d-flex align-items-center gap-1 rounded px-3 text-dark" onClick={exportToCSV}>
               <FaDownload /> Export

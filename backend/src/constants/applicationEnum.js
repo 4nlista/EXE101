@@ -4,7 +4,8 @@ const APPLICATION_STATUS = {
   APPROVED: 'approved',   // Đã duyệt - chấp nhận ứng viên
   REJECTED: 'rejected',   // Đã từ chối ứng viên
   INVITED: 'invited',     // Được mời tham gia dự án
-  EXPIRED: 'expired'      // Đã hết hạn (quá deadline dự án)
+  EXPIRED: 'expired',     // Đã hết hạn (quá deadline dự án)
+  CANCELLED: 'cancelled'  // Dự án đã bị hủy
 };
 
 module.exports = { APPLICATION_STATUS };

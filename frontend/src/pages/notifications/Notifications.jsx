@@ -102,9 +102,10 @@ export default function Notifications() {
     } else if (
       notif.type === NOTIFICATION_TYPE.INVITATION ||
       notif.type === NOTIFICATION_TYPE.REJECTED ||
-      notif.type === NOTIFICATION_TYPE.MEMBER_KICKED
+      notif.type === NOTIFICATION_TYPE.MEMBER_KICKED ||
+      notif.type === NOTIFICATION_TYPE.PROJECT_CANCELLED
     ) {
-      // Đối với Lời mời, Từ chối, Bị kick -> Kiểm tra và mở popup chi tiết dự án
+      // Đối với Lời mời, Từ chối, Bị kick, Dự án hủy -> Kiểm tra và mở popup chi tiết dự án
       if (notif.referenceId) {
         try {
           const res = await getProjectDetail(notif.referenceId);
@@ -138,6 +139,7 @@ export default function Notifications() {
         return <div className="d-flex align-items-center justify-content-center bg-light rounded-2 border" style={{ width: '100%', height: '100%' }}><CheckCircle2 size={18} className="text-secondary" /></div>;
       case NOTIFICATION_TYPE.REJECTED:
       case NOTIFICATION_TYPE.MEMBER_KICKED:
+      case NOTIFICATION_TYPE.PROJECT_CANCELLED:
         return <div className="d-flex align-items-center justify-content-center bg-light rounded-2 border" style={{ width: '100%', height: '100%' }}><FileText size={18} className="text-secondary" /></div>;
       default:
         return <div className="d-flex align-items-center justify-content-center bg-light rounded-2 border" style={{ width: '100%', height: '100%' }}><Bell size={18} className="text-secondary" /></div>;

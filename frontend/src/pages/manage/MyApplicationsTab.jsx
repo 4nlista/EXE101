@@ -110,6 +110,8 @@ export default function MyApplicationsTab() {
         return <StatusBadge variant="primary" text="Được mời" />;
       case APPLICATION_STATUS.EXPIRED:
         return <StatusBadge variant="secondary" text="Đã hết hạn" />;
+      case APPLICATION_STATUS.CANCELLED:
+        return <StatusBadge variant="secondary" text="Dự án đã hủy" />;
       default:
         return null;
     }
@@ -136,6 +138,7 @@ export default function MyApplicationsTab() {
             <option value={APPLICATION_STATUS.REJECTED}>Đã từ chối</option>
             <option value={APPLICATION_STATUS.INVITED}>Được mời</option>
             <option value={APPLICATION_STATUS.EXPIRED}>Đã hết hạn</option>
+            <option value={APPLICATION_STATUS.CANCELLED}>Dự án đã hủy</option>
           </Form.Select>
 
           <InputGroup style={{ width: '250px' }}>

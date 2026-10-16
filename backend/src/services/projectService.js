@@ -348,11 +348,60 @@ const updateProjectStatus = async (projectId, ownerId, status) => {
     if (maxMembers > 0 && currentMembers >= (maxMembers / 2)) {
       throw new Error(`Không thể hủy dự án khi số thành viên đã đạt từ 50% trở lên (${currentMembers}/${maxMembers})`);
     }
+    // Cập nhật trạng thái các đơn nộp và gửi thông báo tới người tham gia
+    await handleCancelProjectApplicationsAndNotify(project, ownerId);
   }
 
   project.status = status;
   await project.save();
   return project;
+};
+
+// Cập nhật trạng thái các đơn nộp sang CANCELLED và gửi thông báo tới ứng viên, thành viên khi dự án bị hủy
+const handleCancelProjectApplicationsAndNotify = async (project, ownerId) => {
+  // Lấy danh sách các đơn chưa kết thúc (đang chờ duyệt, được mời hoặc đã duyệt)
+  const activeApplications = await Application.find({
+    projectId: project._id,
+    status: { $in: [APPLICATION_STATUS.PENDING, APPLICATION_STATUS.INVITED, APPLICATION_STATUS.APPROVED] }
+  });
+
+  // Chuyển trạng thái các đơn này sang CANCELLED thay vì xóa khỏi database
+  await Application.updateMany(
+    {
+      projectId: project._id,
+      status: { $in: [APPLICATION_STATUS.PENDING, APPLICATION_STATUS.INVITED, APPLICATION_STATUS.APPROVED] }
+    },
+    { status: APPLICATION_STATUS.CANCELLED }
+  );
+
+  // Tập hợp danh sách các user cần nhận thông báo (trừ chủ sở hữu dự án)
+  const recipientUserIds = new Set();
+  activeApplications.forEach(app => {
+    if (app.applicantId && app.applicantId.toString() !== ownerId.toString()) {
+      recipientUserIds.add(app.applicantId.toString());
+    }
+  });
+
+  if (project.members && project.members.length > 0) {
+    project.members.forEach(m => {
+      const memberId = m.userId?._id ? m.userId._id.toString() : m.userId?.toString();
+      if (memberId && memberId !== ownerId.toString()) {
+        recipientUserIds.add(memberId);
+      }
+    });
+  }
+
+  // Tạo thông báo cho từng người nhận (kích hoạt hook post('save') phát socket realtime và cập nhật chuông)
+  for (const recipientId of recipientUserIds) {
+    await Notification.create({
+      userId: recipientId,
+      type: NOTIFICATION_TYPE.PROJECT_CANCELLED,
+      title: 'Dự án đã bị hủy',
+      content: `Dự án "${project.title}" đã bị chủ sở hữu hủy.`,
+      referenceId: project._id,
+      referenceModel: 'Project'
+    });
+  }
 };
 
 const deleteProject = async (projectId, ownerId) => {
@@ -365,8 +414,8 @@ const deleteProject = async (projectId, ownerId) => {
     throw new Error(`Không thể hủy dự án khi số thành viên đã đạt từ 50% trở lên (${currentMembers}/${maxMembers})`);
   }
 
-  // Hủy các đơn nộp (nếu có)
-  await Application.deleteMany({ projectId });
+  // Cập nhật trạng thái các đơn nộp và gửi thông báo tới ứng viên, thành viên
+  await handleCancelProjectApplicationsAndNotify(project, ownerId);
   
   // Chuyển trạng thái thành CANCELLED thay vì xóa vật lý
   project.status = PROJECT_STATUS.CANCELLED;

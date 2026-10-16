@@ -8,7 +8,7 @@ import Input from '../../components/Input';
 import { Clock, FileText, CheckCircle, Upload, Send, AlertCircle } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { applyProject, checkApplicationStatus } from '../../services/applicationService';
-import { APPLICATION_STATUS } from '../../constants';
+import { APPLICATION_STATUS, PROJECT_STATUS } from '../../constants';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import OnboardingRequiredModal from '../../components/OnboardingRequiredModal';
@@ -46,6 +46,9 @@ export default function ProjectDetailModal({ project, show, onHide }) {
     }
     if (status === APPLICATION_STATUS.REJECTED && rejectionCount >= 3) {
       return 'Bạn đã bị từ chối 3 lần (Vượt quá giới hạn)';
+    }
+    if (status === APPLICATION_STATUS.CANCELLED) {
+      return 'Dự án này đã bị chủ sở hữu hủy';
     }
     return 'Bạn đã ứng tuyển bài đăng dự án này rồi';
   };
@@ -323,7 +326,14 @@ export default function ProjectDetailModal({ project, show, onHide }) {
               </Alert>
             )}
 
-            {currentUser && !currentUser.onboardingCompleted ? (
+            {project?.status !== PROJECT_STATUS.OPEN ? (
+              <div className="w-100 p-3 rounded fw-bold d-flex align-items-center justify-content-center gap-2 mt-2 bg-light text-muted border">
+                <AlertCircle size={20} />
+                {project?.status === PROJECT_STATUS.CANCELLED
+                  ? 'Dự án này đã bị chủ sở hữu hủy'
+                  : 'Dự án này hiện đã đóng hoặc kết thúc'}
+              </div>
+            ) : currentUser && !currentUser.onboardingCompleted ? (
               <div className="w-100 p-4 rounded text-center my-2 border bg-light">
                 <p className="text-secondary mb-3 small" style={{ lineHeight: '1.6' }}>
                   Bạn cần hoàn tất hồ sơ cá nhân để chủ dự án xem xét chuyên ngành, kỹ năng và GPA của bạn trước khi ứng tuyển.

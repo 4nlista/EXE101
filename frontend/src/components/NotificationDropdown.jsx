@@ -120,9 +120,10 @@ export default function NotificationDropdown() {
     } else if (
       notif.type === NOTIFICATION_TYPE.INVITATION ||
       notif.type === NOTIFICATION_TYPE.REJECTED ||
-      notif.type === NOTIFICATION_TYPE.MEMBER_KICKED
+      notif.type === NOTIFICATION_TYPE.MEMBER_KICKED ||
+      notif.type === NOTIFICATION_TYPE.PROJECT_CANCELLED
     ) {
-      // Đối với Lời mời, Từ chối, Bị kick -> Kiểm tra và mở popup chi tiết dự án
+      // Đối với Lời mời, Từ chối, Bị kick, Dự án hủy -> Kiểm tra và mở popup chi tiết dự án
       if (notif.referenceId) {
         try {
           const res = await getProjectDetail(notif.referenceId);
@@ -152,7 +153,8 @@ export default function NotificationDropdown() {
       case NOTIFICATION_TYPE.INVITATION_ACCEPTED: return <User size={18} className="text-secondary" />;
       case NOTIFICATION_TYPE.APPROVED: return <CheckCircle2 size={18} className="text-secondary" />;
       case NOTIFICATION_TYPE.REJECTED:
-      case NOTIFICATION_TYPE.MEMBER_KICKED: return <FileText size={18} className="text-secondary" />;
+      case NOTIFICATION_TYPE.MEMBER_KICKED:
+      case NOTIFICATION_TYPE.PROJECT_CANCELLED: return <FileText size={18} className="text-secondary" />;
       default: return <Bell size={18} className="text-secondary" />;
     }
   };

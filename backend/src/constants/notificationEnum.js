@@ -11,7 +11,8 @@ const NOTIFICATION_TYPE = {
   SYSTEM: 'system',                     // Thông báo hệ thống từ Admin
   INVITATION: 'invitation',             // Được mời tham gia dự án
   INVITATION_ACCEPTED: 'invitation_accepted', // Ứng viên chấp nhận lời mời tham gia
-  MEMBER_KICKED: 'member_kicked'        // Bị kick khỏi dự án
+  MEMBER_KICKED: 'member_kicked',       // Bị kick khỏi dự án
+  PROJECT_CANCELLED: 'project_cancelled' // Dự án đã bị chủ sở hữu hủy
 };
 
 module.exports = { NOTIFICATION_TYPE };
