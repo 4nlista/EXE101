@@ -10,6 +10,9 @@ const createProjectHistory = async (req, res, next) => {
       delete data.role;
       delete data.task;
     }
+    if (!data.role) delete data.role;
+    if (!data.startDate) delete data.startDate;
+    if (!data.endDate) delete data.endDate;
 
     const newHistory = await projectHistoryService.createProjectHistory(userId, data);
     res.status(201).json({ success: true, data: newHistory });
@@ -29,6 +32,9 @@ const updateProjectHistory = async (req, res, next) => {
       data.role = undefined;
       data.task = undefined;
     }
+    if (!data.role) data.role = undefined;
+    if (!data.startDate) data.startDate = undefined;
+    if (!data.endDate) data.endDate = undefined;
 
     const updatedHistory = await projectHistoryService.updateProjectHistory(userId, id, data);
     res.status(200).json({ success: true, data: updatedHistory });

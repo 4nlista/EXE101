@@ -22,4 +22,7 @@ router.put('/onboarding', verifyToken, uploadCloud.single('avatar'), profileCont
 // [PUT] Cập nhật hồ sơ cá nhân (Profile page)
 router.put('/my-profile', verifyToken, uploadCloud.single('avatar'), profileController.updateMyProfile);
 
+// Quản lý lịch sử dự án của người dùng
+router.use('/project-history', require('./projectHistoryRoutes'));
+
 module.exports = router;
