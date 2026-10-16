@@ -121,23 +121,28 @@ const sendMessage = async (req, res) => {
     // Tạm lưu DB để lỡ AI lỗi thì tin user vẫn còn
     await session.save();
 
-    // 4. Chuẩn bị dữ liệu để gọi AI
+    // 4. Chuẩn bị dữ liệu để gọi AI (Loại trừ dự án của chính mình và dự án mình đã tham gia, chỉ lấy dự án còn slot)
     const projects = await Project.find({
       status: 'open',
-      deadline: { $gt: new Date() }
+      deadline: { $gt: new Date() },
+      ownerId: { $ne: req.user.id },
+      'members.userId': { $ne: req.user.id }
     })
       .select('title description candidateRequirements gradeTarget maxMembers deadline members departmentIds ownerId createdAt')
       .populate('departmentIds', 'name')
       .populate({ path: 'ownerId', select: 'name avatar departmentId', populate: { path: 'departmentId', select: 'name' } });
 
-    const cleanProjects = projects.map(p => ({
+    // Chỉ giữ lại các dự án thực tế còn slot tuyển thành viên
+    const availableProjects = projects.filter(p => (p.maxMembers - (p.members?.length || 0)) > 0);
+
+    const cleanProjects = availableProjects.map(p => ({
       _id: p._id,
       title: p.title,
       description: p.description,
       candidateRequirements: p.candidateRequirements,
       departments: p.departmentIds.map(d => d.name),
       gradeTarget: p.gradeTarget,
-      slotsAvailable: p.maxMembers - p.members.length,
+      slotsAvailable: p.maxMembers - (p.members?.length || 0),
       deadline: p.deadline
     }));
 

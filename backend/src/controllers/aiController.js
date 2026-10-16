@@ -49,23 +49,28 @@ const recommendProjects = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Vui lòng nâng cấp gói VIP hoặc PREMIUM để sử dụng tính năng này.' });
     }
 
-    // 2. Lấy danh sách các Project đang open
+    // 2. Lấy danh sách các Project đang open (loại trừ dự án của chính mình và dự án đã tham gia)
     const projects = await Project.find({
       status: 'open',
-      deadline: { $gt: new Date() }
+      deadline: { $gt: new Date() },
+      ownerId: { $ne: req.user.id },
+      'members.userId': { $ne: req.user.id }
     })
     .select('title description candidateRequirements gradeTarget maxMembers deadline members departmentIds')
     .populate('departmentIds', 'name');
 
+    // Chỉ giữ lại các dự án thực tế còn slot tuyển thành viên
+    const availableProjects = projects.filter(p => (p.maxMembers - (p.members?.length || 0)) > 0);
+
     // Cấu trúc lại dữ liệu cho gọn nhẹ trước khi gửi lên AI (Bỏ bớt các trường không cần thiết)
-    const cleanProjects = projects.map(p => ({
+    const cleanProjects = availableProjects.map(p => ({
       _id: p._id,
       title: p.title,
       description: p.description,
       candidateRequirements: p.candidateRequirements,
       departments: p.departmentIds.map(d => d.name),
       gradeTarget: p.gradeTarget,
-      slotsAvailable: p.maxMembers - p.members.length,
+      slotsAvailable: p.maxMembers - (p.members?.length || 0),
       deadline: p.deadline
     }));
 
