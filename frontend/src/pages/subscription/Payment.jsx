@@ -231,17 +231,19 @@ export default function Payment() {
                   </div>
                 </div>
 
-                <div className="border-top d-flex justify-content-between align-items-center">
+                <div className="border-top pt-3 d-flex justify-content-between align-items-center">
                   <Button variant="cancel" onClick={handleCancel} className="fw-bold text-dark">
                     Hủy giao dịch
                   </Button>
 
-                  {/* CHỈ HIỂN THỊ KHI TEST/DEV */}
+                  {/* Đã ẩn tính năng Giả lập thanh toán khi đưa hệ thống vào hoạt động thực tế */}
+                  {/* 
                   <div className="text-end">
                     <Button variant="success" size="sm" onClick={handleMockPayment} className="shadow-sm">
                       Giả lập thành công
                     </Button>
                   </div>
+                  */}
                 </div>
               </Col>
             </Row>
