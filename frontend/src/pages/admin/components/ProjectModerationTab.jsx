@@ -65,17 +65,31 @@ export default function ProjectModerationTab() {
   const renderStatusBadge = (status) => {
     switch (status) {
       case 'open':
-        return <span className="badge bg-success-subtle text-success border border-success-subtle fw-medium">Đang tuyển</span>;
+        return <span className="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 fw-medium">Đang mở tuyển</span>;
       case 'in_progress':
-        return <span className="badge bg-primary-subtle text-primary border border-primary-subtle fw-medium">Đang làm</span>;
+        return <span className="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 fw-medium">Đang thực hiện</span>;
       case 'completed':
-        return <span className="badge bg-secondary-subtle text-secondary border fw-medium">Hoàn thành</span>;
+        return (
+          <span 
+            className="badge fw-medium border"
+            style={{ color: '#6d28d9', backgroundColor: '#f5f3ff', borderColor: '#ddd6fe' }}
+          >
+            Đã hoàn thành
+          </span>
+        );
       case 'closed':
-        return <span className="badge bg-light text-muted border fw-normal">Đã đóng</span>;
+        return <span className="badge bg-warning bg-opacity-10 text-warning-emphasis border border-warning border-opacity-25 fw-medium">Đã đóng slot</span>;
       case 'cancelled':
-        return <span className="badge bg-light text-muted border fw-normal">Đã hủy</span>;
+        return <span className="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 fw-medium">Đã hủy</span>;
       case 'suspended':
-        return <span className="badge bg-danger-subtle text-danger border border-danger-subtle fw-medium">Bị đình chỉ</span>;
+        return (
+          <span 
+            className="badge fw-medium border"
+            style={{ color: '#be123c', backgroundColor: '#fff1f2', borderColor: '#fecdd3' }}
+          >
+            Bị đình chỉ
+          </span>
+        );
       default:
         return <span className="badge bg-light text-secondary border fw-normal">{status}</span>;
     }
@@ -114,8 +128,9 @@ export default function ProjectModerationTab() {
               <option value="open">Đang mở tuyển</option>
               <option value="in_progress">Đang thực hiện</option>
               <option value="completed">Đã hoàn thành</option>
-              <option value="suspended">Bị đình chỉ / vi phạm</option>
               <option value="closed">Đã đóng slot</option>
+              <option value="cancelled">Đã hủy</option>
+              <option value="suspended">Bị đình chỉ / vi phạm</option>
             </Form.Select>
           </Col>
         </Row>

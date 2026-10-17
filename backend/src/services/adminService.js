@@ -3,6 +3,7 @@ const User = require('../models/User');
 const Project = require('../models/Project');
 const Application = require('../models/Application');
 const Subscription = require('../models/Subscription');
+const Transaction = require('../models/Transaction');
 const Department = require('../models/Department');
 const Major = require('../models/Major');
 const Skill = require('../models/Skill');
@@ -13,6 +14,7 @@ const { ROLE_CODE } = require('../constants/roleEnum');
 const { PROJECT_STATUS } = require('../constants/projectEnum');
 const { NOTIFICATION_TYPE } = require('../constants/notificationEnum');
 const { SUBSCRIPTION_STATUS } = require('../constants/subscriptionEnum');
+const { TRANSACTION_STATUS } = require('../constants/transactionEnum');
 
 // ==========================================
 // HÀM HỖ TRỢ CHUẨN HÓA TIẾNG VIỆT
@@ -98,6 +100,70 @@ const getSystemStats = async () => {
 
   const totalRevenue = revenueData.length > 0 ? revenueData[0].totalRevenue : 0;
 
+  // Tính toán doanh thu theo từng tháng trong 12 tháng gần nhất
+  const now = new Date();
+  const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+
+  const [monthlyRevenueTx, monthlyRevenueSub] = await Promise.all([
+    Transaction.aggregate([
+      {
+        $match: {
+          status: TRANSACTION_STATUS.SUCCESS,
+          createdAt: { $gte: twelveMonthsAgo }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: '$createdAt' },
+            month: { $month: '$createdAt' }
+          },
+          total: { $sum: '$amount' },
+          count: { $sum: 1 }
+        }
+      }
+    ]),
+    Subscription.aggregate([
+      {
+        $match: {
+          status: { $in: [SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.EXPIRED] },
+          createdAt: { $gte: twelveMonthsAgo }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: '$createdAt' },
+            month: { $month: '$createdAt' }
+          },
+          total: { $sum: '$price' },
+          count: { $sum: 1 }
+        }
+      }
+    ])
+  ]);
+
+  // Tạo mảng liên tục cho 12 tháng gần nhất
+  const monthlyRevenue = [];
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const y = d.getFullYear();
+    const m = d.getMonth() + 1; // 1 - 12
+    const foundTx = monthlyRevenueTx.find(t => t._id.year === y && t._id.month === m);
+    const foundSub = monthlyRevenueSub.find(s => s._id.year === y && s._id.month === m);
+    const total = (foundTx ? foundTx.total : 0) || (foundSub ? foundSub.total : 0);
+    const count = (foundTx ? foundTx.count : 0) || (foundSub ? foundSub.count : 0);
+
+    monthlyRevenue.push({
+      year: y,
+      month: m,
+      label: `T${m}`,
+      fullLabel: `Tháng ${m}/${y}`,
+      revenue: total,
+      count
+    });
+  }
+
   return {
     users: {
       total: totalUsers,
@@ -116,7 +182,8 @@ const getSystemStats = async () => {
       byStatus: applicationsByStatus
     },
     revenue: {
-      total: totalRevenue
+      total: totalRevenue,
+      monthly: monthlyRevenue
     }
   };
 };
