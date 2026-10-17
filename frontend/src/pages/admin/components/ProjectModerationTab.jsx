@@ -3,6 +3,7 @@ import { Table, Form, Spinner, Row, Col } from 'react-bootstrap';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Search, FolderGit2, ShieldAlert, CheckCircle, RotateCcw } from 'lucide-react';
 import { adminService } from '../../../services/adminService';
+import { PROJECT_STATUS } from '../../../constants';
 import Button from '../../../components/Button';
 import Pagination from '../../../components/Pagination';
 import ModerateProjectModal from './ModerateProjectModal';
@@ -64,11 +65,11 @@ export default function ProjectModerationTab() {
 
   const renderStatusBadge = (status) => {
     switch (status) {
-      case 'open':
+      case PROJECT_STATUS.OPEN:
         return <span className="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 fw-medium">Đang mở tuyển</span>;
-      case 'in_progress':
+      case PROJECT_STATUS.IN_PROGRESS:
         return <span className="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 fw-medium">Đang thực hiện</span>;
-      case 'completed':
+      case PROJECT_STATUS.COMPLETED:
         return (
           <span 
             className="badge fw-medium border"
@@ -77,11 +78,11 @@ export default function ProjectModerationTab() {
             Đã hoàn thành
           </span>
         );
-      case 'closed':
+      case PROJECT_STATUS.CLOSED:
         return <span className="badge bg-warning bg-opacity-10 text-warning-emphasis border border-warning border-opacity-25 fw-medium">Đã đóng slot</span>;
-      case 'cancelled':
+      case PROJECT_STATUS.CANCELLED:
         return <span className="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 fw-medium">Đã hủy</span>;
-      case 'suspended':
+      case PROJECT_STATUS.SUSPENDED:
         return (
           <span 
             className="badge fw-medium border"
@@ -125,12 +126,12 @@ export default function ProjectModerationTab() {
               }}
             >
               <option value="all">Tất cả trạng thái dự án</option>
-              <option value="open">Đang mở tuyển</option>
-              <option value="in_progress">Đang thực hiện</option>
-              <option value="completed">Đã hoàn thành</option>
-              <option value="closed">Đã đóng slot</option>
-              <option value="cancelled">Đã hủy</option>
-              <option value="suspended">Bị đình chỉ / vi phạm</option>
+              <option value={PROJECT_STATUS.OPEN}>Đang mở tuyển</option>
+              <option value={PROJECT_STATUS.IN_PROGRESS}>Đang thực hiện</option>
+              <option value={PROJECT_STATUS.COMPLETED}>Đã hoàn thành</option>
+              <option value={PROJECT_STATUS.CLOSED}>Đã đóng slot</option>
+              <option value={PROJECT_STATUS.CANCELLED}>Đã hủy</option>
+              <option value={PROJECT_STATUS.SUSPENDED}>Bị đình chỉ / vi phạm</option>
             </Form.Select>
           </Col>
         </Row>
@@ -163,7 +164,7 @@ export default function ProjectModerationTab() {
               </thead>
               <tbody className="small">
                 {projects.map((p) => {
-                  const isSuspended = p.status === 'suspended';
+                  const isSuspended = p.status === PROJECT_STATUS.SUSPENDED;
                   const ownerName = p.ownerId?.name || 'Không rõ';
                   const ownerEmail = p.ownerId?.email || '';
 

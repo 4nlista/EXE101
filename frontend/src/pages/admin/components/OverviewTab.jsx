@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Row, Col, Spinner } from 'react-bootstrap';
 import { Users, FolderGit2, DollarSign, FileText, CheckCircle, Clock, TrendingUp } from 'lucide-react';
+import { PROJECT_STATUS, APPLICATION_STATUS } from '../../../constants';
 
 export default function OverviewTab({ stats, isLoading }) {
   const [hoveredMonthIndex, setHoveredMonthIndex] = useState(null);
@@ -61,10 +62,10 @@ export default function OverviewTab({ stats, isLoading }) {
             <div className="fs-3 fw-bold text-dark">{projectStats.total || 0}</div>
             <div className="small text-muted mt-2 d-flex gap-2 align-items-center">
               <span className="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">
-                {byStatus.open || 0} Đang tuyển
+                {byStatus[PROJECT_STATUS.OPEN] || 0} Đang tuyển
               </span>
               <span className="badge border" style={{ backgroundColor: '#f5f3ff', color: '#6d28d9', borderColor: '#ddd6fe' }}>
-                {byStatus.completed || 0} Hoàn thành
+                {byStatus[PROJECT_STATUS.COMPLETED] || 0} Hoàn thành
               </span>
             </div>
           </div>
@@ -81,10 +82,10 @@ export default function OverviewTab({ stats, isLoading }) {
             <div className="fs-3 fw-bold text-dark">{appStats.total || 0}</div>
             <div className="small text-muted mt-2 d-flex gap-2 align-items-center">
               <span className="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">
-                {appStats.byStatus?.approved || 0} Đã duyệt
+                {appStats.byStatus?.[APPLICATION_STATUS.APPROVED] || 0} Đã duyệt
               </span>
               <span className="badge bg-warning bg-opacity-10 text-warning-emphasis border border-warning border-opacity-25">
-                {appStats.byStatus?.pending || 0} Chờ duyệt
+                {appStats.byStatus?.[APPLICATION_STATUS.PENDING] || 0} Chờ duyệt
               </span>
             </div>
           </div>
@@ -121,7 +122,7 @@ export default function OverviewTab({ stats, isLoading }) {
           <Col xs={6} sm={4} md={2}>
             <div className="p-3 rounded-3 text-center border" style={{ backgroundColor: '#f0fdf4', borderColor: '#bbf7d0' }}>
               <div className="small fw-semibold mb-1 text-success">Đang mở tuyển</div>
-              <div className="fs-4 fw-bold text-success">{byStatus.open || 0}</div>
+              <div className="fs-4 fw-bold text-success">{byStatus[PROJECT_STATUS.OPEN] || 0}</div>
             </div>
           </Col>
 
@@ -129,7 +130,7 @@ export default function OverviewTab({ stats, isLoading }) {
           <Col xs={6} sm={4} md={2}>
             <div className="p-3 rounded-3 text-center border" style={{ backgroundColor: '#eff6ff', borderColor: '#bfdbfe' }}>
               <div className="small fw-semibold mb-1 text-primary">Đang thực hiện</div>
-              <div className="fs-4 fw-bold text-primary">{byStatus.in_progress || 0}</div>
+              <div className="fs-4 fw-bold text-primary">{byStatus[PROJECT_STATUS.IN_PROGRESS] || 0}</div>
             </div>
           </Col>
 
@@ -137,7 +138,7 @@ export default function OverviewTab({ stats, isLoading }) {
           <Col xs={6} sm={4} md={2}>
             <div className="p-3 rounded-3 text-center border" style={{ backgroundColor: '#f5f3ff', borderColor: '#ddd6fe' }}>
               <div className="small fw-semibold mb-1" style={{ color: '#6d28d9' }}>Đã hoàn thành</div>
-              <div className="fs-4 fw-bold" style={{ color: '#7c3aed' }}>{byStatus.completed || 0}</div>
+              <div className="fs-4 fw-bold" style={{ color: '#7c3aed' }}>{byStatus[PROJECT_STATUS.COMPLETED] || 0}</div>
             </div>
           </Col>
 
@@ -145,7 +146,7 @@ export default function OverviewTab({ stats, isLoading }) {
           <Col xs={6} sm={4} md={2}>
             <div className="p-3 rounded-3 text-center border" style={{ backgroundColor: '#fffbeb', borderColor: '#fde68a' }}>
               <div className="small fw-semibold mb-1" style={{ color: '#b45309' }}>Đã đóng slot</div>
-              <div className="fs-4 fw-bold" style={{ color: '#d97706' }}>{byStatus.closed || 0}</div>
+              <div className="fs-4 fw-bold" style={{ color: '#d97706' }}>{byStatus[PROJECT_STATUS.CLOSED] || 0}</div>
             </div>
           </Col>
 
@@ -153,7 +154,7 @@ export default function OverviewTab({ stats, isLoading }) {
           <Col xs={6} sm={4} md={2}>
             <div className="p-3 rounded-3 text-center border" style={{ backgroundColor: '#fef2f2', borderColor: '#fecaca' }}>
               <div className="small fw-semibold mb-1 text-danger">Đã hủy</div>
-              <div className="fs-4 fw-bold text-danger">{byStatus.cancelled || 0}</div>
+              <div className="fs-4 fw-bold text-danger">{byStatus[PROJECT_STATUS.CANCELLED] || 0}</div>
             </div>
           </Col>
 
@@ -161,7 +162,7 @@ export default function OverviewTab({ stats, isLoading }) {
           <Col xs={6} sm={4} md={2}>
             <div className="p-3 rounded-3 text-center border" style={{ backgroundColor: '#fff1f2', borderColor: '#fecdd3' }}>
               <div className="small fw-semibold mb-1" style={{ color: '#be123c' }}>Đình chỉ (Admin)</div>
-              <div className="fs-4 fw-bold" style={{ color: '#be123c' }}>{byStatus.suspended || 0}</div>
+              <div className="fs-4 fw-bold" style={{ color: '#be123c' }}>{byStatus[PROJECT_STATUS.SUSPENDED] || 0}</div>
             </div>
           </Col>
         </Row>

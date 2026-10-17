@@ -4,5 +4,6 @@ export const PROJECT_STATUS = {
   CLOSED: 'closed',         // Đã đóng (đủ slot hoặc hết deadline)
   IN_PROGRESS: 'in_progress', // Đang thực hiện
   COMPLETED: 'completed',     // Kết thúc dự án
-  CANCELLED: 'cancelled'      // Đã hủy (chỉ khi chưa có ai tham gia)
+  CANCELLED: 'cancelled',     // Đã hủy (chỉ khi chưa có ai tham gia)
+  SUSPENDED: 'suspended'      // Bị đình chỉ / gỡ bỏ bởi Quản trị viên
 };

@@ -12,6 +12,7 @@ const sendEmail = require('../utils/emailSender');
 const { IS_ACTIVE } = require('../constants/userEnum');
 const { ROLE_CODE } = require('../constants/roleEnum');
 const { PROJECT_STATUS } = require('../constants/projectEnum');
+const { APPLICATION_STATUS } = require('../constants/applicationEnum');
 const { NOTIFICATION_TYPE } = require('../constants/notificationEnum');
 const { SUBSCRIPTION_STATUS } = require('../constants/subscriptionEnum');
 const { TRANSACTION_STATUS } = require('../constants/transactionEnum');
@@ -69,12 +70,12 @@ const getSystemStats = async () => {
 
   // Chuẩn hóa thống kê dự án theo status
   const projectsByStatus = {
-    open: 0,
-    in_progress: 0,
-    completed: 0,
-    closed: 0,
-    cancelled: 0,
-    suspended: 0
+    [PROJECT_STATUS.OPEN]: 0,
+    [PROJECT_STATUS.IN_PROGRESS]: 0,
+    [PROJECT_STATUS.COMPLETED]: 0,
+    [PROJECT_STATUS.CLOSED]: 0,
+    [PROJECT_STATUS.CANCELLED]: 0,
+    [PROJECT_STATUS.SUSPENDED]: 0
   };
   let totalProjects = 0;
   projectCounts.forEach((item) => {
@@ -86,9 +87,9 @@ const getSystemStats = async () => {
 
   // Chuẩn hóa thống kê ứng tuyển theo status
   const applicationsByStatus = {
-    pending: 0,
-    approved: 0,
-    rejected: 0
+    [APPLICATION_STATUS.PENDING]: 0,
+    [APPLICATION_STATUS.APPROVED]: 0,
+    [APPLICATION_STATUS.REJECTED]: 0
   };
   let totalApplications = 0;
   applicationCounts.forEach((item) => {
