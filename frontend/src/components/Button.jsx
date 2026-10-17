@@ -47,7 +47,7 @@ export default function Button({
   } else if (hasDarkText) {
     contrastClass = 'text-dark fw-medium';
   } else if (['primary', 'success', 'danger', 'dark'].includes(normalizedVariant)) {
-    contrastClass = 'text-white fw-medium';
+    contrastClass = 'text-dark fw-medium';
   }
 
   return (
