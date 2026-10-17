@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Table, Form, Row, Col, Spinner } from 'react-bootstrap';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, GraduationCap, Tag, Check, Eye, EyeOff, Search, BookOpen } from 'lucide-react';
+import { Plus, GraduationCap, Tag, Check, Eye, EyeOff, Search, BookOpen, Pencil } from 'lucide-react';
 import { adminService } from '../../../services/adminService';
 import { useDepartments } from '../../../hooks/useMasterData';
 import Button from '../../../components/Button';
@@ -16,10 +16,12 @@ export default function MasterDataTab() {
 
   // Ngành học state
   const [showDeptModal, setShowDeptModal] = useState(false);
+  const [editingDepartment, setEditingDepartment] = useState(null);
 
   // Chuyên ngành state
   const [selectedDeptId, setSelectedDeptId] = useState('');
   const [showMajorModal, setShowMajorModal] = useState(false);
+  const [editingMajor, setEditingMajor] = useState(null);
 
   // Kỹ năng state
   const [skillSearch, setSkillSearch] = useState('');
@@ -203,23 +205,34 @@ export default function MasterDataTab() {
                         )}
                       </td>
                       <td className="text-end">
-                        <Button
-                          variant="light"
-                          size="sm"
-                          className="border text-secondary shadow-sm d-inline-flex align-items-center gap-1"
-                          onClick={() => toggleDeptMutation.mutate(d._id)}
-                          disabled={toggleDeptMutation.isLoading}
-                        >
-                          {d.isActive ? (
-                            <>
-                              <EyeOff size={14} /> Ẩn đi
-                            </>
-                          ) : (
-                            <>
-                              <Eye size={14} /> Hiện lại
-                            </>
-                          )}
-                        </Button>
+                        <div className="d-inline-flex align-items-center gap-1">
+                          <Button
+                            variant="light"
+                            size="sm"
+                            className="border text-secondary shadow-sm d-inline-flex align-items-center gap-1"
+                            onClick={() => setEditingDepartment(d)}
+                            title="Chỉnh sửa thông tin ngành học"
+                          >
+                            <Pencil size={14} /> Sửa
+                          </Button>
+                          <Button
+                            variant="light"
+                            size="sm"
+                            className="border text-secondary shadow-sm d-inline-flex align-items-center gap-1"
+                            onClick={() => toggleDeptMutation.mutate(d._id)}
+                            disabled={toggleDeptMutation.isLoading}
+                          >
+                            {d.isActive ? (
+                              <>
+                                <EyeOff size={14} /> Ẩn đi
+                              </>
+                            ) : (
+                              <>
+                                <Eye size={14} /> Hiện lại
+                              </>
+                            )}
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -283,23 +296,34 @@ export default function MasterDataTab() {
                         )}
                       </td>
                       <td className="text-end">
-                        <Button
-                          variant="light"
-                          size="sm"
-                          className="border text-secondary shadow-sm d-inline-flex align-items-center gap-1"
-                          onClick={() => toggleMajorMutation.mutate(m._id)}
-                          disabled={toggleMajorMutation.isLoading}
-                        >
-                          {m.isActive ? (
-                            <>
-                              <EyeOff size={14} /> Ẩn đi
-                            </>
-                          ) : (
-                            <>
-                              <Eye size={14} /> Hiện lại
-                            </>
-                          )}
-                        </Button>
+                        <div className="d-inline-flex align-items-center gap-1">
+                          <Button
+                            variant="light"
+                            size="sm"
+                            className="border text-secondary shadow-sm d-inline-flex align-items-center gap-1"
+                            onClick={() => setEditingMajor(m)}
+                            title="Chỉnh sửa chuyên ngành"
+                          >
+                            <Pencil size={14} /> Sửa
+                          </Button>
+                          <Button
+                            variant="light"
+                            size="sm"
+                            className="border text-secondary shadow-sm d-inline-flex align-items-center gap-1"
+                            onClick={() => toggleMajorMutation.mutate(m._id)}
+                            disabled={toggleMajorMutation.isLoading}
+                          >
+                            {m.isActive ? (
+                              <>
+                                <EyeOff size={14} /> Ẩn đi
+                              </>
+                            ) : (
+                              <>
+                                <Eye size={14} /> Hiện lại
+                              </>
+                            )}
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -382,21 +406,29 @@ export default function MasterDataTab() {
         </div>
       )}
 
-      {/* Modal tạo ngành học */}
+      {/* Modal tạo / chỉnh sửa ngành học */}
       <CreateDepartmentModal
-        show={showDeptModal}
-        onClose={() => setShowDeptModal(false)}
+        show={showDeptModal || Boolean(editingDepartment)}
+        departmentToEdit={editingDepartment}
+        onClose={() => {
+          setShowDeptModal(false);
+          setEditingDepartment(null);
+        }}
         onSuccess={() => {
           queryClient.invalidateQueries(['adminDepartments']);
           queryClient.invalidateQueries(['departments']);
         }}
       />
 
-      {/* Modal tạo chuyên ngành */}
+      {/* Modal tạo / chỉnh sửa chuyên ngành */}
       <CreateMajorModal
-        show={showMajorModal}
+        show={showMajorModal || Boolean(editingMajor)}
+        majorToEdit={editingMajor}
         initialDeptId={selectedDeptId}
-        onClose={() => setShowMajorModal(false)}
+        onClose={() => {
+          setShowMajorModal(false);
+          setEditingMajor(null);
+        }}
         onSuccess={() => {
           queryClient.invalidateQueries(['adminMajors']);
           queryClient.invalidateQueries(['adminDepartments']);

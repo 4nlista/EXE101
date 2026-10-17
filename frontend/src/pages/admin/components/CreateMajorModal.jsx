@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, Spinner } from 'react-bootstrap';
-import { Plus, GraduationCap } from 'lucide-react';
+import { Plus, GraduationCap, Pencil, Check } from 'lucide-react';
 import Modal from '../../../components/Modal';
 import Button from '../../../components/Button';
 import Alert from '../../../components/Alert';
@@ -8,7 +8,8 @@ import { adminService } from '../../../services/adminService';
 import { useDepartments } from '../../../hooks/useMasterData';
 import { toast } from 'react-toastify';
 
-export default function CreateMajorModal({ show, onClose, onSuccess, initialDeptId = '' }) {
+export default function CreateMajorModal({ show, onClose, onSuccess, initialDeptId = '', majorToEdit = null }) {
+  const isEditing = Boolean(majorToEdit?._id);
   const [departmentId, setDepartmentId] = useState(initialDeptId);
   const [name, setName] = useState('');
   const [fieldError, setFieldError] = useState('');
@@ -17,6 +18,19 @@ export default function CreateMajorModal({ show, onClose, onSuccess, initialDept
 
   const { data: rawDepartments } = useDepartments();
   const departments = Array.isArray(rawDepartments) ? rawDepartments : (rawDepartments?.data || []);
+
+  // Điền dữ liệu khi ở chế độ chỉnh sửa hoặc làm mới form khi thêm mới
+  useEffect(() => {
+    if (majorToEdit) {
+      setName(majorToEdit.name || '');
+      setDepartmentId(majorToEdit.departmentId?._id || majorToEdit.departmentId || initialDeptId || '');
+    } else {
+      setName('');
+      setDepartmentId(initialDeptId || '');
+    }
+    setFieldError('');
+    setFormError('');
+  }, [majorToEdit, show, initialDeptId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,15 +49,23 @@ export default function CreateMajorModal({ show, onClose, onSuccess, initialDept
 
     try {
       setIsSubmitting(true);
-      await adminService.createMajor({
-        name: name.trim(),
-        departmentId
-      });
-      toast.success(`Đã thêm chuyên ngành "${name.trim()}" thành công.`);
+      if (isEditing) {
+        await adminService.updateMajor(majorToEdit._id, {
+          name: name.trim(),
+          departmentId
+        });
+        toast.success(`Đã cập nhật chuyên ngành "${name.trim()}" thành công.`);
+      } else {
+        await adminService.createMajor({
+          name: name.trim(),
+          departmentId
+        });
+        toast.success(`Đã thêm chuyên ngành "${name.trim()}" thành công.`);
+      }
       onSuccess?.();
       handleClose();
     } catch (err) {
-      setFormError(err.message || err.response?.data?.message || 'Có lỗi xảy ra khi tạo chuyên ngành.');
+      setFormError(err.message || err.response?.data?.message || `Có lỗi xảy ra khi ${isEditing ? 'cập nhật' : 'tạo'} chuyên ngành.`);
     } finally {
       setIsSubmitting(false);
     }
@@ -60,7 +82,15 @@ export default function CreateMajorModal({ show, onClose, onSuccess, initialDept
     <Modal show={show} onHide={handleClose} centered>
       <Modal.Header closeButton>
         <Modal.Title className="d-flex align-items-center gap-2 text-dark fs-5">
-          <GraduationCap size={20} className="text-secondary" /> Thêm chuyên ngành mới
+          {isEditing ? (
+            <>
+              <Pencil size={20} className="text-secondary" /> Chỉnh sửa chuyên ngành
+            </>
+          ) : (
+            <>
+              <GraduationCap size={20} className="text-secondary" /> Thêm chuyên ngành mới
+            </>
+          )}
         </Modal.Title>
       </Modal.Header>
 
@@ -113,7 +143,11 @@ export default function CreateMajorModal({ show, onClose, onSuccess, initialDept
           <Button variant="primary" size="sm" type="submit" disabled={isSubmitting} className="d-inline-flex align-items-center gap-1">
             {isSubmitting ? (
               <>
-                <Spinner animation="border" size="sm" className="me-1" /> Đang tạo...
+                <Spinner animation="border" size="sm" className="me-1" /> {isEditing ? 'Đang lưu...' : 'Đang tạo...'}
+              </>
+            ) : isEditing ? (
+              <>
+                <Check size={16} /> Lưu thay đổi
               </>
             ) : (
               <>

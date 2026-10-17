@@ -725,6 +725,60 @@ const toggleMajorStatus = async (majorId) => {
 };
 
 /**
+ * Cập nhật thông tin chuyên ngành
+ */
+const updateMajor = async (majorId, data) => {
+  if (!mongoose.Types.ObjectId.isValid(majorId)) {
+    const error = new Error('ID chuyên ngành không hợp lệ.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const major = await Major.findById(majorId);
+  if (!major) {
+    const error = new Error('Không tìm thấy chuyên ngành.');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const targetDeptId = data.departmentId || major.departmentId;
+
+  // Nếu chuyển sang ngành học khác, kiểm tra ngành học đó tồn tại
+  if (data.departmentId && data.departmentId.toString() !== major.departmentId.toString()) {
+    const dept = await Department.findById(data.departmentId);
+    if (!dept) {
+      const error = new Error('Ngành học không tồn tại.');
+      error.statusCode = 404;
+      throw error;
+    }
+    major.departmentId = data.departmentId;
+  }
+
+  // Nếu cập nhật tên hoặc đổi ngành, kiểm tra trùng lặp tên chuyên ngành trong ngành đó
+  if (data.name && data.name.trim()) {
+    const trimmedName = data.name.trim();
+    const normalizedTarget = removeAccents(trimmedName);
+
+    const existingMajors = await Major.find({
+      departmentId: targetDeptId,
+      _id: { $ne: majorId }
+    });
+
+    const isDuplicate = existingMajors.some(m => removeAccents(m.name) === normalizedTarget);
+    if (isDuplicate) {
+      const error = new Error(`Chuyên ngành "${trimmedName}" đã tồn tại trong ngành học này.`);
+      error.statusCode = 400;
+      throw error;
+    }
+
+    major.name = trimmedName;
+  }
+
+  await major.save();
+  return await major.populate('departmentId', 'name');
+};
+
+/**
  * Lấy danh sách kỹ năng trong hệ thống
  */
 const getSkillsList = async (query = {}) => {
@@ -869,6 +923,46 @@ const toggleDepartmentStatus = async (departmentId) => {
   return dept;
 };
 
+/**
+ * Cập nhật thông tin ngành học
+ */
+const updateDepartment = async (departmentId, data) => {
+  if (!mongoose.Types.ObjectId.isValid(departmentId)) {
+    const error = new Error('ID ngành học không hợp lệ.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const dept = await Department.findById(departmentId);
+  if (!dept) {
+    const error = new Error('Không tìm thấy ngành học.');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (data.name && data.name.trim() && data.name.trim() !== dept.name) {
+    const trimmedName = data.name.trim();
+    const normalizedTarget = removeAccents(trimmedName);
+
+    const existingDepts = await Department.find({ _id: { $ne: departmentId } });
+    const isDuplicate = existingDepts.some(d => removeAccents(d.name) === normalizedTarget);
+    if (isDuplicate) {
+      const error = new Error(`Ngành học "${trimmedName}" đã tồn tại trong hệ thống.`);
+      error.statusCode = 400;
+      throw error;
+    }
+
+    dept.name = trimmedName;
+  }
+
+  if (data.description !== undefined) {
+    dept.description = data.description ? data.description.trim() : '';
+  }
+
+  await dept.save();
+  return dept;
+};
+
 module.exports = {
   getSystemStats,
   getUsersList,
@@ -878,9 +972,11 @@ module.exports = {
   moderateProject,
   getDepartmentsList,
   createDepartment,
+  updateDepartment,
   toggleDepartmentStatus,
   getMajorsList,
   createMajor,
+  updateMajor,
   toggleMajorStatus,
   getSkillsList,
   createSkill,

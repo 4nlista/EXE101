@@ -57,6 +57,33 @@ const createDepartmentSchema = Joi.object({
   })
 });
 
+// Schema validate cập nhật ngành học
+const updateDepartmentSchema = Joi.object({
+  name: Joi.string().trim().min(2).max(100).optional().messages({
+    'string.base': 'Tên ngành học phải là chuỗi ký tự.',
+    'string.empty': 'Vui lòng không để trống tên ngành học.',
+    'string.min': 'Tên ngành học phải có ít nhất 2 ký tự.',
+    'string.max': 'Tên ngành học không vượt quá 100 ký tự.'
+  }),
+  description: Joi.string().trim().max(500).allow('').optional().messages({
+    'string.base': 'Mô tả ngành học phải là chuỗi ký tự.',
+    'string.max': 'Mô tả ngành học không vượt quá 500 ký tự.'
+  })
+});
+
+// Schema validate cập nhật chuyên ngành
+const updateMajorSchema = Joi.object({
+  name: Joi.string().trim().min(2).max(100).optional().messages({
+    'string.base': 'Tên chuyên ngành phải là chuỗi ký tự.',
+    'string.empty': 'Vui lòng không để trống tên chuyên ngành.',
+    'string.min': 'Tên chuyên ngành phải có ít nhất 2 ký tự.',
+    'string.max': 'Tên chuyên ngành không vượt quá 100 ký tự.'
+  }),
+  departmentId: Joi.string().regex(/^[0-9a-fA-F]{24}$/).optional().messages({
+    'string.pattern.base': 'ID ngành học không đúng định dạng.'
+  })
+});
+
 // Schema validate tạo kỹ năng mới
 const createSkillSchema = Joi.object({
   name: Joi.string().trim().min(2).max(50).required().messages({
@@ -72,6 +99,8 @@ module.exports = {
   lockUserSchema,
   moderateProjectSchema,
   createDepartmentSchema,
+  updateDepartmentSchema,
   createMajorSchema,
+  updateMajorSchema,
   createSkillSchema
 };

@@ -21,11 +21,13 @@ router.post('/projects/:id/moderate', adminController.moderateProject);
 // 4. Quản lý Ngành học
 router.get('/departments', adminController.getDepartmentsList);
 router.post('/departments', adminController.createDepartment);
+router.put('/departments/:id', adminController.updateDepartment);
 router.put('/departments/:id/toggle', adminController.toggleDepartmentStatus);
 
 // 5. Quản lý Chuyên ngành
 router.get('/majors', adminController.getMajorsList);
 router.post('/majors', adminController.createMajor);
+router.put('/majors/:id', adminController.updateMajor);
 router.put('/majors/:id/toggle', adminController.toggleMajorStatus);
 
 // 5. Quản lý Kỹ năng

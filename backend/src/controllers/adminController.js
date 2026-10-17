@@ -4,7 +4,9 @@ const {
   lockUserSchema,
   moderateProjectSchema,
   createDepartmentSchema,
+  updateDepartmentSchema,
   createMajorSchema,
+  updateMajorSchema,
   createSkillSchema
 } = require('../validations/adminValidation');
 
@@ -160,6 +162,27 @@ const toggleMajorStatus = async (req, res, next) => {
   }
 };
 
+// [PUT] /api/admin/majors/:id - Cập nhật thông tin chuyên ngành
+const updateMajor = async (req, res, next) => {
+  try {
+    const { error, value } = updateMajorSchema.validate(req.body);
+    if (error) {
+      const err = new Error(error.details[0].message);
+      err.statusCode = 400;
+      throw err;
+    }
+
+    const updated = await adminService.updateMajor(req.params.id, value);
+    res.status(200).json({
+      success: true,
+      message: 'Cập nhật chuyên ngành thành công.',
+      data: updated
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // [GET] /api/admin/skills - Danh sách kỹ năng
 const getSkillsList = async (req, res, next) => {
   try {
@@ -282,6 +305,27 @@ const toggleDepartmentStatus = async (req, res, next) => {
   }
 };
 
+// [PUT] /api/admin/departments/:id - Cập nhật thông tin ngành học
+const updateDepartment = async (req, res, next) => {
+  try {
+    const { error, value } = updateDepartmentSchema.validate(req.body);
+    if (error) {
+      const err = new Error(error.details[0].message);
+      err.statusCode = 400;
+      throw err;
+    }
+
+    const updated = await adminService.updateDepartment(req.params.id, value);
+    res.status(200).json({
+      success: true,
+      message: 'Cập nhật thông tin ngành học thành công.',
+      data: updated
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   getSystemStats,
   getUsersList,
@@ -291,9 +335,11 @@ module.exports = {
   moderateProject,
   getDepartmentsList,
   createDepartment,
+  updateDepartment,
   toggleDepartmentStatus,
   getMajorsList,
   createMajor,
+  updateMajor,
   toggleMajorStatus,
   getSkillsList,
   createSkill,

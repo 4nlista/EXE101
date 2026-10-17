@@ -40,6 +40,10 @@ export const adminService = {
     return await axiosClient.post('/admin/departments', payload);
   },
 
+  updateDepartment: async (departmentId, payload) => {
+    return await axiosClient.put(`/admin/departments/${departmentId}`, payload);
+  },
+
   toggleDepartmentStatus: async (departmentId) => {
     return await axiosClient.put(`/admin/departments/${departmentId}/toggle`);
   },
@@ -52,6 +56,10 @@ export const adminService = {
 
   createMajor: async (payload) => {
     return await axiosClient.post('/admin/majors', payload);
+  },
+
+  updateMajor: async (majorId, payload) => {
+    return await axiosClient.put(`/admin/majors/${majorId}`, payload);
   },
 
   toggleMajorStatus: async (majorId) => {
