@@ -37,8 +37,23 @@ const createMajorSchema = Joi.object({
     'any.required': 'Vui lòng nhập tên chuyên ngành.'
   }),
   departmentId: Joi.string().regex(/^[0-9a-fA-F]{24}$/).required().messages({
-    'string.pattern.base': 'ID ngành học cha không đúng định dạng.',
-    'any.required': 'Vui lòng chọn ngành học cha cho chuyên ngành này.'
+    'string.pattern.base': 'ID ngành học không đúng định dạng.',
+    'any.required': 'Vui lòng chọn ngành học cho chuyên ngành này.'
+  })
+});
+
+// Schema validate tạo ngành học mới
+const createDepartmentSchema = Joi.object({
+  name: Joi.string().trim().min(2).max(100).required().messages({
+    'string.base': 'Tên ngành học phải là chuỗi ký tự.',
+    'string.empty': 'Vui lòng không để trống tên ngành học.',
+    'string.min': 'Tên ngành học phải có ít nhất 2 ký tự.',
+    'string.max': 'Tên ngành học không vượt quá 100 ký tự.',
+    'any.required': 'Vui lòng nhập tên ngành học.'
+  }),
+  description: Joi.string().trim().max(500).allow('').optional().messages({
+    'string.base': 'Mô tả ngành học phải là chuỗi ký tự.',
+    'string.max': 'Mô tả ngành học không vượt quá 500 ký tự.'
   })
 });
 
@@ -56,6 +71,7 @@ const createSkillSchema = Joi.object({
 module.exports = {
   lockUserSchema,
   moderateProjectSchema,
+  createDepartmentSchema,
   createMajorSchema,
   createSkillSchema
 };

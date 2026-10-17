@@ -24,7 +24,7 @@ export default function CreateMajorModal({ show, onClose, onSuccess, initialDept
     setFormError('');
 
     if (!departmentId) {
-      setFieldError('Vui lòng chọn ngành học cha.');
+      setFieldError('Vui lòng chọn ngành học.');
       return;
     }
 
@@ -60,7 +60,7 @@ export default function CreateMajorModal({ show, onClose, onSuccess, initialDept
     <Modal show={show} onHide={handleClose} centered>
       <Modal.Header closeButton>
         <Modal.Title className="d-flex align-items-center gap-2 text-dark fs-5">
-          <GraduationCap size={20} className="text-secondary" /> Thêm chuyên ngành hẹp mới
+          <GraduationCap size={20} className="text-secondary" /> Thêm chuyên ngành mới
         </Modal.Title>
       </Modal.Header>
 
@@ -77,7 +77,7 @@ export default function CreateMajorModal({ show, onClose, onSuccess, initialDept
               onChange={(e) => setDepartmentId(e.target.value)}
               className="text-secondary"
             >
-              <option value="">-- Chọn ngành học cha --</option>
+              <option value="">-- Chọn ngành học --</option>
               {departments.map((d) => (
                 <option key={d._id} value={d._id}>{d.name}</option>
               ))}
@@ -86,7 +86,7 @@ export default function CreateMajorModal({ show, onClose, onSuccess, initialDept
 
           <Form.Group className="mb-3">
             <Form.Label className="fw-medium text-dark small">
-              Tên chuyên ngành hẹp <span className="text-danger">*</span>
+              Tên chuyên ngành <span className="text-danger">*</span>
             </Form.Label>
             <Form.Control
               type="text"

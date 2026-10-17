@@ -668,15 +668,15 @@ const getMajorsList = async (departmentId = null) => {
 };
 
 /**
- * Tạo mới chuyên ngành hẹp gắn với ngành học cha
+ * Tạo mới chuyên ngành hẹp gắn với ngành học
  */
 const createMajor = async (name, departmentId) => {
   const trimmedName = name.trim();
 
-  // Kiểm tra ngành học cha có tồn tại không
+  // Kiểm tra ngành học có tồn tại không
   const dept = await Department.findById(departmentId);
   if (!dept) {
-    const error = new Error('Ngành học cha không tồn tại.');
+    const error = new Error('Ngành học không tồn tại.');
     error.statusCode = 404;
     throw error;
   }
@@ -792,6 +792,83 @@ const approveSkill = async (skillId) => {
   return skill;
 };
 
+/**
+ * Lấy danh sách ngành học trong hệ thống kèm số lượng chuyên ngành trực thuộc
+ */
+const getDepartmentsList = async () => {
+  const departments = await Department.find().sort({ name: 1 });
+
+  // Đếm số lượng chuyên ngành theo từng ngành học
+  const majorCounts = await Major.aggregate([
+    { $group: { _id: '$departmentId', count: { $sum: 1 } } }
+  ]);
+  const majorCountMap = {};
+  majorCounts.forEach(item => {
+    if (item._id) majorCountMap[item._id.toString()] = item.count;
+  });
+
+  const result = departments.map(d => ({
+    _id: d._id,
+    name: d.name,
+    description: d.description || '',
+    isActive: d.isActive !== false,
+    majorCount: majorCountMap[d._id.toString()] || 0,
+    createdAt: d.createdAt
+  }));
+
+  return result;
+};
+
+/**
+ * Tạo mới ngành học trong hệ thống
+ */
+const createDepartment = async (name, description = '') => {
+  const trimmedName = name.trim();
+  const trimmedDesc = description ? description.trim() : '';
+
+  // Kiểm tra trùng tên ngành học (không phân biệt hoa thường và dấu tiếng Việt)
+  const existingDepartments = await Department.find();
+  const normalizedTarget = removeAccents(trimmedName);
+
+  const isDuplicate = existingDepartments.some(d => removeAccents(d.name) === normalizedTarget);
+  if (isDuplicate) {
+    const error = new Error(`Ngành học "${trimmedName}" đã tồn tại trong hệ thống.`);
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const newDepartment = await Department.create({
+    name: trimmedName,
+    description: trimmedDesc,
+    isActive: true
+  });
+
+  return newDepartment;
+};
+
+/**
+ * Bật/tắt trạng thái hiển thị của ngành học
+ */
+const toggleDepartmentStatus = async (departmentId) => {
+  if (!mongoose.Types.ObjectId.isValid(departmentId)) {
+    const error = new Error('ID ngành học không hợp lệ.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const dept = await Department.findById(departmentId);
+  if (!dept) {
+    const error = new Error('Không tìm thấy ngành học.');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  dept.isActive = dept.isActive === false ? true : false;
+  await dept.save();
+
+  return dept;
+};
+
 module.exports = {
   getSystemStats,
   getUsersList,
@@ -799,6 +876,9 @@ module.exports = {
   unlockUser,
   getProjectsList,
   moderateProject,
+  getDepartmentsList,
+  createDepartment,
+  toggleDepartmentStatus,
   getMajorsList,
   createMajor,
   toggleMajorStatus,

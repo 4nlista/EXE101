@@ -3,6 +3,7 @@ const { adminChatWithAI } = require('../services/aiAdminService');
 const {
   lockUserSchema,
   moderateProjectSchema,
+  createDepartmentSchema,
   createMajorSchema,
   createSkillSchema
 } = require('../validations/adminValidation');
@@ -233,6 +234,54 @@ const aiChat = async (req, res, next) => {
   }
 };
 
+// [GET] /api/admin/departments - Danh sách ngành học
+const getDepartmentsList = async (req, res, next) => {
+  try {
+    const departments = await adminService.getDepartmentsList();
+    res.status(200).json({
+      success: true,
+      data: departments
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// [POST] /api/admin/departments - Thêm mới ngành học
+const createDepartment = async (req, res, next) => {
+  try {
+    const { error, value } = createDepartmentSchema.validate(req.body);
+    if (error) {
+      const err = new Error(error.details[0].message);
+      err.statusCode = 400;
+      throw err;
+    }
+
+    const newDepartment = await adminService.createDepartment(value.name, value.description);
+    res.status(201).json({
+      success: true,
+      message: 'Tạo ngành học mới thành công.',
+      data: newDepartment
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// [PUT] /api/admin/departments/:id/toggle - Ẩn/Hiện ngành học
+const toggleDepartmentStatus = async (req, res, next) => {
+  try {
+    const dept = await adminService.toggleDepartmentStatus(req.params.id);
+    res.status(200).json({
+      success: true,
+      message: `Đã ${dept.isActive ? 'kích hoạt' : 'ẩn'} ngành học thành công.`,
+      data: dept
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   getSystemStats,
   getUsersList,
@@ -240,6 +289,9 @@ module.exports = {
   unlockUser,
   getProjectsList,
   moderateProject,
+  getDepartmentsList,
+  createDepartment,
+  toggleDepartmentStatus,
   getMajorsList,
   createMajor,
   toggleMajorStatus,

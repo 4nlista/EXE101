@@ -31,7 +31,20 @@ export const adminService = {
     return await axiosClient.post(`/admin/projects/${projectId}/moderate`, payload);
   },
 
-  // 4. Quản lý Chuyên ngành
+  // 4. Quản lý Ngành học
+  getDepartments: async () => {
+    return await axiosClient.get('/admin/departments');
+  },
+
+  createDepartment: async (payload) => {
+    return await axiosClient.post('/admin/departments', payload);
+  },
+
+  toggleDepartmentStatus: async (departmentId) => {
+    return await axiosClient.put(`/admin/departments/${departmentId}/toggle`);
+  },
+
+  // 5. Quản lý Chuyên ngành
   getMajors: async (departmentId = '') => {
     const params = departmentId ? { departmentId } : {};
     return await axiosClient.get('/admin/majors', { params });

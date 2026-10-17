@@ -18,7 +18,12 @@ router.put('/users/:id/unlock', adminController.unlockUser);
 router.get('/projects', adminController.getProjectsList);
 router.post('/projects/:id/moderate', adminController.moderateProject);
 
-// 4. Quản lý Chuyên ngành
+// 4. Quản lý Ngành học
+router.get('/departments', adminController.getDepartmentsList);
+router.post('/departments', adminController.createDepartment);
+router.put('/departments/:id/toggle', adminController.toggleDepartmentStatus);
+
+// 5. Quản lý Chuyên ngành
 router.get('/majors', adminController.getMajorsList);
 router.post('/majors', adminController.createMajor);
 router.put('/majors/:id/toggle', adminController.toggleMajorStatus);
