@@ -543,6 +543,9 @@ textarea.input {
 .btn-danger { background: #dc2626; color: #ffffff; border-color: #dc2626; }
 .btn-danger:hover:not(:disabled) { background: #b91c1c; border-color: #b91c1c; }
 
+.btn-orange { background: #ea580c; color: #ffffff !important; border-color: #ea580c; }
+.btn-orange:hover:not(:disabled) { background: #c2410c; border-color: #c2410c; color: #ffffff !important; }
+
 .spinner {
   width: 16px; height: 16px; flex-shrink: 0;
   border: 2px solid rgba(255,255,255,0.3);

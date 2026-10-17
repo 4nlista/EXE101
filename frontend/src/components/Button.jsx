@@ -25,29 +25,45 @@ export default function Button({
     extraClasses.push(...parts.slice(1));
   }
 
-  // Triệt tiêu hoàn toàn outline-* sang solid tương ứng (không dùng outline trong suốt)
+  // Triệt tiêu hoàn toàn outline-* sang solid tương ứng (không dùng outline trong suốt gây lóa mắt)
   if (typeof rawVariant === 'string' && rawVariant.startsWith('outline-')) {
     rawVariant = rawVariant.replace('outline-', '');
-    if (rawVariant === 'secondary') rawVariant = 'light';
   }
 
   let normalizedVariant = rawVariant;
   let contrastClass = '';
 
-  // Kiểm tra xem class truyền vào có yêu cầu chữ đen (text-dark) không
+  // Kiểm tra override từ class truyền vào
   const hasDarkText = (className && className.includes('text-dark')) || extraClasses.includes('text-dark');
+  const hasWhiteText = (className && className.includes('text-white')) || extraClasses.includes('text-white');
 
-  if (normalizedVariant === 'cancel' || normalizedVariant === 'light') {
-    normalizedVariant = 'light';
-    contrastClass = 'text-dark border bg-light fw-medium shadow-sm';
-  } else if (normalizedVariant === 'secondary') {
-    contrastClass = 'text-dark border fw-medium shadow-sm';
-  } else if (normalizedVariant === 'warning') {
+  // QUY ƯỚC MÀU SẮC & TEXT BUTTON:
+  // 1. Nhóm nền sáng: Xám (secondary, gray), Trắng (light, white, cancel), Vàng (warning) => TEXT ĐEN
+  const DARK_TEXT_VARIANTS = ['secondary', 'gray', 'light', 'white', 'cancel', 'warning'];
+
+  // 2. Nhóm nền tối: Xanh lá (success), Xanh dương (primary, info), Đỏ (danger), Đen (dark), Cam (orange) => TEXT TRẮNG
+  const WHITE_TEXT_VARIANTS = ['primary', 'success', 'danger', 'dark', 'info', 'orange'];
+
+  if (hasDarkText) {
     contrastClass = 'text-dark fw-medium';
-  } else if (hasDarkText) {
-    contrastClass = 'text-dark fw-medium';
-  } else if (['primary', 'success', 'danger', 'dark'].includes(normalizedVariant)) {
-    contrastClass = 'text-dark fw-medium';
+  } else if (hasWhiteText) {
+    contrastClass = 'text-white fw-medium';
+  } else if (DARK_TEXT_VARIANTS.includes(normalizedVariant)) {
+    // Quy ước: Xám, Trắng, Vàng dùng chữ đen (text-dark) kèm viền solid rõ nét
+    if (['cancel', 'light', 'white'].includes(normalizedVariant)) {
+      normalizedVariant = 'light';
+      contrastClass = 'text-dark border bg-light fw-medium shadow-sm';
+    } else if (['secondary', 'gray'].includes(normalizedVariant)) {
+      contrastClass = 'text-dark border fw-medium shadow-sm';
+    } else if (normalizedVariant === 'warning') {
+      contrastClass = 'text-dark fw-medium';
+    }
+  } else if (WHITE_TEXT_VARIANTS.includes(normalizedVariant)) {
+    // Quy ước: Xanh lá cây, Xanh dương, Đỏ, Đen, Cam dùng chữ trắng (text-white)
+    contrastClass = 'text-white fw-medium';
+  } else {
+    // Mặc định an toàn cho các màu solid khác
+    contrastClass = 'text-white fw-medium';
   }
 
   return (
