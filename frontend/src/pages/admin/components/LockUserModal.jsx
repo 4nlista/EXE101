@@ -75,7 +75,7 @@ export default function LockUserModal({ user, show, onClose, onSuccess }) {
           )}
 
           {hasProjects && (
-            <Alert type="info" className="small mb-3">
+            <Alert type="info" className="small mb-3 d-block" style={{ lineHeight: '1.6' }}>
               Người dùng này đang chủ trì <strong>{user.hostedProjectsCount} dự án</strong>. Khi khóa, toàn bộ bài tuyển dụng đang mở sẽ được hệ thống tự động tạm đình chỉ hiển thị để tránh người khác nộp hồ sơ.
             </Alert>
           )}

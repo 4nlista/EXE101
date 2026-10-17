@@ -440,9 +440,10 @@ img { max-width: 100%; height: auto; display: block; }
 
 /* ── Alert ── */
 .alert {
-  display: flex; align-items: flex-start; gap: 9px;
+  display: block;
   padding: 11px 13px; border-radius: var(--r-md);
   font-size: 0.855rem; margin-bottom: 16px;
+  line-height: 1.5;
 }
 .alert-error   { background: var(--error-bg);   border-color: var(--error-border);   color: #991B1B; }
 .alert-success { background: var(--success-bg); border-color: var(--success-border); color: #166534; }

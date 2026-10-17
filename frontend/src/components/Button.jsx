@@ -40,11 +40,13 @@ export default function Button({
   if (normalizedVariant === 'cancel' || normalizedVariant === 'light') {
     normalizedVariant = 'light';
     contrastClass = 'text-dark border bg-light fw-medium shadow-sm';
+  } else if (normalizedVariant === 'secondary') {
+    contrastClass = 'text-dark border fw-medium shadow-sm';
   } else if (normalizedVariant === 'warning') {
     contrastClass = 'text-dark fw-medium';
   } else if (hasDarkText) {
     contrastClass = 'text-dark fw-medium';
-  } else if (['primary', 'success', 'danger', 'dark', 'secondary'].includes(normalizedVariant)) {
+  } else if (['primary', 'success', 'danger', 'dark'].includes(normalizedVariant)) {
     contrastClass = 'text-white fw-medium';
   }
 
