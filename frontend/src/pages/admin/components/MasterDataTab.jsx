@@ -107,7 +107,7 @@ export default function MasterDataTab() {
             className={`btn btn-sm rounded-pill px-3 py-1 fw-medium ${activeSubTab === 'majors' ? 'btn-primary text-white' : 'btn-link text-secondary text-decoration-none'}`}
             onClick={() => setActiveSubTab('majors')}
           >
-            <GraduationCap size={16} className="me-1" /> Chuyên ngành hẹp
+            <GraduationCap size={16} className="me-1" /> Chuyên ngành
           </button>
           <button
             type="button"
