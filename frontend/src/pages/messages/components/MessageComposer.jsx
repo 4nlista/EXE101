@@ -27,15 +27,16 @@ export default function MessageComposer({
 
       <form onSubmit={onSendMessage}>
         <div className="messages-composer-pill">
-          {/* Nút bật/tắt bảng chọn emoji */}
+          {/* Nút bật/tắt bảng chọn emoji với viền tối màu rõ nét */}
           <Button
             ref={emojiButtonRef}
             type="button"
-            className="messages-emoji-btn"
+            variant="light"
+            className={`messages-emoji-btn ${showEmojiPicker ? 'active' : ''}`}
             onClick={onToggleEmoji}
             title="Chọn biểu tượng cảm xúc"
           >
-            <Smile size={20} />
+            <Smile size={20} className="messages-emoji-icon" />
           </Button>
 
           {/* Ô nhập tin nhắn */}

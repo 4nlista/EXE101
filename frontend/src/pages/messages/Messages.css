@@ -366,23 +366,49 @@
 }
 
 .messages-emoji-btn {
-  background: transparent !important;
-  border: none !important;
-  padding: 6px !important;
+  background: #ffffff !important;
+  border: 1.5px solid #94a3b8 !important;
+  padding: 0 !important;
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  min-height: 34px !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   border-radius: 50% !important;
   cursor: pointer !important;
-  color: #64748b !important;
+  color: #334155 !important;
   transition: all 0.15s ease !important;
   line-height: 1 !important;
-  box-shadow: none !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
 }
 
 .messages-emoji-btn:hover {
-  background-color: rgba(0, 0, 0, 0.06) !important;
-  color: #1f2937 !important;
+  background-color: #f1f5f9 !important;
+  border-color: #64748b !important;
+  color: #0f172a !important;
+}
+
+.messages-emoji-btn.active {
+  background-color: #e2e8f0 !important;
+  border-color: #475569 !important;
+  color: #0f172a !important;
+}
+
+.messages-emoji-icon {
+  color: #334155 !important;
+  stroke: #334155 !important;
+  stroke-width: 2px;
+  display: block;
+  transition: transform 0.15s ease, color 0.15s ease, stroke 0.15s ease;
+}
+
+.messages-emoji-btn:hover .messages-emoji-icon,
+.messages-emoji-btn.active .messages-emoji-icon {
+  transform: scale(1.08);
+  color: #0f172a !important;
+  stroke: #0f172a !important;
 }
 
 .messages-emoji-popover {
