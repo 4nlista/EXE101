@@ -148,7 +148,6 @@ export default function ProjectFeed() {
                 <Button
                   variant="primary"
                   className="text-white px-3 fw-medium"
-                  style={{ backgroundColor: '#ea580c', borderColor: '#ea580c' }}
                   onClick={handleCreateProjectClick}
                 >
                   +Tạo bài đăng
