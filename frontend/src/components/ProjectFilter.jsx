@@ -203,8 +203,8 @@ export default function ProjectFilter({ filters, setFilters }) {
         </Form.Group>
 
         <div className="d-flex gap-2 mt-4">
-          <Button variant="secondary" onClick={handleReset} className="flex-fill text-white border-0" style={{ backgroundColor: '#484a4dff' }}>Xóa</Button>
-          <Button variant="primary" onClick={handleApply} className="flex-fill" style={{ backgroundColor: '#cb3b14ff', borderColor: '#e0e0e0ff' }}>Lọc</Button>
+          <Button variant="secondary" onClick={handleReset} className="flex-fill text-white border-0">Xóa</Button>
+          <Button variant="primary" onClick={handleApply} className="flex-fill">Lọc</Button>
         </div>
       </Form>
     </div>
