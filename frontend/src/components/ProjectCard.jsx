@@ -231,7 +231,7 @@ export default function ProjectCard({
                 variant="primary"
                 size="sm"
                 className="px-2 py-1 fw-medium flex-shrink-0"
-                style={{ backgroundColor: '#ea580c', borderColor: '#c7e0ecff', fontSize: '0.78rem', whiteSpace: 'nowrap' }}
+                style={{ fontSize: '0.78rem', whiteSpace: 'nowrap' }}
                 onClick={(e) => { e.stopPropagation(); onViewDetail && onViewDetail(); }}
               >
                 Chi tiết
