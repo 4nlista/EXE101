@@ -1082,17 +1082,26 @@ textarea.input {
   padding: 13px 16px 11px; border-bottom: 1px solid var(--border);
 }
 .drop-user-name  { font-size: 0.875rem; font-weight: 700; color: var(--text-primary); }
-.drop-user-email { font-size: 0.78rem; color: var(--text-muted); }
 .drop-item {
-  display: flex; align-items: center; gap: 9px;
-  padding: 9px 16px; font-size: 0.855rem; color: var(--text-secondary);
-  cursor: pointer; transition: background var(--t);
-  border: none; background: none; width: 100%; text-align: left;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 10px !important;
+  padding: 10px 16px !important;
+  font-size: 0.855rem !important;
+  color: var(--text-secondary) !important;
+  cursor: pointer;
+  transition: background var(--t);
+  border: none !important;
+  background: none !important;
+  width: 100% !important;
+  text-align: left !important;
   font-family: var(--font);
+  text-decoration: none !important;
 }
-.drop-item:hover { background: var(--bg-subtle); color: var(--text-primary); }
-.drop-item.danger { color: var(--error); }
-.drop-item.danger:hover { background: var(--error-bg); }
+.drop-item:hover { background: var(--bg-subtle) !important; color: var(--text-primary) !important; text-decoration: none !important; }
+.drop-item.danger { color: var(--error) !important; }
+.drop-item.danger:hover { background: var(--error-bg) !important; }
 .drop-sep { height: 1px; background: var(--border); margin: 3px 0; }
 
 /* Dashboard page */

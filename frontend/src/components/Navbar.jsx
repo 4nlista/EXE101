@@ -136,7 +136,7 @@ export default function Navbar() {
                 {currentUser?.roleCode === 'ADMIN' && (
                   <Button
                     variant="link"
-                    className="drop-item fw-semibold text-start text-decoration-none w-100"
+                    className="drop-item fw-semibold text-start justify-content-start text-decoration-none w-100"
                     style={{ color: 'var(--primary)' }}
                     onClick={() => { navigate('/admin'); setShowDrop(false); }}
                   >
@@ -146,19 +146,19 @@ export default function Navbar() {
                 {!currentUser?.onboardingCompleted && (
                   <Button
                     variant="link"
-                    className="drop-item fw-semibold text-start text-decoration-none w-100"
+                    className="drop-item fw-semibold text-start justify-content-start text-decoration-none w-100"
                     style={{ color: 'var(--primary)' }}
                     onClick={() => { navigate('/onboarding'); setShowDrop(false); }}
                   >
                     <Sparkles size={16} /> Hoàn tất hồ sơ (0/4)
                   </Button>
                 )}
-                <Button variant="link" className="drop-item text-start text-decoration-none w-100" onClick={() => { navigate('/profile'); setShowDrop(false); }}><User size={16} /> Hồ sơ cá nhân</Button>
-                <Button variant="link" className="drop-item text-start text-decoration-none w-100" onClick={() => { navigate('/subscription'); setShowDrop(false); }}><Crown size={16} /> Nâng cấp tài khoản</Button>
-                <Button variant="link" className="drop-item text-start text-decoration-none w-100" onClick={() => { navigate('/transactions'); setShowDrop(false); }}><ReceiptText size={16} /> Lịch sử thanh toán</Button>
-                <Button variant="link" className="drop-item text-start text-decoration-none w-100" onClick={() => { navigate('/change-password'); setShowDrop(false); }}><Settings size={16} /> Đổi mật khẩu</Button>
+                <Button variant="link" className="drop-item text-start justify-content-start text-decoration-none w-100" onClick={() => { navigate('/profile'); setShowDrop(false); }}><User size={16} /> Hồ sơ cá nhân</Button>
+                <Button variant="link" className="drop-item text-start justify-content-start text-decoration-none w-100" onClick={() => { navigate('/subscription'); setShowDrop(false); }}><Crown size={16} /> Nâng cấp tài khoản</Button>
+                <Button variant="link" className="drop-item text-start justify-content-start text-decoration-none w-100" onClick={() => { navigate('/transactions'); setShowDrop(false); }}><ReceiptText size={16} /> Lịch sử thanh toán</Button>
+                <Button variant="link" className="drop-item text-start justify-content-start text-decoration-none w-100" onClick={() => { navigate('/change-password'); setShowDrop(false); }}><Settings size={16} /> Đổi mật khẩu</Button>
                 <div className="drop-sep" />
-                <Button variant="link" className="drop-item danger text-start text-decoration-none w-100" onClick={handleLogout}><LogOut size={16} /> Đăng xuất</Button>
+                <Button variant="link" className="drop-item danger text-start justify-content-start text-decoration-none w-100" onClick={handleLogout}><LogOut size={16} /> Đăng xuất</Button>
               </div>
             </div>
           )}

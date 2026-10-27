@@ -23,6 +23,7 @@
   flex-shrink: 0;
   z-index: 100;
   box-shadow: none;
+  position: relative;
 }
 
 .layout-logo {
@@ -59,7 +60,23 @@
 }
 .layout-search-bar svg { color: var(--text-muted); flex-shrink: 0; }
 
-.layout-nav-links { display: flex; gap: var(--space-1); height: 100%; align-items: center; }
+.layout-nav-links {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: var(--space-1);
+  height: 100%;
+  align-items: center;
+}
+
+@media (max-width: 991px) {
+  .layout-nav-links {
+    position: static;
+    transform: none;
+    margin: 0 auto;
+  }
+}
 .layout-nav-link {
   height: 100%;
   display: flex;

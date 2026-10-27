@@ -526,3 +526,39 @@ hr { border-color: var(--border); opacity: 1; }
   border-color: var(--border-strong);
   transform: translateY(-1px);
 }
+
+/* ============================================================
+   USER DROPDOWN MENU OVERRIDES
+   ============================================================ */
+.drop-menu .drop-item,
+.drop-menu .btn.drop-item {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  text-align: left !important;
+  padding: 10px 16px !important;
+  gap: 10px !important;
+  width: 100% !important;
+  border-radius: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  text-decoration: none !important;
+  font-size: var(--text-sm) !important;
+  font-weight: var(--font-normal) !important;
+  box-shadow: none !important;
+  color: var(--text-secondary) !important;
+}
+.drop-menu .drop-item:hover,
+.drop-menu .btn.drop-item:hover {
+  background-color: var(--bg-subtle) !important;
+  color: var(--text-primary) !important;
+}
+.drop-menu .drop-item.danger,
+.drop-menu .btn.drop-item.danger {
+  color: var(--error) !important;
+}
+.drop-menu .drop-item.danger:hover,
+.drop-menu .btn.drop-item.danger:hover {
+  background-color: var(--error-bg) !important;
+  color: var(--error) !important;
+}
