@@ -178,10 +178,10 @@ export default function MyProjectsTab() {
                 <div style={{ width: '130px', flex: '0 0 130px' }} className="d-flex justify-content-center flex-shrink-0">
                   <StatusBadge
                     variant={
-                      project.status === PROJECT_STATUS.OPEN ? 'warning' :
-                        project.status === PROJECT_STATUS.IN_PROGRESS ? 'primary' :
-                          project.status === PROJECT_STATUS.COMPLETED ? 'success' :
-                            project.status === PROJECT_STATUS.CANCELLED ? 'danger' : 'secondary'
+                      project.status === PROJECT_STATUS.OPEN ? 'green' :
+                        project.status === PROJECT_STATUS.IN_PROGRESS ? 'blue' :
+                          project.status === PROJECT_STATUS.COMPLETED ? 'purple' :
+                            project.status === PROJECT_STATUS.CANCELLED ? 'red' : 'gray'
                     }
                     text={
                       project.status === PROJECT_STATUS.OPEN ? 'Đang tuyển' :

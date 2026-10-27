@@ -5,6 +5,7 @@ import { Search, Lock, Unlock, ShieldAlert, Users } from 'lucide-react';
 import { adminService } from '../../../services/adminService';
 import Button from '../../../components/Button';
 import Pagination from '../../../components/Pagination';
+import StatusBadge from '../../../components/StatusBadge';
 import LockUserModal from './LockUserModal';
 import { toast } from 'react-toastify';
 
@@ -166,14 +167,16 @@ export default function UserManagementTab() {
                       </td>
 
                       <td>
-                        <div className="d-flex flex-column gap-1">
-                          <span className="badge bg-light text-secondary border fw-normal text-start" style={{ width: 'fit-content' }}>
-                            {u.roleCode === 0 ? 'Quản trị viên' : 'Sinh viên'}
-                          </span>
+                        <div className="d-flex flex-column gap-1" style={{ width: 'fit-content' }}>
+                          <StatusBadge
+                            variant="gray"
+                            text={u.roleCode === 0 ? 'Quản trị viên' : 'Sinh viên'}
+                          />
                           {isVip && (
-                            <span className="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle fw-medium text-start" style={{ width: 'fit-content' }}>
-                              {u.currentPackage.toUpperCase()}
-                            </span>
+                            <StatusBadge
+                              variant="orange"
+                              text={u.currentPackage.toUpperCase()}
+                            />
                           )}
                         </div>
                       </td>
@@ -185,13 +188,16 @@ export default function UserManagementTab() {
 
                       <td>
                         {isLocked ? (
-                          <span className="badge bg-danger-subtle text-danger border border-danger-subtle fw-medium d-inline-flex align-items-center gap-1">
-                            <Lock size={12} /> Đã khóa
-                          </span>
+                          <StatusBadge
+                            variant="red"
+                            icon={Lock}
+                            text="Đã khóa"
+                          />
                         ) : (
-                          <span className="badge bg-success-subtle text-success border border-success-subtle fw-medium">
-                            Hoạt động
-                          </span>
+                          <StatusBadge
+                            variant="green"
+                            text="Hoạt động"
+                          />
                         )}
                         {isLocked && u.lockReason && (
                           <div className="text-muted text-truncate mt-1" style={{ maxWidth: '150px', fontSize: '0.75rem' }} title={u.lockReason}>

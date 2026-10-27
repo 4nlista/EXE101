@@ -215,7 +215,10 @@ a:not(.btn):not(.nav-link):not(.dropdown-item):not(.page-link):hover { color: va
 .card-title { color: var(--text-primary); font-weight: var(--font-semibold); }
 
 /* ============================================================
-   BADGES
+   BADGES & STATUS BADGES
+   Quy ước chuẩn độ tương phản toàn hệ thống:
+   - Nền tối / màu đậm (xanh nước biển, xanh lá cây, cam, đỏ, tím, đen): CHỮ TRẮNG (#FFFFFF)
+   - Nền sáng (xám, trắng, light, neutral): CHỮ ĐEN (#0F172A)
    ============================================================ */
 .badge {
   font-size: var(--text-xs);
@@ -224,7 +227,30 @@ a:not(.btn):not(.nav-link):not(.dropdown-item):not(.page-link):hover { color: va
   padding: 3px 10px;
 }
 
-/* Status badge: nền nhạt + chữ cùng tông (không dùng nền đậm) */
+/* Các badge nền tối / màu đậm -> Chữ TRẮNG */
+.badge.bg-primary,
+.badge.bg-success,
+.badge.bg-warning,
+.badge.bg-danger,
+.badge.bg-info,
+.badge.bg-dark,
+.badge.bg-primary.text-primary,
+.badge.bg-success.text-success,
+.badge.bg-warning.text-warning,
+.badge.bg-danger.text-danger,
+.badge.bg-info.text-info {
+  color: #FFFFFF !important;
+}
+
+/* Các badge nền sáng -> Chữ ĐEN + Viền tinh tế */
+.badge.bg-light,
+.badge.bg-secondary,
+.badge.bg-white {
+  color: #0F172A !important;
+  border: 1px solid #CBD5E1 !important;
+}
+
+/* Status Badge Component */
 .status-badge {
   display: inline-flex;
   align-items: center;
@@ -237,11 +263,64 @@ a:not(.btn):not(.nav-link):not(.dropdown-item):not(.page-link):hover { color: va
   border: 1px solid transparent;
   white-space: nowrap;
 }
-.status-badge--success { color: var(--status-success); background: var(--status-success-bg); border-color: rgba(22, 163, 74, 0.18); }
-.status-badge--warning { color: var(--status-warning); background: var(--status-warning-bg); border-color: rgba(217, 119, 6, 0.18); }
-.status-badge--danger  { color: var(--status-danger);  background: var(--status-danger-bg);  border-color: rgba(220, 38, 38, 0.18); }
-.status-badge--info    { color: var(--status-info);    background: var(--status-info-bg);    border-color: rgba(37, 99, 235, 0.18); }
-.status-badge--neutral { color: var(--status-neutral); background: var(--status-neutral-bg); border-color: var(--border); }
+
+/* Nhóm nền tối / màu đậm: CHỮ TRẮNG */
+.status-badge--blue,
+.status-badge--info,
+.status-badge--primary {
+  color: #FFFFFF !important;
+  background-color: #2563EB !important;
+  border-color: #2563EB !important;
+}
+
+.status-badge--green,
+.status-badge--success {
+  color: #FFFFFF !important;
+  background-color: #16A34A !important;
+  border-color: #16A34A !important;
+}
+
+.status-badge--orange,
+.status-badge--warning {
+  color: #FFFFFF !important;
+  background-color: #EA580C !important;
+  border-color: #EA580C !important;
+}
+
+.status-badge--red,
+.status-badge--danger {
+  color: #FFFFFF !important;
+  background-color: #DC2626 !important;
+  border-color: #DC2626 !important;
+}
+
+.status-badge--purple {
+  color: #FFFFFF !important;
+  background-color: #7C3AED !important;
+  border-color: #7C3AED !important;
+}
+
+.status-badge--dark {
+  color: #FFFFFF !important;
+  background-color: #0F172A !important;
+  border-color: #0F172A !important;
+}
+
+/* Nhóm nền sáng: CHỮ ĐEN */
+.status-badge--gray,
+.status-badge--neutral,
+.status-badge--secondary,
+.status-badge--light {
+  color: #0F172A !important;
+  background-color: #F1F5F9 !important;
+  border-color: #CBD5E1 !important;
+}
+
+.status-badge--white {
+  color: #0F172A !important;
+  background-color: #FFFFFF !important;
+  border-color: #CBD5E1 !important;
+}
 
 /* ============================================================
    TABLES

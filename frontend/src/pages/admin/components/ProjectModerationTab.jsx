@@ -6,6 +6,7 @@ import { adminService } from '../../../services/adminService';
 import { PROJECT_STATUS } from '../../../constants';
 import Button from '../../../components/Button';
 import Pagination from '../../../components/Pagination';
+import StatusBadge from '../../../components/StatusBadge';
 import ModerateProjectModal from './ModerateProjectModal';
 import { toast } from 'react-toastify';
 
@@ -66,33 +67,25 @@ export default function ProjectModerationTab() {
   const renderStatusBadge = (status) => {
     switch (status) {
       case PROJECT_STATUS.OPEN:
-        return <span className="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 fw-medium">Đang mở tuyển</span>;
+        // Đang mở tuyển: Nền xanh lá cây chữ trắng
+        return <StatusBadge variant="green" text="Đang mở tuyển" />;
       case PROJECT_STATUS.IN_PROGRESS:
-        return <span className="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 fw-medium">Đang thực hiện</span>;
+        // Đang thực hiện: Nền xanh nước biển chữ trắng
+        return <StatusBadge variant="blue" text="Đang thực hiện" />;
       case PROJECT_STATUS.COMPLETED:
-        return (
-          <span 
-            className="badge fw-medium border"
-            style={{ color: '#6d28d9', backgroundColor: '#f5f3ff', borderColor: '#ddd6fe' }}
-          >
-            Đã hoàn thành
-          </span>
-        );
+        // Đã hoàn thành: Nền tím chữ trắng
+        return <StatusBadge variant="purple" text="Đã hoàn thành" />;
       case PROJECT_STATUS.CLOSED:
-        return <span className="badge bg-warning bg-opacity-10 text-warning-emphasis border border-warning border-opacity-25 fw-medium">Đã đóng slot</span>;
+        // Đã đóng slot: Nền xám chữ đen
+        return <StatusBadge variant="gray" text="Đã đóng slot" />;
       case PROJECT_STATUS.CANCELLED:
-        return <span className="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 fw-medium">Đã hủy</span>;
+        // Đã hủy: Nền đỏ chữ trắng
+        return <StatusBadge variant="red" text="Đã hủy" />;
       case PROJECT_STATUS.SUSPENDED:
-        return (
-          <span 
-            className="badge fw-medium border"
-            style={{ color: '#be123c', backgroundColor: '#fff1f2', borderColor: '#fecdd3' }}
-          >
-            Bị đình chỉ
-          </span>
-        );
+        // Bị đình chỉ: Nền cam chữ trắng
+        return <StatusBadge variant="orange" text="Bị đình chỉ" />;
       default:
-        return <span className="badge bg-light text-secondary border fw-normal">{status}</span>;
+        return <StatusBadge variant="gray" text={status} />;
     }
   };
 

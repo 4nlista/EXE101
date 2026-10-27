@@ -5,6 +5,7 @@ import { Plus, GraduationCap, Tag, Check, Eye, EyeOff, Search, BookOpen, Pencil 
 import { adminService } from '../../../services/adminService';
 import { useDepartments } from '../../../hooks/useMasterData';
 import Button from '../../../components/Button';
+import StatusBadge from '../../../components/StatusBadge';
 import CreateDepartmentModal from './CreateDepartmentModal';
 import CreateMajorModal from './CreateMajorModal';
 import CreateSkillModal from './CreateSkillModal';
@@ -205,9 +206,9 @@ export default function MasterDataTab() {
                       </td>
                       <td>
                         {d.isActive ? (
-                          <span className="badge bg-success-subtle text-success border border-success-subtle fw-medium">Hiển thị</span>
+                          <StatusBadge variant="green" text="Hiển thị" />
                         ) : (
-                          <span className="badge bg-light text-muted border fw-normal">Đã ẩn</span>
+                          <StatusBadge variant="gray" text="Đã ẩn" />
                         )}
                       </td>
                       <td className="text-end">
@@ -296,9 +297,9 @@ export default function MasterDataTab() {
                       <td className="text-muted">{m.departmentId?.name || 'Không rõ'}</td>
                       <td>
                         {m.isActive ? (
-                          <span className="badge bg-success-subtle text-success border border-success-subtle fw-medium">Hiển thị</span>
+                          <StatusBadge variant="green" text="Hiển thị" />
                         ) : (
-                          <span className="badge bg-light text-muted border fw-normal">Đã ẩn</span>
+                          <StatusBadge variant="gray" text="Đã ẩn" />
                         )}
                       </td>
                       <td className="text-end">
@@ -385,9 +386,9 @@ export default function MasterDataTab() {
                       </td>
                       <td>
                         {s.isApproved ? (
-                          <span className="badge bg-success-subtle text-success border border-success-subtle fw-medium">Đã duyệt</span>
+                          <StatusBadge variant="green" text="Đã duyệt" />
                         ) : (
-                          <span className="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle fw-medium">Chờ duyệt</span>
+                          <StatusBadge variant="orange" text="Chờ duyệt" />
                         )}
                       </td>
                       <td className="text-end">

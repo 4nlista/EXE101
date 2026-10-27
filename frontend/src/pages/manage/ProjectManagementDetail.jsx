@@ -266,10 +266,10 @@ export default function ProjectManagementDetail() {
                 <h4 className="fw-bold mb-0">{project.title}</h4>
                 <StatusBadge
                   variant={
-                    project.status === PROJECT_STATUS.OPEN ? 'warning' :
-                      project.status === PROJECT_STATUS.IN_PROGRESS ? 'primary' :
-                        project.status === PROJECT_STATUS.COMPLETED ? 'success' :
-                          project.status === PROJECT_STATUS.CANCELLED ? 'danger' : 'secondary'
+                    project.status === PROJECT_STATUS.OPEN ? 'green' :
+                      project.status === PROJECT_STATUS.IN_PROGRESS ? 'blue' :
+                        project.status === PROJECT_STATUS.COMPLETED ? 'purple' :
+                          project.status === PROJECT_STATUS.CANCELLED ? 'red' : 'gray'
                   }
                   text={
                     project.status === PROJECT_STATUS.OPEN ? 'Đang tuyển' :
