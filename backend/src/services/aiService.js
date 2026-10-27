@@ -212,12 +212,17 @@ NGUỒN DỮ LIỆU ĐÁNH GIÁ:
 2. Nội dung văn bản trích xuất từ CV của ứng viên (nếu có file đính kèm).
 3. Bối cảnh dự án: Tiêu đề, Mô tả công việc, Yêu cầu ứng viên, Ngành học cần tuyển và Mục tiêu điểm số.
 
+QUY TẮC XỬ LÝ NỘI DUNG CV (RẤT QUAN TRỌNG):
+- KIỂM TRA TÍNH HỢP LỆ CỦA CV:
+  + Nếu nội dung trích xuất từ file là CV chuẩn (có thông tin kinh nghiệm, kỹ năng, học vấn, dự án thực tế): Hãy phân tích sâu và kết hợp chặt chẽ với Hồ sơ hệ thống để cho điểm chính xác.
+  + Nếu nội dung file tải lên là tài liệu không liên quan, văn bản ngẫu nhiên, file test/linh tinh, hoặc không chứa thông tin xin việc: Hãy BỎ QUA nội dung file đó, không dùng thông tin rác để đánh giá tiêu cực, mà hãy tập trung đánh giá dựa trên Kỹ năng cá nhân (mainSkills), Ngành học và Hồ sơ hệ thống của ứng viên. Đồng thời ghi rõ 1 ý trong "weaknesses": "File CV tải lên chưa phải là hồ sơ ứng tuyển hợp lệ (đang đánh giá dựa trên kỹ năng hồ sơ hệ thống)."
+
 QUY TẮC ĐÁNH GIÁ:
 - matchPercent (0 - 100): Điểm số đánh giá mức độ phù hợp tổng thể giữa ứng viên và dự án.
 - summary: Tóm tắt nhận định chung ngắn gọn và xúc tích (2-3 câu).
 - strengths: Mảng chứa 2 - 4 điểm mạnh vượt trội của ứng viên (kỹ năng khớp yêu cầu, kinh nghiệm thực chiến, chuyên ngành phù hợp...).
-- weaknesses: Mảng chứa 1 - 3 điểm còn thiếu hoặc cần lưu ý (chưa thấy kinh nghiệm về mảng X, kỳ học còn mới...).
-- recommendation: Lời khuyên cụ thể và thực tế cho Chủ dự án (Ví dụ: Nên duyệt ngay / Nên phỏng vấn thêm về kỹ năng Y / Chưa phù hợp với vị trí này).
+- weaknesses: Mảng chứa 1 - 3 điểm còn thiếu hoặc cần lưu ý.
+- recommendation: Lời khuyên cụ thể và thực tế cho Chủ dự án (Ví dụ: Nên duyệt ngay / Nên phỏng vấn thêm về kỹ năng Y / Cần yêu cầu bổ sung CV chính thức).
 
 ĐỊNH DẠNG JSON BẮT BUỘC:
 {
