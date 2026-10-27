@@ -17,7 +17,7 @@ import {
 } from '../../services/projectService';
 import { initConversation } from '../../services/messageService';
 import { matchApplicant } from '../../services/aiService';
-import { APPLICATION_STATUS } from '../../constants/applicationEnum';
+import { APPLICATION_STATUS, APPLICATION_STATUS_BADGE, PROJECT_MANAGE_ACTION } from '../../constants/applicationEnum';
 import { PROJECT_STATUS } from '../../constants/projectEnum';
 import { formatDate } from '../../utils/formatDate';
 import StatusBadge from '../../components/StatusBadge';
@@ -26,12 +26,52 @@ import CustomTable from '../../components/CustomTable';
 import ReviewTab from './components/ReviewTab';
 import AiMatchModal from './components/AiMatchModal';
 
-const ACTION_TYPES = {
-  APPROVE: 'approve', // Chấp nhận đơn đăng ký
-  REJECT: 'reject',   // Từ chối đơn đăng ký
-  INVITE: 'invite',   // Mời thành viên
-  KICK: 'kick',       // Kích thành viên
-  CHANGE_STATUS: 'change_status' // Thay đổi trạng thái
+// Cấu hình nội dung cho ConfirmActionModal theo từng loại hành động
+const getConfirmModalConfig = (action) => {
+  switch (action.type) {
+    case PROJECT_MANAGE_ACTION.APPROVE:
+      return {
+        title: 'Duyệt ứng viên',
+        message: `Bạn có chắc chắn muốn duyệt ứng viên ${action.name} vào dự án không?`,
+        confirmText: 'Duyệt',
+        variant: 'success'
+      };
+    case PROJECT_MANAGE_ACTION.REJECT:
+      return {
+        title: 'Từ chối ứng viên',
+        message: `Bạn có chắc chắn muốn từ chối ứng viên ${action.name} không?`,
+        confirmText: 'Từ chối',
+        variant: 'danger'
+      };
+    case PROJECT_MANAGE_ACTION.INVITE:
+      return {
+        title: 'Mời tham gia',
+        message: `Bạn có muốn gửi lời mời tham gia dự án đến ${action.name}?`,
+        confirmText: 'Mời',
+        variant: 'success'
+      };
+    case PROJECT_MANAGE_ACTION.KICK:
+      return {
+        title: 'Xóa thành viên',
+        message: `Bạn có chắc chắn muốn xóa thành viên ${action.name} khỏi dự án không?`,
+        confirmText: 'Xóa',
+        variant: 'danger'
+      };
+    case PROJECT_MANAGE_ACTION.CHANGE_STATUS:
+      return {
+        title: 'Xác nhận thay đổi',
+        message: `Bạn có chắc chắn muốn ${action.name}? Hành động này có thể không thể hoàn tác.`,
+        confirmText: 'Xác nhận',
+        variant: action.newStatus === PROJECT_STATUS.CANCELLED ? 'danger' : 'success'
+      };
+    default:
+      return {
+        title: 'Xác nhận',
+        message: 'Bạn có chắc chắn muốn thực hiện hành động này?',
+        confirmText: 'Xác nhận',
+        variant: 'primary'
+      };
+  }
 };
 
 export default function ProjectManagementDetail() {
@@ -86,19 +126,19 @@ export default function ProjectManagementDetail() {
 
   const handleConfirmAction = async () => {
     try {
-      if (confirmAction.type === ACTION_TYPES.APPROVE) {
+      if (confirmAction.type === PROJECT_MANAGE_ACTION.APPROVE) {
         await approveApplicant(projectId, confirmAction.appId);
         toast.success(`Đã duyệt ứng viên ${confirmAction.name}`);
-      } else if (confirmAction.type === ACTION_TYPES.REJECT) {
+      } else if (confirmAction.type === PROJECT_MANAGE_ACTION.REJECT) {
         await rejectApplicant(projectId, confirmAction.appId);
         toast.success(`Đã từ chối ứng viên ${confirmAction.name}`);
-      } else if (confirmAction.type === ACTION_TYPES.INVITE) {
+      } else if (confirmAction.type === PROJECT_MANAGE_ACTION.INVITE) {
         await inviteApplicant(projectId, confirmAction.appId);
         toast.success(`Đã gửi lời mời tham gia dự án đến ${confirmAction.name}`);
-      } else if (confirmAction.type === ACTION_TYPES.KICK) {
+      } else if (confirmAction.type === PROJECT_MANAGE_ACTION.KICK) {
         await kickMember(projectId, confirmAction.userId);
         toast.success(`Đã xóa thành viên ${confirmAction.name} khỏi dự án`);
-      } else if (confirmAction.type === ACTION_TYPES.CHANGE_STATUS) {
+      } else if (confirmAction.type === PROJECT_MANAGE_ACTION.CHANGE_STATUS) {
         await updateProjectStatus(projectId, confirmAction.newStatus);
         toast.success(`Đã cập nhật trạng thái dự án thành công`);
       }
@@ -154,23 +194,10 @@ export default function ProjectManagementDetail() {
     }
   };
 
+  // Lấy badge trạng thái ứng viên từ enum cấu hình chuẩn hóa
   const getStatusBadge = (status) => {
-    switch (status) {
-      case APPLICATION_STATUS.PENDING:
-        return <StatusBadge variant="warning" text="Đang xử lý" />;
-      case APPLICATION_STATUS.APPROVED:
-        return <StatusBadge variant="success" text="Đã duyệt" />;
-      case APPLICATION_STATUS.REJECTED:
-        return <StatusBadge variant="danger" text="Từ chối" />;
-      case APPLICATION_STATUS.INVITED:
-        return <StatusBadge variant="primary" text="Được mời" />;
-      case APPLICATION_STATUS.EXPIRED:
-        return <StatusBadge variant="secondary" text="Đã hết hạn" />;
-      case APPLICATION_STATUS.CANCELLED:
-        return <StatusBadge variant="secondary" text="Đã hủy" />;
-      default:
-        return null;
-    }
+    const badge = APPLICATION_STATUS_BADGE[status];
+    return badge ? <StatusBadge variant={badge.variant} text={badge.text} /> : null;
   };
 
   // Logic lọc và sắp xếp ứng viên
@@ -216,6 +243,8 @@ export default function ProjectManagementDetail() {
     link.click();
     document.body.removeChild(link);
   };
+
+  const confirmModalConfig = getConfirmModalConfig(confirmAction);
 
   if (loading || !project) return <Container className="py-5 text-center">Đang tải...</Container>;
 
@@ -272,7 +301,7 @@ export default function ProjectManagementDetail() {
             <div className="d-flex justify-content-end gap-2">
               {project.status === PROJECT_STATUS.OPEN && members.length < (project.maxMembers / 2) && (
                 <Button variant="danger" className="rounded px-3 shadow-none fw-medium text-white" onClick={() => {
-                  setConfirmAction({ type: ACTION_TYPES.CHANGE_STATUS, name: 'hủy dự án này', newStatus: PROJECT_STATUS.CANCELLED });
+                  setConfirmAction({ type: PROJECT_MANAGE_ACTION.CHANGE_STATUS, name: 'hủy dự án này', newStatus: PROJECT_STATUS.CANCELLED });
                   setShowConfirm(true);
                 }}>
                   Hủy dự án
@@ -282,14 +311,14 @@ export default function ProjectManagementDetail() {
                 <>
                   {members.length < (project.maxMembers / 2) && (
                     <Button variant="danger" className="rounded px-3 shadow-none fw-medium text-white" onClick={() => {
-                      setConfirmAction({ type: ACTION_TYPES.CHANGE_STATUS, name: 'hủy dự án này', newStatus: PROJECT_STATUS.CANCELLED });
+                      setConfirmAction({ type: PROJECT_MANAGE_ACTION.CHANGE_STATUS, name: 'hủy dự án này', newStatus: PROJECT_STATUS.CANCELLED });
                       setShowConfirm(true);
                     }}>
                       Hủy dự án
                     </Button>
                   )}
                   <Button variant="success" className="rounded px-3 shadow-none text-white fw-medium" onClick={() => {
-                    setConfirmAction({ type: ACTION_TYPES.CHANGE_STATUS, name: 'bắt đầu dự án này', newStatus: PROJECT_STATUS.IN_PROGRESS });
+                    setConfirmAction({ type: PROJECT_MANAGE_ACTION.CHANGE_STATUS, name: 'bắt đầu dự án này', newStatus: PROJECT_STATUS.IN_PROGRESS });
                     setShowConfirm(true);
                   }}>
                     Bắt đầu dự án
@@ -298,7 +327,7 @@ export default function ProjectManagementDetail() {
               )}
               {project.status === PROJECT_STATUS.IN_PROGRESS && (
                 <Button variant="success" className="rounded px-3 shadow-none text-white fw-medium" onClick={() => {
-                  setConfirmAction({ type: ACTION_TYPES.CHANGE_STATUS, name: 'hoàn thành dự án này', newStatus: PROJECT_STATUS.COMPLETED });
+                  setConfirmAction({ type: PROJECT_MANAGE_ACTION.CHANGE_STATUS, name: 'hoàn thành dự án này', newStatus: PROJECT_STATUS.COMPLETED });
                   setShowConfirm(true);
                 }}>
                   Hoàn thành dự án
@@ -493,7 +522,7 @@ export default function ProjectManagementDetail() {
                             variant="success"
                             size="sm"
                             onClick={() => {
-                              setConfirmAction({ type: ACTION_TYPES.APPROVE, appId: app._id, name: app.applicantId?.name });
+                              setConfirmAction({ type: PROJECT_MANAGE_ACTION.APPROVE, appId: app._id, name: app.applicantId?.name });
                               setShowConfirm(true);
                             }}
                           >Duyệt</Button>
@@ -501,7 +530,7 @@ export default function ProjectManagementDetail() {
                             variant="danger"
                             size="sm"
                             onClick={() => {
-                              setConfirmAction({ type: ACTION_TYPES.REJECT, appId: app._id, name: app.applicantId?.name });
+                              setConfirmAction({ type: PROJECT_MANAGE_ACTION.REJECT, appId: app._id, name: app.applicantId?.name });
                               setShowConfirm(true);
                             }}
                           >Từ chối</Button>
@@ -519,7 +548,7 @@ export default function ProjectManagementDetail() {
                           variant="info"
                           size="sm"
                           onClick={() => {
-                            setConfirmAction({ type: ACTION_TYPES.INVITE, appId: app._id, name: app.applicantId?.name });
+                            setConfirmAction({ type: PROJECT_MANAGE_ACTION.INVITE, appId: app._id, name: app.applicantId?.name });
                             setShowConfirm(true);
                           }}
                         >Mời tham gia</Button>
@@ -596,7 +625,7 @@ export default function ProjectManagementDetail() {
                             variant="warning"
                             className="w-100 rounded-pill py-1"
                             onClick={() => {
-                              setConfirmAction({ type: ACTION_TYPES.KICK, userId: member.userId._id, name: member.userId.name });
+                              setConfirmAction({ type: PROJECT_MANAGE_ACTION.KICK, userId: member.userId._id, name: member.userId.name });
                               setShowConfirm(true);
                             }}
                             style={{ fontSize: '13px' }}
@@ -616,32 +645,15 @@ export default function ProjectManagementDetail() {
         )}
       </div>
 
+      {/* Modal xác nhận thao tác quản lý */}
       <ConfirmActionModal
         show={showConfirm}
         onHide={() => setShowConfirm(false)}
         onConfirm={handleConfirmAction}
-        title={
-          confirmAction.type === ACTION_TYPES.APPROVE ? 'Duyệt ứng viên' :
-            confirmAction.type === ACTION_TYPES.REJECT ? 'Từ chối ứng viên' :
-              confirmAction.type === ACTION_TYPES.INVITE ? 'Mời tham gia' :
-                confirmAction.type === ACTION_TYPES.CHANGE_STATUS ? 'Xác nhận thay đổi' : 'Xóa thành viên'
-        }
-        message={
-          confirmAction.type === ACTION_TYPES.APPROVE ? `Bạn có chắc chắn muốn duyệt ứng viên ${confirmAction.name} vào dự án không?` :
-            confirmAction.type === ACTION_TYPES.REJECT ? `Bạn có chắc chắn muốn từ chối ứng viên ${confirmAction.name} không?` :
-              confirmAction.type === ACTION_TYPES.INVITE ? `Bạn có muốn gửi lời mời tham gia dự án đến ${confirmAction.name}?` :
-                confirmAction.type === ACTION_TYPES.CHANGE_STATUS ? `Bạn có chắc chắn muốn ${confirmAction.name}? Hành động này có thể không thể hoàn tác.` :
-                  `Bạn có chắc chắn muốn xóa thành viên ${confirmAction.name} khỏi dự án không?`
-        }
-        confirmText={
-          confirmAction.type === ACTION_TYPES.APPROVE ? 'Duyệt' :
-            confirmAction.type === ACTION_TYPES.REJECT ? 'Từ chối' :
-              confirmAction.type === ACTION_TYPES.INVITE ? 'Mời' :
-                confirmAction.type === ACTION_TYPES.CHANGE_STATUS ? 'Xác nhận' : 'Xóa'
-        }
-        variant={
-          confirmAction.type === ACTION_TYPES.APPROVE || confirmAction.type === ACTION_TYPES.INVITE || (confirmAction.type === ACTION_TYPES.CHANGE_STATUS && confirmAction.newStatus !== PROJECT_STATUS.CANCELLED) ? 'success' : 'danger'
-        }
+        title={confirmModalConfig.title}
+        message={confirmModalConfig.message}
+        confirmText={confirmModalConfig.confirmText}
+        variant={confirmModalConfig.variant}
       />
 
       <UpdateProjectModal

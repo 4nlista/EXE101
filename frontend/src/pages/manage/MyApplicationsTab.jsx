@@ -8,7 +8,7 @@ import Card from '../../components/Card';
 import Modal from '../../components/Modal';
 import { getMyApplications, cancelApplication, acceptInvite, declineInvite } from '../../services/applicationService';
 import { getProjectDetail } from '../../services/projectService';
-import { APPLICATION_STATUS } from '../../constants/applicationEnum';
+import { APPLICATION_STATUS, APPLICATION_STATUS_BADGE, APPLICATION_ACTION } from '../../constants/applicationEnum';
 import { formatDate } from '../../utils/formatDate';
 import StatusBadge from '../../components/StatusBadge';
 import ProjectDetailModal from '../feed/ProjectDetailModal';
@@ -17,10 +17,38 @@ import Pagination from '../../components/Pagination';
 import { PROJECT_STATUS } from '../../constants/projectEnum';
 import ReviewTab from './components/ReviewTab';
 
-const ACTION_TYPES = {
-  CANCEL: 'cancel', // Hủy đơn tham gia
-  ACCEPT: 'accept', // Chấp nhận đơn tham gia
-  DECLINE: 'decline'  // từ chối - thành viên bấm từ chối lời mời của chủ dự án
+// Cấu hình nội dung cho ConfirmActionModal theo từng loại hành động của đơn ứng tuyển
+const getApplicationActionModalConfig = (actionType) => {
+  switch (actionType) {
+    case APPLICATION_ACTION.CANCEL:
+      return {
+        title: 'Hủy đơn đăng ký',
+        message: 'Bạn có chắc chắn muốn hủy đơn đăng ký vào dự án này không?',
+        confirmText: 'Hủy đơn',
+        variant: 'danger'
+      };
+    case APPLICATION_ACTION.ACCEPT:
+      return {
+        title: 'Chấp nhận tham gia',
+        message: 'Bạn đồng ý tham gia dự án này chứ?',
+        confirmText: 'Đồng ý',
+        variant: 'success'
+      };
+    case APPLICATION_ACTION.DECLINE:
+      return {
+        title: 'Từ chối lời mời',
+        message: 'Bạn có chắc chắn muốn từ chối lời mời này không?',
+        confirmText: 'Từ chối',
+        variant: 'danger'
+      };
+    default:
+      return {
+        title: 'Xác nhận',
+        message: 'Bạn có chắc muốn thực hiện thao tác này?',
+        confirmText: 'Xác nhận',
+        variant: 'primary'
+      };
+  }
 };
 
 export default function MyApplicationsTab() {
@@ -33,11 +61,8 @@ export default function MyApplicationsTab() {
 
   const ITEMS_PER_PAGE = 5;
 
-  // Modals state
-  const [showCancelModal, setShowCancelModal] = useState(false);
-  const [showAcceptModal, setShowAcceptModal] = useState(false);
-  const [showDeclineModal, setShowDeclineModal] = useState(false);
-  const [selectedAppId, setSelectedAppId] = useState(null);
+  // State xác nhận hành động modal
+  const [confirmAction, setConfirmAction] = useState({ type: null, appId: null });
 
   // Project detail modal
   const [selectedProject, setSelectedProject] = useState(null);
@@ -76,46 +101,36 @@ export default function MyApplicationsTab() {
     fetchApplications();
   }, [statusFilter, search, page]);
 
-  // hàm xử lý hành động với applicationId
-  const handleAction = async (action, appId) => {
+  // Xử lý hành động với applicationId (Hủy đơn, Chấp nhận, Từ chối)
+  const handleAction = async () => {
+    const { type: action, appId } = confirmAction;
+    if (!action || !appId) return;
+
     try {
-      if (action === ACTION_TYPES.CANCEL) {
+      if (action === APPLICATION_ACTION.CANCEL) {
         const res = await cancelApplication(appId);
         if (res.success) toast.success('Hủy đơn thành công');
-        setShowCancelModal(false);
-      } else if (action === ACTION_TYPES.ACCEPT) {
+      } else if (action === APPLICATION_ACTION.ACCEPT) {
         const res = await acceptInvite(appId);
         if (res.success) toast.success('Đã chấp nhận tham gia dự án');
-        setShowAcceptModal(false);
-      } else if (action === ACTION_TYPES.DECLINE) {
+      } else if (action === APPLICATION_ACTION.DECLINE) {
         const res = await declineInvite(appId);
         if (res.success) toast.success('Đã từ chối lời mời');
-        setShowDeclineModal(false);
       }
+      setConfirmAction({ type: null, appId: null });
       fetchApplications();
     } catch (error) {
       toast.error(error?.message || 'Có lỗi xảy ra');
     }
   };
 
+  // Lấy badge trạng thái ứng tuyển từ enum cấu hình chuẩn hóa
   const getStatusBadge = (status) => {
-    switch (status) {
-      case APPLICATION_STATUS.PENDING:
-        return <StatusBadge variant="warning" text="Đang chờ" />;
-      case APPLICATION_STATUS.APPROVED:
-        return <StatusBadge variant="success" text="Đã duyệt" />;
-      case APPLICATION_STATUS.REJECTED:
-        return <StatusBadge variant="danger" text="Đã từ chối" />;
-      case APPLICATION_STATUS.INVITED:
-        return <StatusBadge variant="primary" text="Được mời" />;
-      case APPLICATION_STATUS.EXPIRED:
-        return <StatusBadge variant="secondary" text="Đã hết hạn" />;
-      case APPLICATION_STATUS.CANCELLED:
-        return <StatusBadge variant="secondary" text="Dự án đã hủy" />;
-      default:
-        return null;
-    }
+    const badge = APPLICATION_STATUS_BADGE[status];
+    return badge ? <StatusBadge variant={badge.variant} text={badge.text} /> : null;
   };
+
+  const confirmModalConfig = getApplicationActionModalConfig(confirmAction.type);
 
   return (
     <div className="bg-white rounded-4 shadow-sm border p-4">
@@ -226,16 +241,25 @@ export default function MyApplicationsTab() {
                     </Dropdown.Toggle>
                     <Dropdown.Menu className="border shadow-sm rounded-3 text-center mt-1" style={{ minWidth: '120px', fontSize: '13px', padding: '4px 0' }}>
                       {app.status === APPLICATION_STATUS.PENDING && (
-                        <Dropdown.Item onClick={() => { setSelectedAppId(app._id); setShowCancelModal(true); }} className="text-danger py-1 fw-bold">
+                        <Dropdown.Item
+                          onClick={() => setConfirmAction({ type: APPLICATION_ACTION.CANCEL, appId: app._id })}
+                          className="text-danger py-1 fw-bold"
+                        >
                           Hủy đơn
                         </Dropdown.Item>
                       )}
                       {app.status === APPLICATION_STATUS.INVITED && (
                         <>
-                          <Dropdown.Item onClick={() => { setSelectedAppId(app._id); setShowAcceptModal(true); }} className="text-success py-1">
+                          <Dropdown.Item
+                            onClick={() => setConfirmAction({ type: APPLICATION_ACTION.ACCEPT, appId: app._id })}
+                            className="text-success py-1"
+                          >
                             <FaCheckCircle className="me-1" /> Chấp nhận
                           </Dropdown.Item>
-                          <Dropdown.Item onClick={() => { setSelectedAppId(app._id); setShowDeclineModal(true); }} className="text-danger py-1">
+                          <Dropdown.Item
+                            onClick={() => setConfirmAction({ type: APPLICATION_ACTION.DECLINE, appId: app._id })}
+                            className="text-danger py-1"
+                          >
                             <FaTimesCircle className="me-1" /> Từ chối
                           </Dropdown.Item>
                         </>
@@ -269,32 +293,15 @@ export default function MyApplicationsTab() {
         className="mt-4"
       />
 
+      {/* Modal xác nhận thao tác hồ sơ */}
       <ConfirmActionModal
-        show={showCancelModal}
-        onHide={() => setShowCancelModal(false)}
-        onConfirm={() => handleAction(ACTION_TYPES.CANCEL, selectedAppId)}
-        title="Hủy đơn đăng ký"
-        message="Bạn có chắc chắn muốn hủy đơn đăng ký vào dự án này không?"
-        confirmText="Hủy đơn"
-        variant="danger"
-      />
-      <ConfirmActionModal
-        show={showAcceptModal}
-        onHide={() => setShowAcceptModal(false)}
-        onConfirm={() => handleAction(ACTION_TYPES.ACCEPT, selectedAppId)}
-        title="Chấp nhận tham gia"
-        message="Bạn đồng ý tham gia dự án này chứ?"
-        confirmText="Đồng ý"
-        variant="success"
-      />
-      <ConfirmActionModal
-        show={showDeclineModal}
-        onHide={() => setShowDeclineModal(false)}
-        onConfirm={() => handleAction(ACTION_TYPES.DECLINE, selectedAppId)}
-        title="Từ chối lời mời"
-        message="Bạn có chắc chắn muốn từ chối lời mời này không?"
-        confirmText="Từ chối"
-        variant="danger"
+        show={Boolean(confirmAction.type)}
+        onHide={() => setConfirmAction({ type: null, appId: null })}
+        onConfirm={handleAction}
+        title={confirmModalConfig.title}
+        message={confirmModalConfig.message}
+        confirmText={confirmModalConfig.confirmText}
+        variant={confirmModalConfig.variant}
       />
 
       {/* Modal Xem Dự Án */}
