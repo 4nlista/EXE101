@@ -136,15 +136,16 @@ export default function Community() {
                 autoFocus
               />
               {searchTerm && (
-                <button
+                <Button
                   type="button"
-                  className="btn btn-link position-absolute p-0 text-muted"
+                  variant="link"
+                  className="position-absolute p-0 text-muted"
                   style={{ top: '50%', right: '14px', transform: 'translateY(-50%)', textDecoration: 'none' }}
                   onClick={() => setSearchTerm('')}
                   title="Xóa tìm kiếm"
                 >
                   <X size={16} />
-                </button>
+                </Button>
               )}
             </div>
 
@@ -227,15 +228,16 @@ export default function Community() {
                       </div>
                     </div>
 
-                    <button
+                    <Button
                       type="button"
-                      className="btn btn-link p-1 text-muted"
+                      variant="link"
+                      className="p-1 text-muted"
                       style={{ textDecoration: 'none' }}
                       onClick={(e) => handleRemoveRecent(e, user._id)}
                       title="Xóa khỏi lịch sử"
                     >
                       <X size={16} />
-                    </button>
+                    </Button>
                   </div>
                 ))}
               </div>

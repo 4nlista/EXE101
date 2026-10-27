@@ -7,6 +7,7 @@ import notificationService from '../services/notificationService';
 import { NOTIFICATION_TYPE } from '../constants/notificationEnum';
 import { toast } from 'react-toastify';
 import { getProjectDetail } from '../services/projectService';
+import Button from './Button';
 
 const timeAgo = (date) => {
   const seconds = Math.floor((new Date() - new Date(date)) / 1000);
@@ -161,55 +162,77 @@ export default function NotificationDropdown() {
 
   return (
     <div className="position-relative" ref={dropdownRef}>
-      <button className="nav-icon-btn border-0 bg-transparent" onClick={() => setShow(!show)}>
+      <Button
+        variant="link"
+        className="nav-icon-btn border-0 bg-transparent p-0 text-decoration-none shadow-none"
+        onClick={() => setShow(!show)}
+        aria-label="Thông báo"
+        aria-expanded={show}
+      >
         <Bell size={20} />
         {unreadNotificationCount > 0 && (
-          <Badge
-            pill
-            bg="danger"
-            className="position-absolute"
-            style={{ top: '0', right: '0', fontSize: '0.65rem', padding: '0.25em 0.4em' }}
+          <span
+            className="position-absolute status-badge status-badge--danger p-0 d-inline-flex align-items-center justify-content-center"
+            style={{
+              top: '2px',
+              right: '2px',
+              minWidth: '16px',
+              height: '16px',
+              fontSize: '10px',
+              padding: '0 4px',
+              lineHeight: 1
+            }}
           >
             {unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}
-          </Badge>
+          </span>
         )}
-      </button>
+      </Button>
 
       {show && (
         <div 
-          className="position-absolute bg-white shadow-sm rounded-2 border"
+          className="position-absolute bg-white border"
           style={{
-            top: '45px', right: '-60px', width: '360px', zIndex: 1050,
-            maxHeight: '500px', display: 'flex', flexDirection: 'column'
+            top: '45px',
+            right: '-60px',
+            width: '360px',
+            zIndex: 1050,
+            maxHeight: '500px',
+            display: 'flex',
+            flexDirection: 'column',
+            borderRadius: 'var(--radius-lg)',
+            boxShadow: 'var(--shadow-md)'
           }}
         >
           {/* Header */}
           <div className="p-3 border-bottom d-flex justify-content-between align-items-center">
-            <h5 className="mb-0 fw-bold">Thông báo</h5>
+            <h6 className="mb-0 fw-semibold">Thông báo</h6>
             {unreadNotificationCount > 0 && (
-              <button 
-                className="btn btn-link p-0 text-decoration-none text-muted d-flex align-items-center gap-1"
-                style={{ fontSize: '0.85rem' }}
+              <Button 
+                variant="link"
+                className="p-0 text-decoration-none text-muted d-flex align-items-center gap-1"
+                style={{ fontSize: 'var(--text-xs)' }}
                 onClick={handleMarkAllRead}
               >
-                <Check size={16} /> Đánh dấu đã xem
-              </button>
+                <Check size={14} /> Đánh dấu đã xem
+              </Button>
             )}
           </div>
 
           <div className="d-flex px-3 pt-2 gap-2 pb-2 border-bottom">
-            <button 
-              className={`btn btn-sm rounded-2 px-3 ${activeTab === 'ALL' ? 'btn-primary shadow-sm' : 'btn-light text-dark fw-medium border'}`}
+            <Button 
+              size="sm"
+              variant={activeTab === 'ALL' ? 'primary' : 'light'}
               onClick={() => setActiveTab('ALL')}
             >
               Tất cả
-            </button>
-            <button 
-              className={`btn btn-sm rounded-2 px-3 ${activeTab === 'UNREAD' ? 'btn-primary shadow-sm' : 'btn-light text-dark fw-medium border'}`}
+            </Button>
+            <Button 
+              size="sm"
+              variant={activeTab === 'UNREAD' ? 'primary' : 'light'}
               onClick={() => setActiveTab('UNREAD')}
             >
               Chưa đọc
-            </button>
+            </Button>
           </div>
 
           {/* List */}
@@ -267,13 +290,14 @@ export default function NotificationDropdown() {
 
           {/* Footer View All */}
           <div className="p-2 text-center border-top bg-light" style={{ borderBottomLeftRadius: '0.5rem', borderBottomRightRadius: '0.5rem' }}>
-            <button 
-              className="btn btn-link text-decoration-none fw-semibold w-100 p-1"
+            <Button 
+              variant="link"
+              className="text-decoration-none fw-semibold w-100 p-1"
               style={{ fontSize: '0.9rem' }}
               onClick={() => { setShow(false); navigate('/notifications'); }}
             >
               Xem tất cả thông báo
-            </button>
+            </Button>
           </div>
         </div>
       )}

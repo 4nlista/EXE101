@@ -13,11 +13,11 @@ export default function ProfileInfo({
   errors = {}
 }) {
   return (
-    <Card className="profile-card border-0 mb-3 shadow-sm">
+    <Card className="profile-card mb-3">
       <Card.Body className="p-3">
         <div className="d-flex align-items-center justify-content-between border-bottom pb-2 mb-2">
-          <h6 className="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
-            <User size={18} className="text-secondary" />
+          <h6 className="fw-semibold text-dark mb-0 d-flex align-items-center gap-2">
+            <User size={16} className="text-secondary" />
             Giới thiệu
           </h6>
         </div>

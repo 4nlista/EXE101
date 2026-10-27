@@ -96,28 +96,34 @@ export default function MasterDataTab() {
     <div>
       {/* Sub-tab chuyển đổi giữa Ngành học, Chuyên ngành và Kỹ năng */}
       <div className="d-flex flex-wrap align-items-center justify-content-between mb-3 gap-2">
-        <div className="d-inline-flex p-1 bg-white rounded-pill border shadow-sm">
-          <button
+        <div className="d-inline-flex p-1 bg-white rounded border">
+          <Button
             type="button"
-            className={`btn btn-sm rounded-pill px-3 py-1 fw-medium ${activeSubTab === 'departments' ? 'btn-primary text-white' : 'btn-link text-secondary text-decoration-none'}`}
+            variant={activeSubTab === 'departments' ? 'primary' : 'link'}
+            size="sm"
+            className={`px-3 py-1 fw-medium ${activeSubTab === 'departments' ? '' : 'text-secondary text-decoration-none'}`}
             onClick={() => setActiveSubTab('departments')}
           >
             <BookOpen size={16} className="me-1" /> Ngành học
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
-            className={`btn btn-sm rounded-pill px-3 py-1 fw-medium ${activeSubTab === 'majors' ? 'btn-primary text-white' : 'btn-link text-secondary text-decoration-none'}`}
+            variant={activeSubTab === 'majors' ? 'primary' : 'link'}
+            size="sm"
+            className={`px-3 py-1 fw-medium ${activeSubTab === 'majors' ? '' : 'text-secondary text-decoration-none'}`}
             onClick={() => setActiveSubTab('majors')}
           >
             <GraduationCap size={16} className="me-1" /> Chuyên ngành
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
-            className={`btn btn-sm rounded-pill px-3 py-1 fw-medium ${activeSubTab === 'skills' ? 'btn-primary text-white' : 'btn-link text-secondary text-decoration-none'}`}
+            variant={activeSubTab === 'skills' ? 'primary' : 'link'}
+            size="sm"
+            className={`px-3 py-1 fw-medium ${activeSubTab === 'skills' ? '' : 'text-secondary text-decoration-none'}`}
             onClick={() => setActiveSubTab('skills')}
           >
             <Tag size={16} className="me-1" /> Từ điển Kỹ năng
-          </button>
+          </Button>
         </div>
 
         <div>

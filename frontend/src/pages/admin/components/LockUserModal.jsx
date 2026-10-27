@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Form, Spinner } from 'react-bootstrap';
+import { Form } from 'react-bootstrap';
 import { ShieldAlert, AlertTriangle } from 'lucide-react';
 import Modal from '../../../components/Modal';
 import Button from '../../../components/Button';
+import Input from '../../../components/Input';
 import Alert from '../../../components/Alert';
 import { adminService } from '../../../services/adminService';
 import { toast } from 'react-toastify';
@@ -85,44 +86,34 @@ export default function LockUserModal({ user, show, onClose, onSuccess }) {
             <div className="text-muted small">{user.email}</div>
           </div>
 
-          <Form.Group className="mb-3">
-            <Form.Label className="fw-medium text-dark small">
-              Lý do khóa tài khoản <span className="text-danger">*</span>
-            </Form.Label>
-            <Form.Control
-              as="textarea"
-              rows={3}
-              placeholder="Nêu rõ lý do vi phạm (ví dụ: Spam tuyển dụng, thông tin lừa đảo, ngôn từ phản cảm...)"
-              value={reason}
-              onChange={(e) => {
-                setReason(e.target.value);
-                if (fieldError) setFieldError('');
-              }}
-              isInvalid={Boolean(fieldError)}
-            />
-            {fieldError && (
-              <Form.Control.Feedback type="invalid" className="d-block">
-                {fieldError}
-              </Form.Control.Feedback>
-            )}
-            <Form.Text className="text-muted small">
-              Lý do này sẽ được gửi thông báo qua Email (Brevo) và lưu vào hệ thống thông báo của người dùng.
-            </Form.Text>
-          </Form.Group>
+          <Input
+            as="textarea"
+            rows={3}
+            label="Lý do khóa tài khoản"
+            required
+            placeholder="Nêu rõ lý do vi phạm (ví dụ: Spam tuyển dụng, thông tin lừa đảo, ngôn từ phản cảm...)"
+            value={reason}
+            onChange={(e) => {
+              setReason(e.target.value);
+              if (fieldError) setFieldError('');
+            }}
+            error={fieldError}
+            helperText="Lý do này sẽ được gửi thông báo qua Email (Brevo) và lưu vào hệ thống thông báo của người dùng."
+          />
         </Modal.Body>
 
         <Modal.Footer>
           <Button variant="secondary" size="sm" onClick={handleClose} disabled={isSubmitting}>
             Hủy bỏ
           </Button>
-          <Button variant="danger" size="sm" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? (
-              <>
-                <Spinner animation="border" size="sm" className="me-1" /> Đang khóa...
-              </>
-            ) : (
-              'Xác nhận khóa'
-            )}
+          <Button
+            variant="danger"
+            size="sm"
+            type="submit"
+            loading={isSubmitting}
+            loadingText="Đang khóa..."
+          >
+            Xác nhận khóa
           </Button>
         </Modal.Footer>
       </Form>

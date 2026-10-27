@@ -1,7 +1,21 @@
 import React from 'react';
 import { Spinner } from 'react-bootstrap';
 
-// Component StatusBadge dùng để hiển thị các huy hiệu trạng thái có màu nền và viền đồng bộ
+// Map các variant cũ (theo tên màu Bootstrap) sang 5 tông trạng thái chuẩn
+const VARIANT_TONE = {
+  success: 'success',
+  warning: 'warning',
+  danger: 'danger',
+  info: 'info',
+  primary: 'info',
+  purple: 'info',
+  neutral: 'neutral',
+  secondary: 'neutral',
+  light: 'neutral',
+  dark: 'neutral'
+};
+
+// Component StatusBadge: nền nhạt + chữ cùng tông, không dùng nền đậm
 export default function StatusBadge({
   variant = 'secondary',
   icon: Icon,
@@ -12,36 +26,19 @@ export default function StatusBadge({
   style = {},
   ...props
 }) {
-  const getColors = () => {
-    switch (variant) {
-      case 'success':
-        return 'text-success bg-success bg-opacity-10 border-success border-opacity-20';
-      case 'danger':
-        return 'text-danger bg-danger bg-opacity-10 border-danger border-opacity-20';
-      case 'warning':
-        return 'text-warning bg-warning bg-opacity-10 border-warning border-opacity-20';
-      case 'primary':
-        return 'text-primary bg-primary bg-opacity-10 border-primary border-opacity-20';
-      case 'purple':
-        return 'text-purple bg-purple bg-opacity-10 border-purple border-opacity-20';
-      case 'secondary':
-      default:
-        return 'text-secondary bg-secondary bg-opacity-10 border-secondary border-opacity-20';
-    }
-  };
-
+  const tone = VARIANT_TONE[variant] || 'neutral';
   const content = text ?? children;
 
   return (
     <span
-      className={`d-inline-flex align-items-center px-3 py-1 rounded-pill border fw-medium text-nowrap ${getColors()} ${className}`}
-      style={{ fontSize: '0.875rem', lineHeight: '1.0', ...style }}
+      className={`status-badge status-badge--${tone} ${className}`}
+      style={style}
       {...props}
     >
       {isSpinning && (
-        <Spinner animation="border" size="sm" className="me-2 flex-shrink-0" style={{ borderWidth: '1px', width: '10px', height: '14px' }} />
+        <Spinner animation="border" size="sm" className="flex-shrink-0" style={{ borderWidth: '1px', width: '10px', height: '10px' }} />
       )}
-      {Icon && <Icon size={14} className="me-1" />}
+      {Icon && <Icon size={12} />}
       {content}
     </span>
   );

@@ -1,6 +1,6 @@
 import React from 'react';
-import { Row, Col, Card } from 'react-bootstrap';
-import { FaUserFriends, FaCheckCircle, FaFileAlt, FaTimesCircle } from 'react-icons/fa';
+import { Row, Col } from 'react-bootstrap';
+import { Users, CheckCircle, Clock, CheckSquare, FileText, XCircle } from 'lucide-react';
 
 export default function StatsCards({ stats }) {
   if (!stats) return null;
@@ -9,72 +9,63 @@ export default function StatsCards({ stats }) {
     {
       title: 'Đang tuyển',
       count: stats.openProjects || 0,
-      desc: 'dự án đang mở tuyển thành viên',
-      icon: <FaUserFriends size={24} className="text-warning" />,
-      bgColor: '#fff8eb',
-      iconBg: '#ffedd5'
+      desc: 'Dự án đang mở tuyển thành viên',
+      icon: <Users size={18} />,
+      borderClass: ''
     },
     {
       title: 'Đã đủ thành viên',
       count: stats.closedProjects || 0,
-      desc: 'dự án đã đủ số lượng thành viên',
-      icon: <FaCheckCircle size={24} className="text-secondary" />,
-      bgColor: '#f8f9fa',
-      iconBg: '#e9ecef'
+      desc: 'Dự án đã đủ số lượng',
+      icon: <CheckCircle size={18} />,
+      borderClass: ''
     },
     {
       title: 'Đang thực hiện',
       count: stats.inProgressProjects || 0,
-      desc: 'dự án team đang làm việc',
-      icon: <FaUserFriends size={24} className="text-primary" />,
-      bgColor: '#eff6ff',
-      iconBg: '#dbeafe'
+      desc: 'Dự án đang tiến hành',
+      icon: <Clock size={18} />,
+      borderClass: ''
     },
     {
       title: 'Đã kết thúc',
       count: stats.completedProjects || 0,
-      desc: 'dự án đã hoàn thành',
-      icon: <FaCheckCircle size={24} className="text-success" />,
-      bgColor: '#f0fdf4',
-      iconBg: '#dcfce7'
+      desc: 'Dự án đã hoàn thành',
+      icon: <CheckSquare size={18} />,
+      borderClass: ''
     },
     {
       title: 'Hồ sơ chờ duyệt',
       count: stats.pendingApplications || 0,
-      desc: 'ứng viên đang chờ bạn xét duyệt',
-      icon: <FaFileAlt size={24} className="text-info" />,
-      bgColor: '#e0f2fe',
-      iconBg: '#bae6fd'
+      desc: 'Ứng viên đang chờ bạn duyệt',
+      icon: <FileText size={18} />,
+      borderClass: stats.pendingApplications > 0 ? 'stat-card--warning' : ''
     },
     {
       title: 'Đã hủy',
       count: stats.cancelledProjects || 0,
-      desc: 'dự án đã bị hủy bỏ',
-      icon: <FaTimesCircle size={24} className="text-danger" />,
-      bgColor: '#fef2f2',
-      iconBg: '#fee2e2'
+      desc: 'Dự án đã bị hủy bỏ',
+      icon: <XCircle size={18} />,
+      borderClass: ''
     }
   ];
 
   return (
     <Row className="g-3 mb-4">
       {data.map((item, idx) => (
-        <Col md={4} key={idx}>
-          <Card className="border-0 shadow-sm h-100 rounded-4" style={{ backgroundColor: item.bgColor }}>
-            <Card.Body className="d-flex align-items-center">
-              <div 
-                className="d-flex align-items-center justify-content-center rounded-3 me-3 flex-shrink-0" 
-                style={{ width: '48px', height: '48px', backgroundColor: item.iconBg }}
-              >
-                {item.icon}
+        <Col lg={4} md={6} sm={12} key={idx}>
+          <div className={`stat-card ${item.borderClass}`}>
+            <div className="stat-card__icon">
+              {item.icon}
+            </div>
+            <div>
+              <div className="stat-card__label">{item.title}</div>
+              <div className="stat-card__value">{item.count}</div>
+              <div className="text-muted" style={{ fontSize: '0.75rem', marginTop: '2px' }}>
+                {item.desc}
               </div>
-              <div>
-                <h6 className="mb-0 text-muted fw-semibold" style={{ fontSize: '13px' }}>{item.title}</h6>
-                <h3 className="mb-0 fw-bold">{item.count}</h3>
-                <small className="text-muted" style={{ fontSize: '12px' }}>{item.desc}</small>
-              </div>
-            </Card.Body>
-          </Card>
+            </div>
+          </div>
         </Col>
       ))}
     </Row>

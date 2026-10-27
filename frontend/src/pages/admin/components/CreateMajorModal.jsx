@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Spinner } from 'react-bootstrap';
+import { Form } from 'react-bootstrap';
 import { Plus, GraduationCap, Pencil, Check } from 'lucide-react';
 import Modal from '../../../components/Modal';
 import Button from '../../../components/Button';
+import Input from '../../../components/Input';
+import Select from '../../../components/Select';
 import Alert from '../../../components/Alert';
 import { adminService } from '../../../services/adminService';
 import { useDepartments } from '../../../hooks/useMasterData';
@@ -98,54 +100,44 @@ export default function CreateMajorModal({ show, onClose, onSuccess, initialDept
         <Modal.Body>
           {formError && <Alert type="danger" className="mb-3">{formError}</Alert>}
 
-          <Form.Group className="mb-3">
-            <Form.Label className="fw-medium text-dark small">
-              Ngành học trực thuộc <span className="text-danger">*</span>
-            </Form.Label>
-            <Form.Select
-              value={departmentId}
-              onChange={(e) => setDepartmentId(e.target.value)}
-              className="text-secondary"
-            >
-              <option value="">-- Chọn ngành học --</option>
-              {departments.map((d) => (
-                <option key={d._id} value={d._id}>{d.name}</option>
-              ))}
-            </Form.Select>
-          </Form.Group>
+          <Select
+            label="Ngành học trực thuộc"
+            required
+            value={departmentId}
+            onChange={(e) => setDepartmentId(e.target.value)}
+          >
+            <option value="">-- Chọn ngành học --</option>
+            {departments.map((d) => (
+              <option key={d._id} value={d._id}>{d.name}</option>
+            ))}
+          </Select>
 
-          <Form.Group className="mb-3">
-            <Form.Label className="fw-medium text-dark small">
-              Tên chuyên ngành <span className="text-danger">*</span>
-            </Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="Ví dụ: Trí tuệ nhân tạo (AI), Kỹ thuật phần mềm, v.v..."
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                if (fieldError) setFieldError('');
-              }}
-              isInvalid={Boolean(fieldError)}
-            />
-            {fieldError && (
-              <Form.Control.Feedback type="invalid" className="d-block">
-                {fieldError}
-              </Form.Control.Feedback>
-            )}
-          </Form.Group>
+          <Input
+            label="Tên chuyên ngành"
+            required
+            placeholder="Ví dụ: Trí tuệ nhân tạo (AI), Kỹ thuật phần mềm, v.v..."
+            value={name}
+            onChange={(e) => {
+              setName(e.target.value);
+              if (fieldError) setFieldError('');
+            }}
+            error={fieldError}
+          />
         </Modal.Body>
 
         <Modal.Footer>
           <Button variant="secondary" size="sm" onClick={handleClose} disabled={isSubmitting}>
             Hủy bỏ
           </Button>
-          <Button variant="primary" size="sm" type="submit" disabled={isSubmitting} className="d-inline-flex align-items-center gap-1">
-            {isSubmitting ? (
-              <>
-                <Spinner animation="border" size="sm" className="me-1" /> {isEditing ? 'Đang lưu...' : 'Đang tạo...'}
-              </>
-            ) : isEditing ? (
+          <Button
+            variant="primary"
+            size="sm"
+            type="submit"
+            loading={isSubmitting}
+            loadingText={isEditing ? 'Đang lưu...' : 'Đang tạo...'}
+            className="d-inline-flex align-items-center gap-1"
+          >
+            {isEditing ? (
               <>
                 <Check size={16} /> Lưu thay đổi
               </>

@@ -103,17 +103,19 @@ export default function AiAssistantTab() {
       {/* ── Gợi ý câu hỏi nhanh (Monochrome style) ── */}
       <div className="mb-3 d-flex flex-wrap gap-2">
         {QUICK_PROMPTS.map((promptText, idx) => (
-          <button
+          <Button
             key={idx}
             type="button"
-            className="btn btn-sm btn-light border text-secondary rounded-pill small py-1 px-3 d-inline-flex align-items-center gap-1 text-start"
+            variant="secondary"
+            size="sm"
+            className="small py-1 px-3 d-inline-flex align-items-center gap-1 text-start"
             style={{ fontSize: '0.78rem' }}
             onClick={() => handleSend(promptText)}
             disabled={isLoading}
           >
             <Sparkles size={12} className="text-secondary flex-shrink-0" />
             <span>{promptText}</span>
-          </button>
+          </Button>
         ))}
       </div>
 

@@ -4,72 +4,56 @@ import { Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
-import StatusBadge from '../../components/StatusBadge';
 import paymentService from '../../services/paymentService';
 import { useAuth } from '../../contexts/AuthContext';
 import { PACKAGE_TYPE } from '../../constants/subscriptionEnum';
 import { formatDate, calculateDaysLeft } from '../../utils/formatDate';
 
-// Cấu hình thông tin các gói dịch vụ (Tái sử dụng dữ liệu - Clean Code)
+// Cấu hình thông tin các gói dịch vụ (Clean SaaS)
 const SUBSCRIPTION_PACKAGES = [
   {
     id: PACKAGE_TYPE.FREE,
     title: 'Cơ bản',
+    description: 'Dành cho sinh viên bắt đầu tìm kiếm dự án và kết nối nhóm.',
     priceText: 'Miễn phí',
     period: '',
     amount: 0,
-    bgColor: '#f8fafc', // Màu xám xanh nhẹ thanh lịch
-    borderColor: '#cbd5e1',
-    headerBg: '#e2e8f0',
-    hoverClass: 'sub-card-free',
-    badgeText: null,
-    buttonVariant: 'secondary',
-    buttonStyle: { backgroundColor: '#cbd5e1', color: '#475569' },
+    isPopular: false,
     features: [
       'Xem các bài đăng dự án',
-      'Nộp hồ sơ tham gia',
-      'Nhắn tin / kết nối',
+      'Nộp hồ sơ ứng tuyển',
+      'Nhắn tin và trao đổi trực tiếp',
       'Đăng tối đa 3 dự án / tháng',
     ],
   },
   {
     id: PACKAGE_TYPE.VIP,
     title: 'VIP',
+    description: 'Dành cho sinh viên năng động muốn tìm kiếm nhóm nhanh chóng.',
     priceText: '59.000đ',
     period: '/ tháng',
     amount: 59000,
-    bgColor: '#fffbeb', // Màu vàng kem nhẹ nổi bật
-    borderColor: '#facc15',
-    headerBg: '#fef08a',
-    hoverClass: 'sub-card-vip',
-    badgeText: 'Phổ biến',
-    badgeBg: 'warning',
-    buttonVariant: 'warning',
-    buttonStyle: { backgroundColor: '#f59e0b', color: '#000000', borderColor: '#f59e0b' },
+    isPopular: true,
     features: [
-      'Mọi quyền lợi của Cơ bản',
+      'Mọi quyền lợi của gói Cơ bản',
       'Đăng tối đa 10 dự án / tháng',
-      'AI Đề xuất dự án phù hợp',
+      'AI Đề xuất dự án phù hợp nhất',
+      'Huy hiệu VIP trên hồ sơ cá nhân',
     ],
   },
   {
     id: PACKAGE_TYPE.PREMIUM,
-    title: 'PREMIUM',
+    title: 'Premium',
+    description: 'Dành cho trưởng nhóm, dự án khởi nghiệp hoặc đồ án lớn.',
     priceText: '139.000đ',
     period: '/ tháng',
     amount: 139000,
-    bgColor: '#fff1f2', // Màu hồng dâu nhẹ cao cấp
-    borderColor: '#f87171',
-    headerBg: '#fecdd3',
-    hoverClass: 'sub-card-premium',
-    badgeText: 'Cao cấp nhất',
-    badgeBg: 'danger',
-    buttonVariant: 'danger',
-    buttonStyle: { backgroundColor: '#770a0aff', color: '#ffffff', borderColor: '#ef4444' },
+    isPopular: false,
     features: [
-      'Mọi quyền lợi của VIP',
+      'Mọi quyền lợi của gói VIP',
       'Đăng dự án KHÔNG GIỚI HẠN',
-      'AI Match - Phân tích độ phù hợp của Ứng viên tự động',
+      'AI Match - Phân tích CV & chấm điểm phù hợp tự động',
+      'Hỗ trợ ưu tiên và đẩy tin bài đăng',
     ],
   },
 ];
@@ -98,41 +82,18 @@ export default function Subscription() {
   const isCurrentPackage = (type) => currentUser?.currentPackage === type;
 
   return (
-    <Container className="py-5">
-      {/* CSS hiệu ứng hover elevation & đổ bóng theo màu gói */}
-      <style>{`
-        .sub-card {
-          transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
-          box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
-          border-radius: 12px;
-          overflow: hidden;
-        }
-        .sub-card-free:hover {
-          transform: translateY(-8px);
-          box-shadow: 0 16px 32px rgba(100, 116, 139, 0.22) !important;
-          border-color: #cbd5e1 !important;
-        }
-        .sub-card-vip:hover {
-          transform: translateY(-8px);
-          box-shadow: 0 16px 36px rgba(245, 158, 11, 0.28) !important;
-          border-color: #f59e0b !important;
-        }
-        .sub-card-premium:hover {
-          transform: translateY(-8px);
-          box-shadow: 0 16px 36px rgba(239, 68, 68, 0.3) !important;
-          border-color: #ef4444 !important;
-        }
-      `}</style>
-
+    <Container className="py-5" style={{ maxWidth: '1100px' }}>
       {/* Header trang */}
       <div className="text-center mb-5">
-        <h2 className="fw-bold mb-3 text-dark">Nâng cấp tài khoản</h2>
-        <p className="text-muted fs-6" style={{ maxWidth: '600px', margin: '0 auto' }}>
-          Chọn gói dịch vụ phù hợp để mở khóa các tính năng tuyệt vời nhất từ hệ thống.
-        </p>
+        <div className="page-header mb-2">
+          <h1 className="page-header__title">Gói dịch vụ</h1>
+          <p className="page-header__subtitle">
+            Chọn gói tài khoản phù hợp với nhu cầu phát triển dự án và kết nối nhóm của bạn.
+          </p>
+        </div>
       </div>
 
-      {/* Danh sách các Card gói dịch vụ */}
+      {/* Danh sách 3 gói */}
       <Row className="justify-content-center g-4">
         {SUBSCRIPTION_PACKAGES.map((pkg) => {
           const isCurrent = isCurrentPackage(pkg.id);
@@ -140,91 +101,98 @@ export default function Subscription() {
           const isVipDisabled = pkg.id === PACKAGE_TYPE.VIP && isCurrentPackage(PACKAGE_TYPE.PREMIUM);
 
           return (
-            <Col key={pkg.id} md={4}>
-              <Card
-                className={`h-100 sub-card ${pkg.hoverClass} position-relative`}
+            <Col key={pkg.id} lg={4} md={6}>
+              <div
+                className="h-100 bg-white rounded p-4 d-flex flex-column position-relative"
                 style={{
-                  backgroundColor: pkg.bgColor,
-                  border: isCurrent ? '2.5px solid #16a34a' : `2px solid ${pkg.borderColor}`,
+                  border: pkg.isPopular ? '2px solid var(--primary)' : '1px solid var(--border)',
+                  boxShadow: pkg.isPopular ? 'var(--shadow-md)' : 'var(--shadow-xs)'
                 }}
               >
-                {/* Badge nhãn nổi bật */}
-                {pkg.badgeText && (
-                  <div className="position-absolute top-0 end-0 p-3" style={{ zIndex: 2 }}>
-                    <StatusBadge
-                      variant={pkg.badgeBg}
-                      text={pkg.badgeText}
-                      className="px-2 py-1 shadow-sm"
-                    />
+                {/* Badge Phổ biến */}
+                {pkg.isPopular && (
+                  <div className="position-absolute" style={{ top: '-12px', left: '50%', transform: 'translateX(-50%)' }}>
+                    <span className="status-badge status-badge--warning px-3 py-1 shadow-sm">
+                      Phổ biến
+                    </span>
                   </div>
                 )}
 
-                <Card.Body className="p-4 d-flex flex-column">
-                  {/* Khung Tiêu đề & Giá gói với màu nền riêng */}
-                  <div className="text-center p-3 mb-4 rounded-3 shadow-sm" style={{ backgroundColor: pkg.headerBg }}>
-                    <h4 className="fw-bold text-dark mb-2">{pkg.title}</h4>
-                    <div className="fs-2 fw-bold text-dark mb-1">
-                      {pkg.priceText}
-                      {pkg.period && <span className="fs-6 text-muted fw-normal"> {pkg.period}</span>}
+                {/* Tiêu đề & Mô tả */}
+                <div className="mb-4">
+                  <div className="d-flex justify-content-between align-items-center mb-1">
+                    <h3 className="fw-semibold text-dark fs-5 mb-0">{pkg.title}</h3>
+                    {isCurrent && (
+                      <span className="status-badge status-badge--success">
+                        Gói hiện tại
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-muted small mb-3" style={{ minHeight: '38px', lineHeight: '1.4' }}>
+                    {pkg.description}
+                  </p>
+
+                  <div className="d-flex align-items-baseline gap-1">
+                    <span className="fs-2 fw-bold text-dark">{pkg.priceText}</span>
+                    {pkg.period && <span className="text-muted small">{pkg.period}</span>}
+                  </div>
+
+                  {isCurrent && currentUser?.subscriptionEndDate && !isFree && (
+                    <div className="text-muted small mt-1">
+                      Còn {calculateDaysLeft(currentUser.subscriptionEndDate)} ({formatDate(currentUser.subscriptionEndDate).split(' ')[0]})
                     </div>
-                    {isCurrent ? (
-                      <div className="d-flex flex-column align-items-center">
-                        <StatusBadge variant="success" text="Gói hiện tại" className="px-3 py-1 shadow-sm mb-1" />
-                        {currentUser?.subscriptionEndDate && !isFree && (
-                          <small className="text-dark" style={{ fontSize: '1.0rem' }}>
-                            {calculateDaysLeft(currentUser.subscriptionEndDate)} ({formatDate(currentUser.subscriptionEndDate).split(' ')[0]})
-                          </small>
-                        )}
-                      </div>
-                    ) : (
-                      <div style={{ height: '40px' }}></div>
-                    )}
-                  </div>
+                  )}
+                </div>
 
-                  {/* Danh sách tính năng */}
-                  <div className="flex-grow-1 my-2">
-                    <ul className="list-unstyled mb-0">
-                      {pkg.features.map((feat, idx) => (
-                        <li key={idx} className="d-flex align-items-start mb-3 text-dark">
-                          <Check size={18} className="text-success me-2 mt-1 flex-shrink-0" />
-                          <span className="fw-medium">{feat}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                <hr className="my-0 mb-4" />
 
-                  {/* Nút thao tác */}
-                  <div className="mt-4 pt-2">
-                    {isFree ? (
-                      <Button variant="light" style={pkg.buttonStyle} className="w-100 fw-bold border-0 shadow-sm" disabled>
-                        {isCurrent ? 'Đang sử dụng' : 'Gói mặc định'}
-                      </Button>
-                    ) : (
-                      <Button
-                        variant={pkg.buttonVariant}
-                        style={pkg.buttonStyle}
-                        className="w-100 fw-bold border-0 shadow-sm"
-                        onClick={() => handlePayment(pkg.id, pkg.amount)}
-                        disabled={loadingType !== null || isCurrentPackage(pkg.id) || isVipDisabled}
-                      >
-                        {loadingType === pkg.id ? (
-                          <Spinner size="sm" animation="border" />
-                        ) : isCurrent ? (
-                          'Gia hạn gói'
-                        ) : (
-                          'Nâng cấp ngay'
-                        )}
-                      </Button>
-                    )}
+                {/* Danh sách tính năng */}
+                <div className="flex-grow-1 mb-4">
+                  <div className="text-muted small fw-medium text-uppercase mb-3" style={{ letterSpacing: '0.04em' }}>
+                    Quyền lợi bao gồm:
                   </div>
-                </Card.Body>
-              </Card>
+                  <ul className="list-unstyled mb-0 d-flex flex-column gap-3">
+                    {pkg.features.map((feat, idx) => (
+                      <li key={idx} className="d-flex align-items-start text-dark small">
+                        <Check size={16} className="text-secondary me-2 mt-0.5 flex-shrink-0" />
+                        <span>{feat}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Nút hành động */}
+                <div className="mt-auto pt-2">
+                  {isFree ? (
+                    <Button
+                      variant="secondary"
+                      className="w-100 fw-medium"
+                      disabled
+                    >
+                      {isCurrent ? 'Đang sử dụng' : 'Gói mặc định'}
+                    </Button>
+                  ) : (
+                    <Button
+                      variant={pkg.isPopular ? 'primary' : 'outline-primary'}
+                      className="w-100 fw-medium"
+                      onClick={() => handlePayment(pkg.id, pkg.amount)}
+                      disabled={loadingType !== null || isCurrentPackage(pkg.id) || isVipDisabled}
+                    >
+                      {loadingType === pkg.id ? (
+                        <Spinner size="sm" animation="border" />
+                      ) : isCurrent ? (
+                        'Gia hạn gói'
+                      ) : (
+                        'Nâng cấp ngay'
+                      )}
+                    </Button>
+                  )}
+                </div>
+              </div>
             </Col>
           );
         })}
       </Row>
-
     </Container>
   );
 }
-

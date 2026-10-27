@@ -34,11 +34,11 @@ export default function ProfileSkills({
   };
 
   return (
-    <Card className="profile-card border-0 shadow-sm">
+    <Card className="profile-card">
       <Card.Body className="p-3">
         <div className="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
-          <h6 className="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
-            <Star size={18} className="text-secondary" />
+          <h6 className="fw-semibold text-dark mb-0 d-flex align-items-center gap-2">
+            <Star size={16} className="text-secondary" />
             Kỹ năng chuyên môn
           </h6>
           {isEditMode && (
@@ -72,7 +72,9 @@ export default function ProfileSkills({
           <div className="d-flex flex-wrap gap-2">
             {profileData.mainSkills && profileData.mainSkills.length > 0 ? (
               profileData.mainSkills.map((skill, idx) => (
-                <StatusBadge key={idx} variant="light" text={skill} className="border border-secondary px-2 py-1 fw-medium rounded-pill" style={{ fontSize: '0.8rem' }} />
+                <span key={idx} className="status-badge status-badge--neutral">
+                  {skill}
+                </span>
               ))
             ) : (
               <span className="text-muted small">Chưa có kỹ năng</span>

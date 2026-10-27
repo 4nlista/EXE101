@@ -41,17 +41,17 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="min-vh-100" style={{ backgroundColor: '#f0f2f5' }}>
+    <div className="min-vh-100" style={{ backgroundColor: 'var(--bg-subtle)' }}>
       {/* ── Topbar Quản trị ── */}
-      <header className="bg-white border-bottom shadow-sm sticky-top" style={{ zIndex: 1020 }}>
+      <header className="bg-white border-bottom sticky-top" style={{ zIndex: 1020 }}>
         <Container fluid className="px-4 py-2 d-flex justify-content-between align-items-center">
           <div className="d-flex align-items-center gap-2">
-            <div className="p-2 rounded-2 bg-dark text-white fw-bold d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px' }}>
+            <div className="rounded d-flex align-items-center justify-content-center text-white fw-bold" style={{ width: '32px', height: '32px', backgroundColor: 'var(--primary)' }}>
               U
             </div>
             <div>
-              <span className="fw-bold fs-6 text-dark">UniVerse AI</span>
-              <span className="badge bg-light text-secondary border ms-2 small fw-normal d-inline-flex align-items-center gap-1">
+              <span className="fw-semibold fs-6 text-dark">UniVerse AI</span>
+              <span className="status-badge status-badge--neutral ms-2">
                 <ShieldCheck size={12} /> Cổng Quản trị viên
               </span>
             </div>
@@ -59,14 +59,14 @@ export default function AdminDashboard() {
 
           <div className="d-flex align-items-center gap-3">
             <div className="text-end d-none d-sm-block">
-              <div className="fw-semibold text-dark small">{currentUser?.name || 'Quản trị viên'}</div>
+              <div className="fw-medium text-dark small">{currentUser?.name || 'Quản trị viên'}</div>
               <div className="text-muted small" style={{ fontSize: '0.75rem' }}>{currentUser?.email}</div>
             </div>
 
             <Button
-              variant="light"
+              variant="outline-secondary"
               size="sm"
-              className="border text-secondary shadow-sm d-inline-flex align-items-center gap-1"
+              className="d-inline-flex align-items-center gap-1"
               onClick={handleLogout}
               title="Đăng xuất khỏi hệ thống"
             >
@@ -79,7 +79,7 @@ export default function AdminDashboard() {
         {/* ── Thanh chuyển Tab (Monochrome Icons) ── */}
         <div className="bg-white border-top px-4">
           <Container fluid className="p-0">
-            <Nav variant="tabs" className="border-0 flex-nowrap overflow-auto">
+            <Nav variant="tabs" className="flex-nowrap overflow-auto" activeKey={activeTab}>
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.key;
@@ -89,8 +89,8 @@ export default function AdminDashboard() {
                     <Nav.Link
                       active={isActive}
                       onClick={() => setActiveTab(item.key)}
-                      className={`d-inline-flex align-items-center gap-2 py-3 px-3 border-0 border-bottom border-2 text-nowrap fw-medium small ${isActive ? 'border-dark text-dark fw-semibold active' : 'border-transparent text-secondary'}`}
-                      style={{ cursor: 'pointer', background: 'transparent' }}
+                      className="d-inline-flex align-items-center gap-2 text-nowrap"
+                      style={{ cursor: 'pointer' }}
                     >
                       <Icon size={16} />
                       {item.label}

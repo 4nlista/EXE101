@@ -79,7 +79,7 @@ export default function ProjectFeed() {
   };
 
   return (
-    <div className="min-vh-100 d-flex flex-column" style={{ backgroundColor: '#f0f2f5' }}>
+    <div className="min-vh-100 d-flex flex-column" style={{ backgroundColor: 'var(--bg-subtle)' }}>
 
       <Container fluid className="py-4 px-4 flex-grow-1">
         <Row>
@@ -93,7 +93,7 @@ export default function ProjectFeed() {
 
             {/* Banner nhắc nhở hoàn tất hồ sơ cho người dùng chưa onboarding */}
             {currentUser && !currentUser.onboardingCompleted && (
-              <div className="bg-white border border-warning border-opacity-75 rounded-3 p-3 mb-3 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 shadow-sm">
+              <div className="bg-white border rounded p-3 mb-4 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3" style={{ borderLeft: '3px solid var(--status-warning)' }}>
                 <div className="d-flex align-items-center gap-2">
                   <span className="fs-5">⚡</span>
                   <div>
@@ -110,24 +110,23 @@ export default function ProjectFeed() {
                   size="sm"
                   onClick={() => navigate('/onboarding')}
                   className="text-nowrap fw-medium"
-                  style={{ backgroundColor: '#ea580c', borderColor: '#ea580c' }}
                 >
                   Hoàn tất hồ sơ ngay →
                 </Button>
               </div>
             )}
 
-            {/* Top Bar */}
-            <div className="bg-white p-3 rounded shadow-sm border border-primary border-opacity-25 mb-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center">
-              <div className="mb-2 mb-md-0">
-                <h4 className="fw-bold mb-1">Bảng tin dự án</h4>
-                <p className="text-muted small mb-0">Tìm kiếm các nhóm phù hợp với kỹ năng của bạn.</p>
+            {/* Top Bar / Page Header */}
+            <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+              <div className="page-header mb-0">
+                <h1 className="page-header__title">Bảng tin dự án</h1>
+                <p className="page-header__subtitle">Tìm kiếm các nhóm phù hợp với kỹ năng của bạn.</p>
               </div>
-              <div className="d-flex align-items-center gap-2">
-                <div style={{ width: '250px' }}>
+              <div className="d-flex align-items-center gap-2 flex-wrap">
+                <div style={{ width: '240px' }}>
                   <Input
                     type="text"
-                    placeholder="Tìm kiếm tên dự án..."
+                    placeholder="Tìm kiếm dự án..."
                     value={filters.search}
                     onChange={(e) => setFilters({ ...filters, search: e.target.value, page: 1 })}
                     icon={Search}
@@ -141,16 +140,16 @@ export default function ProjectFeed() {
                   value={filters.sort || 'newest'}
                   onChange={(e) => setFilters({ ...filters, sort: e.target.value, page: 1 })}
                 >
-                  <option value="newest">Sắp xếp: Mới nhất</option>
-                  <option value="oldest">Sắp xếp: Cũ nhất</option>
+                  <option value="newest">Mới nhất</option>
+                  <option value="oldest">Cũ nhất</option>
                 </Select>
 
                 <Button
                   variant="primary"
-                  className="text-white px-3 fw-medium"
+                  className="px-3 fw-medium text-nowrap"
                   onClick={handleCreateProjectClick}
                 >
-                  +Tạo bài đăng
+                  + Tạo bài đăng
                 </Button>
               </div>
             </div>
@@ -170,7 +169,7 @@ export default function ProjectFeed() {
             )}
 
             {!isLoading && !isError && projects.length === 0 && (
-              <div className="text-center py-5 bg-white rounded shadow-sm">
+              <div className="text-center py-5 bg-white rounded border">
                 <p className="text-muted mb-0">Không tìm thấy dự án nào phù hợp với bộ lọc.</p>
               </div>
             )}

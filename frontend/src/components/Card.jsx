@@ -2,11 +2,11 @@ import React from 'react';
 import { Card as BootstrapCard } from 'react-bootstrap';
 import clsx from 'clsx';
 
-// Component Card bọc ngoài chuẩn hóa bo góc, đổ bóng và nền trắng cho toàn hệ thống
+// Component Card bọc ngoài — bo góc, viền, đổ bóng lấy từ .card trong bootstrap-overrides.css
 const Card = ({ children, className, ...props }) => {
   return (
     <BootstrapCard
-      className={clsx('border shadow-sm rounded-3 bg-white', className)}
+      className={clsx(className)}
       {...props}
     >
       {children}
@@ -18,7 +18,7 @@ const Card = ({ children, className, ...props }) => {
 Card.Header = ({ children, className, ...props }) => {
   return (
     <BootstrapCard.Header
-      className={clsx('bg-white border-bottom py-3 px-4 fw-semibold', className)}
+      className={clsx(className)}
       {...props}
     >
       {children}
@@ -42,7 +42,7 @@ Card.Body = ({ children, className, ...props }) => {
 Card.Title = ({ children, className, ...props }) => {
   return (
     <BootstrapCard.Title
-      className={clsx('fw-bold mb-2', className)}
+      className={clsx('mb-2', className)}
       {...props}
     >
       {children}
@@ -88,7 +88,7 @@ Card.Img = ({ className, ...props }) => {
 Card.Footer = ({ children, className, ...props }) => {
   return (
     <BootstrapCard.Footer
-      className={clsx('bg-light border-top py-3 px-4', className)}
+      className={clsx(className)}
       {...props}
     >
       {children}

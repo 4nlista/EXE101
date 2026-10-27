@@ -13,7 +13,7 @@ const Modal = ({ children, className, ...props }) => {
 
 Modal.Header = ({ children, className, ...props }) => {
   return (
-    <BootstrapModal.Header className={clsx('border-0 pb-0', className)} {...props}>
+    <BootstrapModal.Header className={clsx(className)} {...props}>
       {children}
     </BootstrapModal.Header>
   );
@@ -21,7 +21,7 @@ Modal.Header = ({ children, className, ...props }) => {
 
 Modal.Title = ({ children, className, ...props }) => {
   return (
-    <BootstrapModal.Title className={clsx('fw-bold fs-4', className)} {...props}>
+    <BootstrapModal.Title className={clsx(className)} {...props}>
       {children}
     </BootstrapModal.Title>
   );
@@ -29,7 +29,7 @@ Modal.Title = ({ children, className, ...props }) => {
 
 Modal.Body = ({ children, className, ...props }) => {
   return (
-    <BootstrapModal.Body className={clsx('pt-2 px-4 pb-4', className)} {...props}>
+    <BootstrapModal.Body className={clsx(className)} {...props}>
       {children}
     </BootstrapModal.Body>
   );
@@ -37,7 +37,7 @@ Modal.Body = ({ children, className, ...props }) => {
 
 Modal.Footer = ({ children, className, ...props }) => {
   return (
-    <BootstrapModal.Footer className={clsx('bg-light border-top shadow-sm px-4 py-2 m-0', className)} {...props}>
+    <BootstrapModal.Footer className={clsx(className)} {...props}>
       {children}
     </BootstrapModal.Footer>
   );

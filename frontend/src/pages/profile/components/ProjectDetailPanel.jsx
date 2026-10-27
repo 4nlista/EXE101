@@ -1,6 +1,6 @@
 import React from 'react';
 import { Form, Row, Col } from 'react-bootstrap';
-import { Plus, SquarePen } from 'lucide-react';
+import { Plus, SquarePen, X } from 'lucide-react';
 import Button from '../../../components/Button';
 
 export default function ProjectDetailPanel({
@@ -19,7 +19,9 @@ export default function ProjectDetailPanel({
           </div>
           {isAddingProject ? 'Thêm dự án mới' : 'Chi tiết dự án'}
         </h6>
-        <button className="btn-close shadow-none" onClick={closeProjectDetail}></button>
+        <Button variant="link" className="p-0 text-muted shadow-none d-flex align-items-center" onClick={closeProjectDetail} title="Đóng">
+          <X size={18} />
+        </Button>
       </div>
 
       <div className="detail-body flex-grow-1">

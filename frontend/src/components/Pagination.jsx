@@ -39,7 +39,7 @@ export default function Pagination({
 
   return (
     <div className={`d-flex justify-content-center align-items-center ${className}`}>
-      <BsPagination className="mb-0 shadow-sm">
+      <BsPagination className="mb-0">
         <BsPagination.Prev
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage <= 1 || disabled}

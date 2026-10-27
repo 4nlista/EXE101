@@ -85,15 +85,14 @@ export default function MyProjectsTab() {
       <StatsCards stats={stats} />
 
       <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
-        <h5 className="fw-bold mb-0 text-dark">Danh sách dự án</h5>
-        <div className="d-flex flex-wrap gap-3 align-items-center justify-content-end" style={{ maxWidth: '520px' }}>
+        <h5 className="fw-semibold mb-0 text-dark">Danh sách dự án</h5>
+        <div className="d-flex flex-wrap gap-2 align-items-center justify-content-end" style={{ maxWidth: '520px' }}>
           <Form.Select
             value={statusFilter}
             onChange={(e) => {
               setStatusFilter(e.target.value);
               setPage(1);
             }}
-            className="shadow-none border rounded-pill"
             style={{ width: '180px' }}
           >
             <option value="">Tất cả trạng thái</option>
@@ -104,13 +103,12 @@ export default function MyProjectsTab() {
             <option value={PROJECT_STATUS.CANCELLED}>Đã hủy</option>
           </Form.Select>
 
-          <InputGroup style={{ width: '250px' }}>
-            <InputGroup.Text className="bg-white border-end-0 rounded-start-pill text-muted px-3">
-              <FaSearch />
+          <InputGroup style={{ width: '240px' }}>
+            <InputGroup.Text className="bg-white text-muted">
+              <FaSearch size={13} />
             </InputGroup.Text>
             <Form.Control
               placeholder="Tìm kiếm dự án..."
-              className="border-start-0 shadow-none rounded-end-pill ps-0"
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -121,31 +119,30 @@ export default function MyProjectsTab() {
         </div>
       </div>
 
-      <div className="d-flex flex-column gap-3">
+      <div className="d-flex flex-column gap-2">
         {loading ? (
           <div className="text-center py-4 text-muted">Đang tải...</div>
         ) : projects.length === 0 ? (
-          <div className="text-center py-5 text-muted bg-light rounded-4">
+          <div className="text-center py-5 text-muted bg-white border rounded">
             Bạn chưa có dự án nào
           </div>
         ) : (
           projects.map(project => (
-            <Card key={project._id} className="border-0 shadow-sm rounded-4">
-              <Card.Body className="d-flex align-items-center py-2 px-3 gap-3">
-                {/* Cột 1: Icon + Tên dự án + Ngành học (Chiếm phần còn lại và co giãn linh hoạt, tự ba chấm nếu quá dài) */}
+            <Card key={project._id} className="card">
+              <Card.Body className="d-flex align-items-center py-3 px-4 gap-3">
+                {/* Cột 1: Icon + Tên dự án + Ngành học */}
                 <div className="d-flex align-items-center gap-3" style={{ flex: '1 1 0', minWidth: '0' }}>
                   <div
-                    className="bg-light rounded-3 d-flex align-items-center justify-content-center border flex-shrink-0"
-                    style={{ width: '40px', height: '40px' }}
+                    className="rounded d-flex align-items-center justify-content-center border flex-shrink-0"
+                    style={{ width: '38px', height: '38px', backgroundColor: 'var(--bg-subtle)' }}
                   >
-                    <FaLaptopCode size={20} className="text-secondary" />
+                    <FaLaptopCode size={18} className="text-secondary" />
                   </div>
                   <div style={{ minWidth: '0', flex: '1 1 0' }}>
-                    <h6 className="fw-bold mb-0 text-truncate" style={{ fontSize: '14px' }} title={project.title}>
+                    <h6 className="fw-semibold mb-0 text-truncate text-dark" style={{ fontSize: '14px' }} title={project.title}>
                       {project.title}
                     </h6>
                     <div className="d-flex align-items-center gap-1 text-muted text-truncate mt-1" style={{ fontSize: '12px' }}>
-                      <span>•</span>
                       <span className="text-truncate">
                         {project.departmentIds?.map(d => d?.name || d).filter(Boolean).join(' · ')}
                       </span>
@@ -153,31 +150,31 @@ export default function MyProjectsTab() {
                   </div>
                 </div>
 
-                {/* Cột 2: Hạn ứng tuyển (Fix cứng 150px, thẳng hàng 100%) */}
-                <div style={{ width: '150px', flex: '0 0 150px' }} className="flex-shrink-0">
-                  <div className="text-dark mb-0 fw-bold text-truncate" style={{ fontSize: '12px' }}>
+                {/* Cột 2: Hạn ứng tuyển */}
+                <div style={{ width: '140px', flex: '0 0 140px' }} className="flex-shrink-0">
+                  <div className="text-muted small">
                     Hạn ứng tuyển
                   </div>
-                  <div className="text-muted text-truncate mt-1" style={{ fontSize: '12.5px' }}>
+                  <div className="text-dark fw-medium small text-truncate mt-0">
                     {formatDate(project.deadline)}
                   </div>
                 </div>
 
-                {/* Cột 3: Thành viên + Progress bar (Fix cứng 130px) */}
+                {/* Cột 3: Thành viên + Progress bar */}
                 <div style={{ width: '130px', flex: '0 0 130px' }} className="flex-shrink-0">
                   <div className="d-flex justify-content-between mb-1" style={{ fontSize: '12px' }}>
                     <span className="text-muted">Thành viên</span>
-                    <span className="fw-semibold">{project.members?.length || 0}/{project.maxMembers}</span>
+                    <span className="fw-semibold text-dark">{project.members?.length || 0}/{project.maxMembers}</span>
                   </div>
-                  <div className="progress" style={{ height: '5px' }}>
+                  <div className="progress" style={{ height: '4px' }}>
                     <div
-                      className="progress-bar bg-success"
+                      className="progress-bar"
                       style={{ width: `${Math.min(100, ((project.members?.length || 0) / project.maxMembers) * 100)}%` }}
                     />
                   </div>
                 </div>
 
-                {/* Cột 4: Trạng thái (Fix cứng 130px, căn giữa) */}
+                {/* Cột 4: Trạng thái */}
                 <div style={{ width: '130px', flex: '0 0 130px' }} className="d-flex justify-content-center flex-shrink-0">
                   <StatusBadge
                     variant={
@@ -195,21 +192,21 @@ export default function MyProjectsTab() {
                   />
                 </div>
 
-                {/* Cột 5: Nút Quản lý & Dropdown (Fix cứng 120px, căn phải) */}
+                {/* Cột 5: Nút Quản lý & Dropdown */}
                 <div style={{ width: '120px', flex: '0 0 120px' }} className="d-flex align-items-center justify-content-end gap-2 flex-shrink-0">
                   <Button
-                    variant="cancel"
-                    className="rounded-pill px-3 py-1 text-dark"
-                    style={{ fontSize: '13px' }}
+                    variant="outline-secondary"
+                    size="sm"
+                    className="fw-medium px-3"
                     onClick={() => navigate(`/manage/${project._id}`)}
                   >
                     Quản lý
                   </Button>
                   <Dropdown align="end">
                     <Dropdown.Toggle as="div" className="btn btn-link text-muted p-1" style={{ cursor: 'pointer' }}>
-                      <FaEllipsisV size={14} />
+                      <FaEllipsisV size={13} />
                     </Dropdown.Toggle>
-                    <Dropdown.Menu className="border-1 shadow-sm rounded-5">
+                    <Dropdown.Menu>
                       {project.status !== PROJECT_STATUS.CANCELLED && (project.members?.length || 0) < (project.maxMembers / 2) && (
                         <Dropdown.Item onClick={() => handleDeleteClick(project._id)} className="text-danger fw-medium">
                           Hủy dự án

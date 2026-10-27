@@ -8,9 +8,11 @@ import { SocketProvider } from './contexts/SocketContext';
 import App from './App';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import './styles/variables.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './styles/global.css';
 import './styles/layout.css';
+import './styles/bootstrap-overrides.css';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'dummy-client-id';
 const queryClient = new QueryClient();

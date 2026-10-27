@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
-import { Badge } from 'react-bootstrap';
-import { Bell, Settings, LogOut, ChevronDown, User, Home, Briefcase, MessageSquareMore, Sparkles, Crown, ReceiptText, Users } from 'lucide-react';
+import {
+  Settings, LogOut, ChevronDown, User, Home, Briefcase,
+  MessageSquareMore, Sparkles, Crown, ReceiptText, Users, ShieldCheck
+} from 'lucide-react';
 import LogoImg from '../assets/images/Logo.png';
 import NotificationDropdown from './NotificationDropdown';
+import Button from './Button';
 
 export default function Navbar() {
   const { currentUser, logout } = useAuth();
@@ -13,6 +16,31 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [showDrop, setShowDrop] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Đóng dropdown khi click ra ngoài
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDrop(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Đóng dropdown khi chuyển trang hoặc nhấn phím Escape
+  useEffect(() => {
+    setShowDrop(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setShowDrop(false);
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -28,35 +56,42 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="layout-nav position-relative">
-      <Link to="/feed" className="layout-logo text-decoration-none d-flex align-items-center" style={{ marginLeft: '60px' }}>
-        <img src={LogoImg} alt="UniVerse AI Logo" style={{ height: '32px', marginRight: '10px' }} />
-        <div className="layout-logo-text fw-bold text-dark fs-5">UniVerse AI</div>
+    <nav className="layout-nav">
+      <Link to="/feed" className="layout-logo">
+        <img src={LogoImg} alt="UniVerse AI Logo" style={{ height: '28px' }} />
+        <span className="layout-logo-text">UniVerse AI</span>
       </Link>
 
-      <div className="layout-nav-links" style={{ position: 'absolute', left: '42%', transform: 'translateX(-50%)' }}>
+      <div className="layout-nav-links">
         {navs.map(n => {
           const isActive = location.pathname.startsWith(n.path);
           const Icon = n.icon;
           return (
             <Link
-              key={n.path} to={n.path}
+              key={n.path}
+              to={n.path}
               className={`layout-nav-link ${isActive ? 'active' : ''}`}
             >
-              <div className="position-relative">
-                <Icon width={28} height={22} strokeWidth={isActive ? 2.5 : 2} fill={isActive ? "currentColor" : "none"} />
+              <div className="position-relative d-inline-flex align-items-center">
+                <Icon size={20} strokeWidth={isActive ? 2.25 : 1.75} />
                 {n.badge && (
-                  <Badge
-                    pill
-                    bg="danger"
-                    className="position-absolute"
-                    style={{ top: '-4px', right: '-8px', fontSize: '0.65rem', padding: '0.25em 0.4em' }}
+                  <span
+                    className="position-absolute status-badge status-badge--danger p-0 d-inline-flex align-items-center justify-content-center"
+                    style={{
+                      top: '-6px',
+                      right: '-10px',
+                      minWidth: '16px',
+                      height: '16px',
+                      fontSize: '10px',
+                      padding: '0 4px',
+                      lineHeight: 1
+                    }}
                   >
                     {n.badge}
-                  </Badge>
+                  </span>
                 )}
               </div>
-              <span className="mt-1">{n.name}</span>
+              <span>{n.name}</span>
             </Link>
           );
         })}
@@ -65,8 +100,15 @@ export default function Navbar() {
       <div className="layout-nav-right">
         <NotificationDropdown />
 
-        <div className="drop-wrap">
-          <button className="user-pill" onClick={() => setShowDrop(!showDrop)}>
+        <div className="drop-wrap" ref={dropdownRef}>
+          <Button
+            variant="link"
+            className="user-pill text-decoration-none shadow-none"
+            onClick={() => setShowDrop(!showDrop)}
+            aria-label="Menu người dùng"
+            aria-expanded={showDrop}
+            aria-haspopup="true"
+          >
             <div className="user-av">
               {currentUser?.avatar ? (
                 <img src={currentUser.avatar} alt="Avatar" />
@@ -74,8 +116,13 @@ export default function Navbar() {
                 currentUser?.name ? currentUser.name.trim().charAt(0).toUpperCase() : 'U'
               )}
             </div>
+            {currentUser?.name && (
+              <span className="user-pill-name d-none d-md-inline ms-1">
+                {currentUser.name}
+              </span>
+            )}
             <ChevronDown size={14} style={{ color: 'var(--text-muted)' }} />
-          </button>
+          </Button>
 
           {showDrop && (
             <div className="drop-menu">
@@ -86,21 +133,32 @@ export default function Navbar() {
                 </div>
               </div>
               <div style={{ padding: '6px 0' }}>
+                {currentUser?.roleCode === 'ADMIN' && (
+                  <Button
+                    variant="link"
+                    className="drop-item fw-semibold text-start text-decoration-none w-100"
+                    style={{ color: 'var(--primary)' }}
+                    onClick={() => { navigate('/admin'); setShowDrop(false); }}
+                  >
+                    <ShieldCheck size={16} /> Cổng Quản trị viên
+                  </Button>
+                )}
                 {!currentUser?.onboardingCompleted && (
-                  <button
-                    className="drop-item fw-semibold"
-                    style={{ color: '#ea580c' }}
+                  <Button
+                    variant="link"
+                    className="drop-item fw-semibold text-start text-decoration-none w-100"
+                    style={{ color: 'var(--primary)' }}
                     onClick={() => { navigate('/onboarding'); setShowDrop(false); }}
                   >
                     <Sparkles size={16} /> Hoàn tất hồ sơ (0/4)
-                  </button>
+                  </Button>
                 )}
-                <button className="drop-item" onClick={() => { navigate('/profile'); setShowDrop(false); }}><User size={16} /> Hồ sơ cá nhân</button>
-                <button className="drop-item" onClick={() => { navigate('/subscription'); setShowDrop(false); }}><Crown size={16} className="text-warning" /> Nâng cấp tài khoản</button>
-                <button className="drop-item" onClick={() => { navigate('/transactions'); setShowDrop(false); }}><ReceiptText size={16} /> Lịch sử thanh toán</button>
-                <button className="drop-item" onClick={() => { navigate('/change-password'); setShowDrop(false); }}><Settings size={16} /> Đổi mật khẩu</button>
+                <Button variant="link" className="drop-item text-start text-decoration-none w-100" onClick={() => { navigate('/profile'); setShowDrop(false); }}><User size={16} /> Hồ sơ cá nhân</Button>
+                <Button variant="link" className="drop-item text-start text-decoration-none w-100" onClick={() => { navigate('/subscription'); setShowDrop(false); }}><Crown size={16} /> Nâng cấp tài khoản</Button>
+                <Button variant="link" className="drop-item text-start text-decoration-none w-100" onClick={() => { navigate('/transactions'); setShowDrop(false); }}><ReceiptText size={16} /> Lịch sử thanh toán</Button>
+                <Button variant="link" className="drop-item text-start text-decoration-none w-100" onClick={() => { navigate('/change-password'); setShowDrop(false); }}><Settings size={16} /> Đổi mật khẩu</Button>
                 <div className="drop-sep" />
-                <button className="drop-item danger" onClick={handleLogout}><LogOut size={16} /> Đăng xuất</button>
+                <Button variant="link" className="drop-item danger text-start text-decoration-none w-100" onClick={handleLogout}><LogOut size={16} /> Đăng xuất</Button>
               </div>
             </div>
           )}

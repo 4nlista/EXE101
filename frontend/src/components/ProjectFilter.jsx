@@ -74,8 +74,8 @@ export default function ProjectFilter({ filters, setFilters }) {
   };
 
   return (
-    <div className="bg-white p-4 rounded shadow-sm border border-secondary-subtle">
-      <h6 className="mb-4 fw-bold text-secondary text-uppercase">Bộ lọc</h6>
+    <div className="filter-panel">
+      <div className="filter-panel__title">Bộ lọc</div>
 
       <Form>
         {/* Bộ lọc dự án yêu thích */}
@@ -84,7 +84,7 @@ export default function ProjectFilter({ filters, setFilters }) {
             type="switch"
             id="onlyLikedSwitch"
             label={
-              <span className="fw-semibold text-dark d-inline-flex align-items-center gap-1">
+              <span className="fw-medium text-dark d-inline-flex align-items-center gap-1" style={{ fontSize: 'var(--text-sm)' }}>
                 Đã thả tim <Heart size={14} fill="#dc3545" className="text-danger" />
               </span>
             }
@@ -97,7 +97,7 @@ export default function ProjectFilter({ filters, setFilters }) {
         {/* Ngành học (Chọn qua select và gom vào danh sách tags) */}
         <Form.Group className="mb-4">
           <div className="d-flex justify-content-between align-items-center mb-1">
-            <Form.Label className="fw-bold mb-0">Ngành học</Form.Label>
+            <Form.Label className="fw-medium mb-0">Ngành học</Form.Label>
             {selectedDeptIds.length > 0 && (
               <span
                 role="button"
@@ -161,7 +161,7 @@ export default function ProjectFilter({ filters, setFilters }) {
         </Form.Group>
 
         <Form.Group className="mb-4">
-          <Form.Label className="fw-bold">Mục tiêu điểm<span className="text-danger ms-1">*</span></Form.Label>
+          <Form.Label className="fw-medium mb-1">Mục tiêu điểm<span className="text-danger ms-1">*</span></Form.Label>
           <div className="d-flex align-items-center">
             <Form.Control
               type="number"
@@ -188,7 +188,7 @@ export default function ProjectFilter({ filters, setFilters }) {
         </Form.Group>
 
         <Form.Group className="mb-4">
-          <Form.Label className="fw-bold">Hạn chót<span className="text-danger ms-1">*</span></Form.Label>
+          <Form.Label className="fw-medium mb-1">Hạn chót<span className="text-danger ms-1">*</span></Form.Label>
           <Form.Select
             name="deadline"
             value={localFilters.deadline || ''}
@@ -203,7 +203,7 @@ export default function ProjectFilter({ filters, setFilters }) {
         </Form.Group>
 
         <div className="d-flex gap-2 mt-4">
-          <Button variant="secondary" onClick={handleReset} className="flex-fill text-dark">Xóa</Button>
+          <Button variant="secondary" onClick={handleReset} className="flex-fill">Xóa</Button>
           <Button variant="primary" onClick={handleApply} className="flex-fill">Lọc</Button>
         </div>
       </Form>

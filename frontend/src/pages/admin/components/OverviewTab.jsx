@@ -32,157 +32,157 @@ export default function OverviewTab({ stats, isLoading }) {
       {/* 4 Thẻ chỉ số tổng quan chính */}
       <Row className="g-3 mb-4">
         <Col xs={12} sm={6} lg={3}>
-          <div className="bg-white p-3 rounded-3 border shadow-sm h-100">
-            <div className="d-flex justify-content-between align-items-center mb-2">
-              <span className="text-muted small fw-medium">Tổng người dùng</span>
-              <div className="p-2 rounded-2 bg-primary bg-opacity-10 text-primary">
-                <Users size={18} />
-              </div>
+          <div className="stat-card">
+            <div className="stat-card__icon">
+              <Users size={18} />
             </div>
-            <div className="fs-3 fw-bold text-dark">{userStats.total || 0}</div>
-            <div className="small text-muted mt-2 d-flex gap-2 align-items-center">
-              <span className="badge border" style={{ backgroundColor: '#fef3c7', color: '#b45309', borderColor: '#fde68a' }}>
-                {userStats.vip || 0} VIP
-              </span>
-              <span className="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25">
-                {userStats.locked || 0} Bị khóa
-              </span>
+            <div>
+              <div className="stat-card__label">Tổng người dùng</div>
+              <div className="stat-card__value">{userStats.total || 0}</div>
+              <div className="small text-muted mt-2 d-flex gap-2 align-items-center">
+                <span className="status-badge status-badge--warning">
+                  {userStats.vip || 0} VIP
+                </span>
+                <span className="status-badge status-badge--danger">
+                  {userStats.locked || 0} Khóa
+                </span>
+              </div>
             </div>
           </div>
         </Col>
 
         <Col xs={12} sm={6} lg={3}>
-          <div className="bg-white p-3 rounded-3 border shadow-sm h-100">
-            <div className="d-flex justify-content-between align-items-center mb-2">
-              <span className="text-muted small fw-medium">Tổng dự án</span>
-              <div className="p-2 rounded-2 bg-success bg-opacity-10 text-success">
-                <FolderGit2 size={18} />
-              </div>
+          <div className="stat-card">
+            <div className="stat-card__icon">
+              <FolderGit2 size={18} />
             </div>
-            <div className="fs-3 fw-bold text-dark">{projectStats.total || 0}</div>
-            <div className="small text-muted mt-2 d-flex gap-2 align-items-center">
-              <span className="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">
-                {byStatus[PROJECT_STATUS.OPEN] || 0} Đang tuyển
-              </span>
-              <span className="badge border" style={{ backgroundColor: '#f5f3ff', color: '#6d28d9', borderColor: '#ddd6fe' }}>
-                {byStatus[PROJECT_STATUS.COMPLETED] || 0} Hoàn thành
-              </span>
+            <div>
+              <div className="stat-card__label">Tổng dự án</div>
+              <div className="stat-card__value">{projectStats.total || 0}</div>
+              <div className="small text-muted mt-2 d-flex gap-2 align-items-center">
+                <span className="status-badge status-badge--success">
+                  {byStatus[PROJECT_STATUS.OPEN] || 0} Đang mở
+                </span>
+                <span className="status-badge status-badge--neutral">
+                  {byStatus[PROJECT_STATUS.COMPLETED] || 0} Xong
+                </span>
+              </div>
             </div>
           </div>
         </Col>
 
         <Col xs={12} sm={6} lg={3}>
-          <div className="bg-white p-3 rounded-3 border shadow-sm h-100">
-            <div className="d-flex justify-content-between align-items-center mb-2">
-              <span className="text-muted small fw-medium">Hồ sơ ứng tuyển</span>
-              <div className="p-2 rounded-2" style={{ backgroundColor: '#f5f3ff', color: '#7c3aed' }}>
-                <FileText size={18} />
-              </div>
+          <div className="stat-card">
+            <div className="stat-card__icon">
+              <FileText size={18} />
             </div>
-            <div className="fs-3 fw-bold text-dark">{appStats.total || 0}</div>
-            <div className="small text-muted mt-2 d-flex gap-2 align-items-center">
-              <span className="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">
-                {appStats.byStatus?.[APPLICATION_STATUS.APPROVED] || 0} Đã duyệt
-              </span>
-              <span className="badge bg-warning bg-opacity-10 text-warning-emphasis border border-warning border-opacity-25">
-                {appStats.byStatus?.[APPLICATION_STATUS.PENDING] || 0} Chờ duyệt
-              </span>
+            <div>
+              <div className="stat-card__label">Hồ sơ ứng tuyển</div>
+              <div className="stat-card__value">{appStats.total || 0}</div>
+              <div className="small text-muted mt-2 d-flex gap-2 align-items-center">
+                <span className="status-badge status-badge--success">
+                  {appStats.byStatus?.[APPLICATION_STATUS.APPROVED] || 0} Đã duyệt
+                </span>
+                <span className="status-badge status-badge--warning">
+                  {appStats.byStatus?.[APPLICATION_STATUS.PENDING] || 0} Chờ duyệt
+                </span>
+              </div>
             </div>
           </div>
         </Col>
 
         <Col xs={12} sm={6} lg={3}>
-          <div className="bg-white p-3 rounded-3 border shadow-sm h-100">
-            <div className="d-flex justify-content-between align-items-center mb-2">
-              <span className="text-muted small fw-medium">Tổng doanh thu gói</span>
-              <div className="p-2 rounded-2" style={{ backgroundColor: '#ecfdf5', color: '#059669' }}>
-                <DollarSign size={18} />
+          <div className="stat-card stat-card--success">
+            <div className="stat-card__icon">
+              <DollarSign size={18} />
+            </div>
+            <div>
+              <div className="stat-card__label">Tổng doanh thu gói</div>
+              <div className="stat-card__value">
+                {(revenueStats.total || 0).toLocaleString('vi-VN')} đ
               </div>
-            </div>
-            <div className="fs-3 fw-bold text-success">
-              {(revenueStats.total || 0).toLocaleString('vi-VN')} đ
-            </div>
-            <div className="small text-muted mt-2">
-              <span className="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">
-                Gói VIP & Premium
-              </span>
+              <div className="small text-muted mt-2">
+                <span className="status-badge status-badge--success">
+                  Gói VIP & Premium
+                </span>
+              </div>
             </div>
           </div>
         </Col>
       </Row>
 
-      {/* Chi tiết phân bổ trạng thái dự án - Quy ước màu sắc trực quan */}
-      <div className="bg-white p-4 rounded-3 border shadow-sm mb-4">
+      {/* Chi tiết phân bổ trạng thái dự án */}
+      <div className="card p-4 mb-4">
         <div className="d-flex justify-content-between align-items-center mb-3">
-          <h6 className="fw-bold text-dark mb-0">Phân bổ trạng thái dự án trên toàn hệ thống</h6>
-          <span className="text-muted small">Cập nhật thời gian thực</span>
+          <h6 className="fw-semibold text-dark mb-0">Phân bổ trạng thái dự án trên toàn hệ thống</h6>
+          <span className="text-muted small">Thời gian thực</span>
         </div>
         <Row className="g-3">
-          {/* 1. Đang mở tuyển: Xanh lá */}
+          {/* 1. Đang mở tuyển */}
           <Col xs={6} sm={4} md={2}>
-            <div className="p-3 rounded-3 text-center border" style={{ backgroundColor: '#f0fdf4', borderColor: '#bbf7d0' }}>
-              <div className="small fw-semibold mb-1 text-success">Đang mở tuyển</div>
-              <div className="fs-4 fw-bold text-success">{byStatus[PROJECT_STATUS.OPEN] || 0}</div>
+            <div className="p-3 rounded text-center border" style={{ backgroundColor: 'var(--bg-subtle)' }}>
+              <div className="small text-muted mb-1">Đang mở tuyển</div>
+              <div className="fs-5 fw-bold text-dark">{byStatus[PROJECT_STATUS.OPEN] || 0}</div>
             </div>
           </Col>
 
-          {/* 2. Đang thực hiện: Xanh dương */}
+          {/* 2. Đang thực hiện */}
           <Col xs={6} sm={4} md={2}>
-            <div className="p-3 rounded-3 text-center border" style={{ backgroundColor: '#eff6ff', borderColor: '#bfdbfe' }}>
-              <div className="small fw-semibold mb-1 text-primary">Đang thực hiện</div>
-              <div className="fs-4 fw-bold text-primary">{byStatus[PROJECT_STATUS.IN_PROGRESS] || 0}</div>
+            <div className="p-3 rounded text-center border" style={{ backgroundColor: 'var(--bg-subtle)' }}>
+              <div className="small text-muted mb-1">Đang thực hiện</div>
+              <div className="fs-5 fw-bold text-dark">{byStatus[PROJECT_STATUS.IN_PROGRESS] || 0}</div>
             </div>
           </Col>
 
-          {/* 3. Đã hoàn thành: Tím */}
+          {/* 3. Đã hoàn thành */}
           <Col xs={6} sm={4} md={2}>
-            <div className="p-3 rounded-3 text-center border" style={{ backgroundColor: '#f5f3ff', borderColor: '#ddd6fe' }}>
-              <div className="small fw-semibold mb-1" style={{ color: '#6d28d9' }}>Đã hoàn thành</div>
-              <div className="fs-4 fw-bold" style={{ color: '#7c3aed' }}>{byStatus[PROJECT_STATUS.COMPLETED] || 0}</div>
+            <div className="p-3 rounded text-center border" style={{ backgroundColor: 'var(--bg-subtle)' }}>
+              <div className="small text-muted mb-1">Đã hoàn thành</div>
+              <div className="fs-5 fw-bold text-dark">{byStatus[PROJECT_STATUS.COMPLETED] || 0}</div>
             </div>
           </Col>
 
-          {/* 4. Đã đóng slot: Vàng cam */}
+          {/* 4. Đã đóng slot */}
           <Col xs={6} sm={4} md={2}>
-            <div className="p-3 rounded-3 text-center border" style={{ backgroundColor: '#fffbeb', borderColor: '#fde68a' }}>
-              <div className="small fw-semibold mb-1" style={{ color: '#b45309' }}>Đã đóng slot</div>
-              <div className="fs-4 fw-bold" style={{ color: '#d97706' }}>{byStatus[PROJECT_STATUS.CLOSED] || 0}</div>
+            <div className="p-3 rounded text-center border" style={{ backgroundColor: 'var(--bg-subtle)' }}>
+              <div className="small text-muted mb-1">Đã đóng slot</div>
+              <div className="fs-5 fw-bold text-dark">{byStatus[PROJECT_STATUS.CLOSED] || 0}</div>
             </div>
           </Col>
 
-          {/* 5. Đã hủy: Đỏ */}
+          {/* 5. Đã hủy */}
           <Col xs={6} sm={4} md={2}>
-            <div className="p-3 rounded-3 text-center border" style={{ backgroundColor: '#fef2f2', borderColor: '#fecaca' }}>
-              <div className="small fw-semibold mb-1 text-danger">Đã hủy</div>
-              <div className="fs-4 fw-bold text-danger">{byStatus[PROJECT_STATUS.CANCELLED] || 0}</div>
+            <div className="p-3 rounded text-center border" style={{ backgroundColor: 'var(--bg-subtle)' }}>
+              <div className="small text-muted mb-1">Đã hủy</div>
+              <div className="fs-5 fw-bold text-dark">{byStatus[PROJECT_STATUS.CANCELLED] || 0}</div>
             </div>
           </Col>
 
-          {/* 6. Đình chỉ / Vi phạm: Đỏ sẫm */}
+          {/* 6. Đình chỉ / Vi phạm */}
           <Col xs={6} sm={4} md={2}>
-            <div className="p-3 rounded-3 text-center border" style={{ backgroundColor: '#fff1f2', borderColor: '#fecdd3' }}>
-              <div className="small fw-semibold mb-1" style={{ color: '#be123c' }}>Đình chỉ (Admin)</div>
-              <div className="fs-4 fw-bold" style={{ color: '#be123c' }}>{byStatus[PROJECT_STATUS.SUSPENDED] || 0}</div>
+            <div className="p-3 rounded text-center border" style={{ backgroundColor: 'var(--bg-subtle)' }}>
+              <div className="small text-muted mb-1">Đình chỉ</div>
+              <div className="fs-5 fw-bold text-dark">{byStatus[PROJECT_STATUS.SUSPENDED] || 0}</div>
             </div>
           </Col>
         </Row>
       </div>
 
       {/* Biểu đồ Doanh thu theo 12 tháng gần nhất */}
-      <div className="bg-white p-4 rounded-3 border shadow-sm mb-4">
+      <div className="card p-4 mb-4">
         <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
           <div>
-            <h6 className="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
-              <TrendingUp size={18} className="text-secondary" /> Doanh thu theo 12 tháng gần nhất
+            <h6 className="fw-semibold text-dark mb-1 d-flex align-items-center gap-2">
+              <TrendingUp size={16} className="text-secondary" /> Doanh thu theo 12 tháng gần nhất
             </h6>
             <div className="text-muted small">Biến động doanh thu gói VIP & Premium qua các tháng</div>
           </div>
           <div className="d-flex align-items-center gap-3">
             <div className="text-end">
               <span className="text-muted small">Tháng này: </span>
-              <span className="fw-bold text-dark me-3">{currentMonthRevenue.toLocaleString('vi-VN')} đ</span>
+              <span className="fw-semibold text-dark me-3">{currentMonthRevenue.toLocaleString('vi-VN')} đ</span>
               <span className="text-muted small">Tổng 12 tháng: </span>
-              <span className="fw-bold text-success fs-6">{total12MonthsRevenue.toLocaleString('vi-VN')} đ</span>
+              <span className="fw-semibold text-dark fs-6">{(total12MonthsRevenue || 0).toLocaleString('vi-VN')} đ</span>
             </div>
           </div>
         </div>
@@ -214,31 +214,30 @@ export default function OverviewTab({ stats, isLoading }) {
                         lineHeight: '1.2'
                       }}
                     >
-                      <div className="fw-bold">{item.fullLabel}</div>
-                      <div className="text-success fw-semibold mt-1">{(item.revenue || 0).toLocaleString('vi-VN')} đ</div>
-                      <div className="text-white-50">{item.count || 0} lượt giao dịch</div>
+                      <div className="fw-semibold">{item.fullLabel}</div>
+                      <div className="text-white fw-bold mt-1">{(item.revenue || 0).toLocaleString('vi-VN')} đ</div>
+                      <div className="text-white-50">{item.count || 0} giao dịch</div>
                     </div>
                   )}
 
                   {/* Thanh Bar */}
                   <div className="w-100 d-flex flex-column justify-content-end" style={{ height: '140px' }}>
                     <div
-                      className="w-100 rounded-top transition-all"
+                      className="w-100 rounded-top"
                       style={{
                         height: `${heightPercent}%`,
                         backgroundColor: item.revenue > 0
-                          ? (isCurrentMonth ? '#059669' : '#10b981')
-                          : '#e5e7eb',
+                          ? (isCurrentMonth ? 'var(--primary)' : 'var(--primary-hover)')
+                          : 'var(--border)',
                         opacity: isHovered ? 1 : 0.85,
-                        boxShadow: isHovered ? '0 4px 10px rgba(16, 185, 129, 0.3)' : 'none',
-                        transition: 'all 0.2s ease-in-out'
+                        transition: 'all 0.15s ease'
                       }}
                     />
                   </div>
 
                   {/* Nhãn tháng */}
                   <div
-                    className={`mt-2 small text-center text-nowrap ${isCurrentMonth ? 'fw-bold text-success' : 'text-muted'}`}
+                    className={`mt-2 small text-center text-nowrap ${isCurrentMonth ? 'fw-semibold text-dark' : 'text-muted'}`}
                     style={{ fontSize: '0.72rem' }}
                   >
                     {item.label}
@@ -253,24 +252,24 @@ export default function OverviewTab({ stats, isLoading }) {
       {/* Tóm tắt tăng trưởng tuần qua */}
       <Row className="g-3">
         <Col md={6}>
-          <div className="bg-white p-3 rounded-3 border shadow-sm d-flex align-items-center justify-content-between">
-            <div>
-              <div className="text-muted small">Sinh viên mới đăng ký trong 7 ngày qua</div>
-              <div className="fs-4 fw-bold text-dark mt-1">+{userStats.newThisWeek || 0} người dùng</div>
+          <div className="stat-card">
+            <div className="stat-card__icon">
+              <CheckCircle size={18} />
             </div>
-            <div className="p-3 rounded-circle bg-light text-secondary">
-              <CheckCircle size={24} />
+            <div>
+              <div className="stat-card__label">Sinh viên mới trong 7 ngày qua</div>
+              <div className="stat-card__value">+{userStats.newThisWeek || 0}</div>
             </div>
           </div>
         </Col>
         <Col md={6}>
-          <div className="bg-white p-3 rounded-3 border shadow-sm d-flex align-items-center justify-content-between">
-            <div>
-              <div className="text-muted small">Dự án mới tạo trong 7 ngày qua</div>
-              <div className="fs-4 fw-bold text-dark mt-1">+{projectStats.newThisWeek || 0} dự án</div>
+          <div className="stat-card">
+            <div className="stat-card__icon">
+              <Clock size={18} />
             </div>
-            <div className="p-3 rounded-circle bg-light text-secondary">
-              <Clock size={24} />
+            <div>
+              <div className="stat-card__label">Dự án mới trong 7 ngày qua</div>
+              <div className="stat-card__value">+{projectStats.newThisWeek || 0}</div>
             </div>
           </div>
         </Col>

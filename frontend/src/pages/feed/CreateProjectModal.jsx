@@ -235,8 +235,7 @@ export default function CreateProjectModal({ show, onHide }) {
             <p className="text-muted mb-4 fs-6">{serverError || limitMessage}</p>
             <Button
               variant="primary"
-              className="px-4 py-2 fw-bold"
-              style={{ backgroundColor: '#0077ffff', borderColor: '#ffffffff', borderRadius: '20px' }}
+              className="px-4 py-2 fw-medium"
               onClick={() => {
                 onHide();
                 navigate('/subscription');
@@ -308,7 +307,7 @@ export default function CreateProjectModal({ show, onHide }) {
                     Ngành cần tuyển & Chỉ tiêu <span className="text-danger">*</span>
                   </span>
                   <span className="badge bg-white text-secondary border px-2 py-1 small">
-                    Tổng cần tuyển: <strong style={{ color: '#ea580c' }}>{totalNeededMembers}</strong> ứng viên
+                    Tổng cần tuyển: <strong style={{ color: 'var(--primary)' }}>{totalNeededMembers}</strong> ứng viên
                   </span>
                 </div>
 
@@ -449,7 +448,6 @@ export default function CreateProjectModal({ show, onHide }) {
             type="submit"
             form="createProjectForm"
             variant="primary"
-            style={{ backgroundColor: '#ea580c', borderColor: '#ea580c' }}
             loading={createMutation.isLoading}
           >
             Đăng bài

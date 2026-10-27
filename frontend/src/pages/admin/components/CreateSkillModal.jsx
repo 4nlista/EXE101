@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Form, Spinner } from 'react-bootstrap';
+import { Form } from 'react-bootstrap';
 import { Plus, Tag } from 'lucide-react';
 import Modal from '../../../components/Modal';
 import Button from '../../../components/Button';
+import Input from '../../../components/Input';
 import Alert from '../../../components/Alert';
 import { adminService } from '../../../services/adminService';
 import { toast } from 'react-toastify';
@@ -57,45 +58,33 @@ export default function CreateSkillModal({ show, onClose, onSuccess }) {
         <Modal.Body>
           {formError && <Alert type="danger" className="mb-3">{formError}</Alert>}
 
-          <Form.Group className="mb-3">
-            <Form.Label className="fw-medium text-dark small">
-              Tên kỹ năng <span className="text-danger">*</span>
-            </Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="Ví dụ: Next.js, Prompt Engineering, Docker, Figma, v.v..."
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                if (fieldError) setFieldError('');
-              }}
-              isInvalid={Boolean(fieldError)}
-            />
-            {fieldError && (
-              <Form.Control.Feedback type="invalid" className="d-block">
-                {fieldError}
-              </Form.Control.Feedback>
-            )}
-            <Form.Text className="text-muted small">
-              Kỹ năng này sẽ được thêm vào kho từ điển chuẩn để hỗ trợ sinh viên tự động hoàn thiện hồ sơ và đăng bài tuyển dụng.
-            </Form.Text>
-          </Form.Group>
+          <Input
+            label="Tên kỹ năng"
+            required
+            placeholder="Ví dụ: Next.js, Prompt Engineering, Docker, Figma, v.v..."
+            value={name}
+            onChange={(e) => {
+              setName(e.target.value);
+              if (fieldError) setFieldError('');
+            }}
+            error={fieldError}
+            helperText="Kỹ năng này sẽ được thêm vào kho từ điển chuẩn để hỗ trợ sinh viên tự động hoàn thiện hồ sơ và đăng bài tuyển dụng."
+          />
         </Modal.Body>
 
         <Modal.Footer>
           <Button variant="secondary" size="sm" onClick={handleClose} disabled={isSubmitting}>
             Hủy bỏ
           </Button>
-          <Button variant="primary" size="sm" type="submit" disabled={isSubmitting} className="d-inline-flex align-items-center gap-1">
-            {isSubmitting ? (
-              <>
-                <Spinner animation="border" size="sm" className="me-1" /> Đang tạo...
-              </>
-            ) : (
-              <>
-                <Plus size={16} /> Thêm kỹ năng
-              </>
-            )}
+          <Button
+            variant="primary"
+            size="sm"
+            type="submit"
+            loading={isSubmitting}
+            loadingText="Đang tạo..."
+            className="d-inline-flex align-items-center gap-1"
+          >
+            <Plus size={16} /> Thêm kỹ năng
           </Button>
         </Modal.Footer>
       </Form>

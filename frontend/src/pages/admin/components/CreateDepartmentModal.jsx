@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Spinner } from 'react-bootstrap';
+import { Form } from 'react-bootstrap';
 import { Plus, BookOpen, Pencil, Check } from 'lucide-react';
 import Modal from '../../../components/Modal';
 import Button from '../../../components/Button';
+import Input from '../../../components/Input';
 import Alert from '../../../components/Alert';
 import { adminService } from '../../../services/adminService';
 import { toast } from 'react-toastify';
@@ -93,52 +94,42 @@ export default function CreateDepartmentModal({ show, onClose, onSuccess, depart
           {formError && <Alert type="danger" className="mb-3">{formError}</Alert>}
 
           {/* Tên ngành học */}
-          <Form.Group className="mb-3">
-            <Form.Label className="fw-medium text-dark small">
-              Tên ngành học <span className="text-danger">*</span>
-            </Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="Ví dụ: Công nghệ thông tin, Quản trị kinh doanh, v.v..."
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                if (fieldError) setFieldError('');
-              }}
-              isInvalid={Boolean(fieldError)}
-            />
-            {fieldError && (
-              <Form.Control.Feedback type="invalid" className="d-block">
-                {fieldError}
-              </Form.Control.Feedback>
-            )}
-          </Form.Group>
+          <Input
+            label="Tên ngành học"
+            required
+            placeholder="Ví dụ: Công nghệ thông tin, Quản trị kinh doanh, v.v..."
+            value={name}
+            onChange={(e) => {
+              setName(e.target.value);
+              if (fieldError) setFieldError('');
+            }}
+            error={fieldError}
+          />
 
           {/* Mô tả ngành học */}
-          <Form.Group className="mb-3">
-            <Form.Label className="fw-medium text-dark small">
-              Mô tả ngành học (không bắt buộc)
-            </Form.Label>
-            <Form.Control
-              as="textarea"
-              rows={3}
-              placeholder="Nhập mô tả ngắn gọn về phạm vi đào tạo hoặc định hướng của ngành học này..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </Form.Group>
+          <Input
+            as="textarea"
+            rows={3}
+            label="Mô tả ngành học (không bắt buộc)"
+            placeholder="Nhập mô tả ngắn gọn về phạm vi đào tạo hoặc định hướng của ngành học này..."
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
         </Modal.Body>
 
         <Modal.Footer>
           <Button variant="secondary" size="sm" onClick={handleClose} disabled={isSubmitting}>
             Hủy bỏ
           </Button>
-          <Button variant="primary" size="sm" type="submit" disabled={isSubmitting} className="d-inline-flex align-items-center gap-1">
-            {isSubmitting ? (
-              <>
-                <Spinner animation="border" size="sm" className="me-1" /> {isEditing ? 'Đang lưu...' : 'Đang tạo...'}
-              </>
-            ) : isEditing ? (
+          <Button
+            variant="primary"
+            size="sm"
+            type="submit"
+            loading={isSubmitting}
+            loadingText={isEditing ? 'Đang lưu...' : 'Đang tạo...'}
+            className="d-inline-flex align-items-center gap-1"
+          >
+            {isEditing ? (
               <>
                 <Check size={16} /> Lưu thay đổi
               </>

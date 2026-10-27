@@ -165,52 +165,46 @@ export default function ProjectDetailModal({ project, show, onHide }) {
   return (
     <Modal show={show} onHide={onHide} size="lg" centered scrollable>
       {/* ── Header ── */}
-      <Modal.Header closeButton className="border-0 pb-0">
-        <div className="w-100">
+      <Modal.Header closeButton>
+        <div className="w-100 pe-3">
           <div className="d-flex align-items-center mb-2 gap-2 flex-wrap">
             {project.departmentTargets && project.departmentTargets.length > 0 ? (
               project.departmentTargets.map((target, idx) => (
-                <Badge
+                <span
                   key={target._id || idx}
-                  bg="warning"
-                  text="dark"
-                  className="px-2 py-1 fw-bold"
-                  style={{ backgroundColor: '#fed7aa', color: '#ea580c' }}
+                  className="status-badge status-badge--warning"
                 >
                   {target.departmentId?.name || 'Ngành'}: {target.neededCount} người
-                </Badge>
+                </span>
               ))
             ) : project.departmentIds && project.departmentIds.length > 0 ? (
               project.departmentIds.map((dept, idx) => (
-                <Badge
+                <span
                   key={dept._id || idx}
-                  bg="warning"
-                  text="dark"
-                  className="px-2 py-1 fw-bold"
-                  style={{ backgroundColor: '#fed7aa', color: '#ea580c' }}
+                  className="status-badge status-badge--warning"
                 >
                   {dept.name || dept}
-                </Badge>
+                </span>
               ))
             ) : (
-              <Badge bg="warning" text="dark" className="px-2 py-1 fw-bold" style={{ backgroundColor: '#fed7aa', color: '#ea580c' }}>
+              <span className="status-badge status-badge--warning">
                 {departmentName}
-              </Badge>
+              </span>
             )}
             <span className="text-muted small d-flex align-items-center gap-1 ms-auto">
               <Clock size={14} /> {timeAgo}
             </span>
           </div>
-          <Modal.Title className="fw-bold fs-4">{project.title}</Modal.Title>
+          <Modal.Title>{project.title}</Modal.Title>
         </div>
       </Modal.Header>
 
-      <Modal.Body className="pt-2 px-4 pb-4">
+      <Modal.Body className="p-4">
         {/* ── Thông tin Chủ bài đăng & Meta ── */}
         <div className="d-flex flex-wrap align-items-center justify-content-between mb-4 border-bottom pb-3">
           <div 
-            className="d-flex align-items-center gap-2 mt-2 hover-opacity"
-            style={{ cursor: 'pointer', transition: 'opacity 0.2s' }}
+            className="d-flex align-items-center gap-2"
+            style={{ cursor: 'pointer' }}
             onClick={() => {
               if (project.ownerId?._id) {
                 onHide();
@@ -222,68 +216,56 @@ export default function ProjectDetailModal({ project, show, onHide }) {
               src={project.ownerId?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(project.ownerId?.name || 'User')}&background=random`}
               alt="Avatar"
               className="rounded-circle"
-              style={{ width: 40, height: 40, objectFit: 'cover' }}
+              style={{ width: 40, height: 40, objectFit: 'cover', border: '1px solid var(--border)' }}
             />
             <div>
-              <div className="fw-bold hover-primary text-primary-hover">{project.ownerId?.name || 'Người dùng ẩn danh'}</div>
+              <div className="fw-semibold text-dark">{project.ownerId?.name || 'Người dùng ẩn danh'}</div>
               <div className="text-muted small">Người đăng bài</div>
             </div>
           </div>
         </div>
 
         {/* ── Box 1: Chi tiết Dự án ── */}
-        <Card
-          className="mb-4 rounded-3 border-0 shadow-sm"
-          style={{
-            transition: 'box-shadow 0.2s ease-in-out'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'}
-          onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 0.125rem 0.25rem rgba(0, 0, 0, 0.075)'}
-        >
+        <Card className="mb-4">
           <Card.Body className="p-4">
 
             {/* Tổng quan & Thông số */}
             <div className="mb-4">
               <div className="d-flex flex-wrap align-items-center justify-content-between mb-3">
-                <h5 className="fw-bold d-flex align-items-center gap-2 mb-0" style={{ color: '#b45309' }}>
-                  <FileText size={20} /> Tổng quan Dự án
+                <h5 className="fw-semibold d-flex align-items-center gap-2 mb-0 text-dark">
+                  <FileText size={18} className="text-secondary" /> Tổng quan Dự án
                 </h5>
               </div>
 
               {/* Các thông số dự án */}
               <Row
-                className="p-3 rounded-3 mb-3 shadow-hover mx-0"
-                style={{
-                  backgroundColor: '#f3f4f6',
-                  transition: 'box-shadow 0.2s ease-in-out'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'}
-                onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'none'}
+                className="p-3 rounded mb-3 mx-0 border"
+                style={{ backgroundColor: 'var(--bg-subtle)' }}
               >
-                <Col className="text-center border-end border-secondary border-opacity-25">
+                <Col className="text-center border-end">
                   <div className="fw-bold text-dark fs-5">{project.maxMembers}</div>
-                  <div className="text-muted small fw-bold">Tổng số lượng tuyển <span className="text-danger">*</span></div>
+                  <div className="text-muted small">Tổng chỉ tiêu</div>
                 </Col>
-                <Col className={`text-center ${project.gradeTarget ? 'border-end border-secondary border-opacity-25' : ''}`}>
+                <Col className={`text-center ${project.gradeTarget ? 'border-end' : ''}`}>
                   <div className="fw-bold text-primary fs-5">{remainingSlots}</div>
-                  <div className="text-muted small fw-bold">Còn lại <span className="text-danger">*</span></div>
+                  <div className="text-muted small">Còn lại</div>
                 </Col>
                 {project.gradeTarget && (
                   <Col className="text-center">
                     <div className="fw-bold text-success fs-5">{project.gradeTarget}</div>
-                    <div className="text-muted small fw-bold">Mục tiêu điểm số <span className="text-danger">*</span></div>
+                    <div className="text-muted small">Mục tiêu điểm số</div>
                   </Col>
                 )}
               </Row>
 
               {/* Chỉ tiêu tuyển dụng chi tiết theo ngành (nếu có) */}
               {project.departmentTargets && project.departmentTargets.length > 0 && (
-                <div className="mb-3 p-3 bg-light rounded-3 border">
-                  <div className="fw-semibold small text-dark mb-2">Chỉ tiêu tuyển dụng theo từng ngành:</div>
+                <div className="mb-3 p-3 bg-light rounded border">
+                  <div className="fw-medium small text-dark mb-2">Chỉ tiêu theo từng ngành:</div>
                   <div className="d-flex flex-wrap gap-2">
                     {project.departmentTargets.map((target, idx) => (
-                      <span key={target._id || idx} className="badge bg-white text-secondary border px-2 py-1 small">
-                        {target.departmentId?.name || 'Ngành'}: <strong style={{ color: '#ea580c' }}>{target.neededCount} người</strong>
+                      <span key={target._id || idx} className="status-badge status-badge--neutral">
+                        {target.departmentId?.name || 'Ngành'}: <strong style={{ color: 'var(--primary)' }}>{target.neededCount} người</strong>
                       </span>
                     ))}
                   </div>
@@ -297,8 +279,8 @@ export default function ProjectDetailModal({ project, show, onHide }) {
 
             {/* Yêu cầu */}
             <div>
-              <h5 className="fw-bold d-flex align-items-center gap-2 mb-3" style={{ color: '#b45309' }}>
-                <CheckCircle size={20} /> Yêu cầu Ứng viên
+              <h5 className="fw-semibold d-flex align-items-center gap-2 mb-3 text-dark">
+                <CheckCircle size={18} className="text-secondary" /> Yêu cầu Ứng viên
               </h5>
               <div className="text-secondary" style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
                 {project.candidateRequirements}
@@ -309,26 +291,19 @@ export default function ProjectDetailModal({ project, show, onHide }) {
         </Card>
 
         {/* ── Box 2: Form Nộp Hồ Sơ ── */}
-        <Card
-          className="rounded-3 border-0 shadow-sm"
-          style={{
-            transition: 'box-shadow 0.2s ease-in-out'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'}
-          onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 0.125rem 0.25rem rgba(0, 0, 0, 0.075)'}
-        >
+        <Card>
           <Card.Body className="p-4">
-            <h5 className="fw-bold mb-4">Nộp Hồ Sơ Ứng Tuyển</h5>
+            <h5 className="fw-semibold mb-4 text-dark">Nộp Hồ Sơ Ứng Tuyển</h5>
 
             {errorMsg && (
-              <Alert variant="danger" className="mb-4">
+              <Alert type="danger" className="mb-4">
                 {errorMsg}
               </Alert>
             )}
 
             {project?.status !== PROJECT_STATUS.OPEN ? (
-              <div className="w-100 p-3 rounded fw-bold d-flex align-items-center justify-content-center gap-2 mt-2 bg-light text-muted border">
-                <AlertCircle size={20} />
+              <div className="alert alert-secondary d-flex align-items-center justify-content-center gap-2 mb-0">
+                <AlertCircle size={18} />
                 {project?.status === PROJECT_STATUS.CANCELLED
                   ? 'Dự án này đã bị chủ sở hữu hủy'
                   : 'Dự án này hiện đã đóng hoặc kết thúc'}
@@ -345,35 +320,33 @@ export default function ProjectDetailModal({ project, show, onHide }) {
                     onHide();
                     navigate('/onboarding');
                   }}
-                  style={{ backgroundColor: '#ea580c', borderColor: '#ea580c' }}
-                  className="fw-medium px-4 shadow-sm"
+                  className="fw-medium px-4"
                 >
                   Hoàn tất hồ sơ ngay →
                 </Button>
               </div>
             ) : !appStatus.canApply ? (
-              <div className="w-100 p-3 rounded fw-bold d-flex align-items-center justify-content-center gap-2 mt-2" 
-                   style={
-                     appStatus.status === APPLICATION_STATUS.APPROVED
-                       ? { backgroundColor: '#f0fdf4', border: '1px solid #4ade80', color: '#166534' }
-                       : appStatus.status === APPLICATION_STATUS.PENDING || appStatus.status === APPLICATION_STATUS.INVITED
-                       ? { backgroundColor: '#fffbeb', border: '1px solid #fcd34d', color: '#92400e' }
-                       : { backgroundColor: '#fef2f2', border: '1px solid #f87171', color: '#dc2626' }
-                   }>
-                {appStatus.status === APPLICATION_STATUS.APPROVED ? <CheckCircle size={20} /> : <AlertCircle size={20} />} 
+              <div className={`alert ${
+                appStatus.status === APPLICATION_STATUS.APPROVED 
+                  ? 'alert-success' 
+                  : appStatus.status === APPLICATION_STATUS.PENDING || appStatus.status === APPLICATION_STATUS.INVITED
+                  ? 'alert-warning'
+                  : 'alert-danger'
+              } d-flex align-items-center justify-content-center gap-2 mb-0`}>
+                {appStatus.status === APPLICATION_STATUS.APPROVED ? <CheckCircle size={18} /> : <AlertCircle size={18} />} 
                 {getStatusMessage(appStatus.status, appStatus.rejectionCount)}
               </div>
             ) : (
               <Form onSubmit={handleApplySubmit}>
                 {/* Upload CV */}
                 <Form.Group className="mb-4">
-                  <Form.Label className="fw-bold">Chọn CV/Hồ sơ <span className="text-danger">*</span></Form.Label>
+                  <Form.Label className="fw-medium mb-1">Chọn CV/Hồ sơ <span className="text-danger">*</span></Form.Label>
                   <label
                     className="d-block border rounded p-4 text-center cursor-pointer"
                     style={{
                       cursor: 'pointer',
-                      backgroundColor: applyFile ? '#fff7ed' : '#f9fafb',
-                      borderColor: applyFile ? '#fdba74' : '#e5e7eb',
+                      backgroundColor: applyFile ? 'var(--primary-light)' : 'var(--bg-subtle)',
+                      borderColor: applyFile ? 'var(--primary)' : 'var(--border)',
                       borderStyle: applyFile ? 'solid' : 'dashed'
                     }}
                   >
@@ -399,15 +372,15 @@ export default function ProjectDetailModal({ project, show, onHide }) {
                       required
                     />
                     <div className="d-flex flex-column align-items-center justify-content-center">
-                      <Upload size={32} style={{ color: applyFile ? '#ea580c' : '#9ca3af', marginBottom: 12 }} />
+                      <Upload size={28} style={{ color: applyFile ? 'var(--primary)' : 'var(--text-muted)', marginBottom: 8 }} />
                       {applyFile ? (
                         <>
-                          <div className="fw-bold" style={{ color: '#ea580c' }}>{applyFile.name}</div>
+                          <div className="fw-semibold" style={{ color: 'var(--primary)' }}>{applyFile.name}</div>
                           <div className="text-muted small mt-1">Đã chọn file thành công</div>
                         </>
                       ) : (
                         <>
-                          <div className="fw-medium text-dark">Tải lên CV mới</div>
+                          <div className="fw-medium text-dark">Tải lên CV (PDF)</div>
                           <div className="text-muted small mt-1">Định dạng PDF, tối đa 5MB</div>
                         </>
                       )}
@@ -434,15 +407,13 @@ export default function ProjectDetailModal({ project, show, onHide }) {
                 />
 
                 {/* ── Footer Buttons ── */}
-                <div className="mt-4 pt-3 border-top d-flex justify-content-center">
-                  <div className="w-100 d-flex justify-content-end gap-2">
-                    <Button variant="cancel" type="button" onClick={onHide} className="fw-medium px-4">
-                      Hủy
-                    </Button>
-                    <Button type="submit" variant="primary" disabled={!applyFile} loading={isSubmitting} className="fw-medium px-4 d-flex align-items-center gap-2" style={{ backgroundColor: '#ea580c', borderColor: '#ea580c' }}>
-                      Gửi Hồ Sơ {!isSubmitting && <Send size={16} />}
-                    </Button>
-                  </div>
+                <div className="mt-4 pt-3 border-top d-flex justify-content-end gap-2">
+                  <Button variant="cancel" type="button" onClick={onHide} className="fw-medium px-4">
+                    Hủy
+                  </Button>
+                  <Button type="submit" variant="primary" disabled={!applyFile} loading={isSubmitting} className="fw-medium px-4 d-flex align-items-center gap-2">
+                    Gửi Hồ Sơ {!isSubmitting && <Send size={16} />}
+                  </Button>
                 </div>
               </Form>
             )}
