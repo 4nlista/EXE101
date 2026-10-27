@@ -167,37 +167,94 @@ ${chatHistoryText}
 // TÍNH NĂNG B: AI MATCH % ỨNG VIÊN CHO CHỦ DỰ ÁN
 // ==========================================
 
-// Helper: Đọc chữ từ file PDF qua URL
+// Helper: Đọc chữ từ file PDF qua URL (hỗ trợ cả pdf-parse v2 PDFParse class và v1 function)
 const extractTextFromPdfUrl = async (pdfUrl) => {
   try {
-    const response = await axios.get(pdfUrl, { responseType: 'arraybuffer' });
-    const data = await pdfParse(response.data);
-    return data.text;
+    const response = await axios.get(pdfUrl, {
+      responseType: 'arraybuffer',
+      timeout: 10000 // Tối đa 10s tải file
+    });
+
+    // Thư viện pdf-parse v2 (class PDFParse)
+    if (pdfParse && pdfParse.PDFParse) {
+      const parser = new pdfParse.PDFParse(new Uint8Array(response.data));
+      await parser.load();
+      const text = await parser.getText();
+      return text ? text.trim() : null;
+    }
+
+    // Fallback nếu là hàm function trực tiếp (pdf-parse v1)
+    if (typeof pdfParse === 'function') {
+      const data = await pdfParse(response.data);
+      return data?.text ? data.text.trim() : null;
+    }
+
+    return null;
   } catch (error) {
-    console.error('Lỗi khi đọc file PDF:', error);
+    console.warn('Lưu ý: Không thể trích xuất text từ file PDF (có thể là file ảnh scan hoặc đường dẫn giới hạn):', error?.message || error);
     return null;
   }
 };
 
-const matchApplicantWithAI = async (projectRequirements, cvText) => {
+/**
+ * Phân tích độ phù hợp của ứng viên dựa trên cả CV tải lên và Hồ sơ năng lực cá nhân (kỹ năng, ngành, kinh nghiệm)
+ * @param {object} candidateData - Thông tin ứng viên (kỹ năng cá nhân, ngành, học kỳ, lịch sử dự án, cvText...)
+ * @param {object} projectData - Thông tin dự án (yêu cầu ứng viên, mô tả, ngành tuyển...)
+ * @returns {Promise<object>} Kết quả JSON phân tích gồm matchPercent, summary, strengths, weaknesses, recommendation
+ */
+const matchApplicantWithAI = async (candidateData, projectData) => {
   try {
-    const systemPrompt = `Bạn là một chuyên gia tuyển dụng nhân sự (HR).
-Nhiệm vụ của bạn là đánh giá độ phù hợp của 1 ứng viên dựa trên nội dung CV của họ so với Yêu cầu của dự án.
-Bạn PHẢI trả về ĐÚNG định dạng JSON như sau:
+    const systemPrompt = `Bạn là một chuyên gia tuyển dụng nhân sự (HR) và cố vấn ghép đội ngũ dự án của nền tảng UniVerse.
+Nhiệm vụ của bạn là đánh giá độ phù hợp của một ứng viên đối với bài đăng tuyển thành viên dự án.
+
+NGUỒN DỮ LIỆU ĐÁNH GIÁ:
+1. Hồ sơ năng lực trên hệ thống: Kỹ năng cá nhân (mainSkills), Ngành/Chuyên ngành đào tạo, Học kỳ hiện tại, Điểm GPA, Lịch sử dự án đã làm, và Ghi chú ứng tuyển.
+2. Nội dung văn bản trích xuất từ CV của ứng viên (nếu có file đính kèm).
+3. Bối cảnh dự án: Tiêu đề, Mô tả công việc, Yêu cầu ứng viên, Ngành học cần tuyển và Mục tiêu điểm số.
+
+QUY TẮC ĐÁNH GIÁ:
+- matchPercent (0 - 100): Điểm số đánh giá mức độ phù hợp tổng thể giữa ứng viên và dự án.
+- summary: Tóm tắt nhận định chung ngắn gọn và xúc tích (2-3 câu).
+- strengths: Mảng chứa 2 - 4 điểm mạnh vượt trội của ứng viên (kỹ năng khớp yêu cầu, kinh nghiệm thực chiến, chuyên ngành phù hợp...).
+- weaknesses: Mảng chứa 1 - 3 điểm còn thiếu hoặc cần lưu ý (chưa thấy kinh nghiệm về mảng X, kỳ học còn mới...).
+- recommendation: Lời khuyên cụ thể và thực tế cho Chủ dự án (Ví dụ: Nên duyệt ngay / Nên phỏng vấn thêm về kỹ năng Y / Chưa phù hợp với vị trí này).
+
+ĐỊNH DẠNG JSON BẮT BUỘC:
 {
   "matchPercent": 85,
-  "matchReason": "Giải thích ngắn gọn từ 3 đến 4 câu lý do tại sao ứng viên được số điểm này. Nêu rõ điểm mạnh và điểm thiếu sót so với yêu cầu."
+  "summary": "Ứng viên có kỹ năng chuyên môn rất phù hợp với dự án...",
+  "strengths": [
+    "Kỹ năng chính đáp ứng tốt yêu cầu...",
+    "Có kinh nghiệm làm dự án tương tự..."
+  ],
+  "weaknesses": [
+    "Cần bổ sung thêm kỹ năng..."
+  ],
+  "recommendation": "Đề xuất duyệt hoặc phỏng vấn nhanh về..."
 }`;
 
     const promptText = `
 ${systemPrompt}
 
---- DỮ LIỆU ĐẦU VÀO ---
-YÊU CẦU CỦA DỰ ÁN:
-${projectRequirements}
+--- THÔNG TIN DỰ ÁN ---
+Tiêu đề dự án: ${projectData.title || 'Không có'}
+Mô tả dự án: ${projectData.description || 'Không có'}
+Yêu cầu ứng viên: ${projectData.candidateRequirements || 'Không có'}
+Ngành học cần tuyển: ${(projectData.departments || []).join(', ') || 'Tất cả các ngành'}
+Mục tiêu điểm số của dự án: ${projectData.gradeTarget || 'Không đặt mục tiêu'}
 
-NỘI DUNG CV CỦA ỨNG VIÊN (Đã được trích xuất):
-${cvText || 'Không trích xuất được hoặc không có CV'}
+--- HỒ SƠ ỨNG VIÊN ---
+Họ và tên: ${candidateData.name || 'Ứng viên'}
+Ngành học: ${candidateData.department || 'Chưa cập nhật'}
+Chuyên ngành: ${candidateData.major || 'Chưa cập nhật'}
+Học kỳ hiện tại: ${candidateData.semester ? 'Kỳ ' + candidateData.semester : 'Chưa cập nhật'}
+Điểm GPA: ${candidateData.gpa || 'Chưa cung cấp'}
+Kỹ năng cá nhân (mainSkills): ${(candidateData.mainSkills || []).join(', ') || 'Chưa cập nhật danh sách kỹ năng'}
+Ghi chú khi nộp đơn: ${candidateData.note || 'Không có ghi chú'}
+Lịch sử dự án đã tham gia: ${JSON.stringify(candidateData.projectHistory || [], null, 2)}
+
+--- NỘI DUNG TRÍCH XUẤT TỪ CV ỨNG VIÊN ---
+${candidateData.cvText ? candidateData.cvText : '(Không có văn bản trích xuất từ file CV hoặc file dạng ảnh scan, hãy tập trung phân tích kỹ năng cá nhân và hồ sơ hệ thống ở trên)'}
 `;
 
     let responseText = await generateContentWithFallback(promptText, {
@@ -211,7 +268,7 @@ ${cvText || 'Không trích xuất được hoặc không có CV'}
     return { success: true, data: parsedData };
   } catch (error) {
     console.error('Lỗi khi gọi AI Match sau khi đã thử qua các model dự phòng:', error);
-    return { success: false, message: 'Lỗi hệ thống khi phân tích CV' };
+    return { success: false, message: 'Lỗi hệ thống khi phân tích CV và kỹ năng' };
   }
 };
 

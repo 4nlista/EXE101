@@ -30,9 +30,15 @@ const applicationSchema = new mongoose.Schema(
       min: 0,
       max: 100
     },
-    // Lý do phù hợp (AI giải thích)
+    // Lý do phù hợp (AI giải thích tóm tắt)
     matchReason: {
       type: String
+    },
+    // Chi tiết phân tích đa chiều từ AI (điểm mạnh, điểm yếu, khuyến nghị)
+    matchDetails: {
+      strengths: [{ type: String }],
+      weaknesses: [{ type: String }],
+      recommendation: { type: String }
     },
     // 'pending' | 'approved' | 'rejected'
     status: {

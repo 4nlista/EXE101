@@ -104,70 +104,100 @@ const recommendProjects = async (req, res) => {
 };
 
 // @route   POST /api/ai/match-applicant/:applicationId
-// @desc    Đọc CV và phân tích % phù hợp của ứng viên
-// @access  Private (Chỉ PREMIUM & Chủ dự án)
+// @desc    Phân tích % phù hợp và đánh giá ứng viên (kết hợp CV và Kỹ năng cá nhân)
+// @access  Private (Chủ dự án hoặc Admin)
 const matchApplicant = async (req, res) => {
   try {
     const { applicationId } = req.params;
 
-    // 1. Lấy thông tin User và kiểm tra gói PREMIUM
-    const user = await User.findById(req.user.id).select('currentPackage');
-    if (!user || user.currentPackage !== 'premium') {
-      return res.status(403).json({ success: false, message: 'Chức năng này chỉ dành cho tài khoản PREMIUM.' });
-    }
+    // 1. Lấy đơn ứng tuyển kèm thông tin ứng viên (kỹ năng, học vấn, kinh nghiệm)
+    const application = await Application.findById(applicationId)
+      .populate({
+        path: 'applicantId',
+        select: 'name avatar departmentId majorId semester gpa mainSkills projectHistory',
+        populate: [
+          { path: 'departmentId', select: 'name' },
+          { path: 'majorId', select: 'name' },
+          { path: 'projectHistory' }
+        ]
+      });
 
-    // 2. Lấy đơn ứng tuyển
-    const application = await Application.findById(applicationId);
     if (!application) {
-      return res.status(404).json({ success: false, message: 'Không tìm thấy đơn ứng tuyển' });
+      return res.status(404).json({ success: false, message: 'Không tìm thấy đơn ứng tuyển.' });
     }
 
-    // 3. Lấy thông tin dự án để kiểm tra quyền và lấy yêu cầu
-    const project = await Project.findById(application.projectId);
+    // 2. Lấy thông tin dự án để kiểm tra quyền và lấy yêu cầu tuyển dụng
+    const project = await Project.findById(application.projectId)
+      .populate('departmentIds', 'name');
+
     if (!project) {
-      return res.status(404).json({ success: false, message: 'Không tìm thấy dự án' });
+      return res.status(404).json({ success: false, message: 'Không tìm thấy dự án.' });
     }
 
-    // Kiểm tra xem người gọi API có phải là chủ dự án không
-    if (project.leaderId.toString() !== req.user.id) {
+    // 3. Kiểm tra xem người gọi API có phải là chủ dự án (ownerId) hoặc Admin không
+    if (project.ownerId.toString() !== req.user.id && req.user.roleCode !== 0) {
       return res.status(403).json({ success: false, message: 'Bạn không có quyền phân tích ứng viên của dự án này.' });
     }
 
-    // 4. Trích xuất text từ CV
-    if (!application.cvFileUrl) {
-      return res.status(400).json({ success: false, message: 'Ứng viên này không có file CV để phân tích.' });
+    // 4. Trích xuất text từ CV (nếu có file)
+    let cvText = null;
+    if (application.cvFileUrl) {
+      cvText = await extractTextFromPdfUrl(application.cvFileUrl);
     }
 
-    const cvText = await extractTextFromPdfUrl(application.cvFileUrl);
-    if (!cvText) {
-      return res.status(500).json({ success: false, message: 'Không thể đọc nội dung từ file CV này (có thể file bị lỗi hoặc hình ảnh không chứa text).' });
-    }
+    // 5. Chuẩn bị dữ liệu đa chiều gửi sang AI
+    const applicant = application.applicantId;
+    const candidateData = {
+      name: applicant?.name || 'Ứng viên',
+      department: applicant?.departmentId?.name || '',
+      major: applicant?.majorId?.name || '',
+      semester: applicant?.semester,
+      gpa: applicant?.gpa,
+      mainSkills: applicant?.mainSkills || [],
+      projectHistory: applicant?.projectHistory || [],
+      note: application.note || '',
+      cvText
+    };
 
-    // 5. Gọi AI để phân tích
-    const aiResult = await matchApplicantWithAI(project.candidateRequirements, cvText);
+    const projectData = {
+      title: project.title,
+      description: project.description,
+      candidateRequirements: project.candidateRequirements,
+      departments: (project.departmentIds || []).map(d => d.name || d),
+      gradeTarget: project.gradeTarget
+    };
+
+    // 6. Gọi AI Gemini để phân tích
+    const aiResult = await matchApplicantWithAI(candidateData, projectData);
 
     if (aiResult.success) {
-      // 6. Cập nhật kết quả vào DB
+      // 7. Cập nhật kết quả vào database
       application.matchPercent = aiResult.data.matchPercent;
-      application.matchReason = aiResult.data.matchReason;
+      application.matchReason = aiResult.data.summary || 'Đã phân tích độ phù hợp với dự án.';
+      application.matchDetails = {
+        strengths: aiResult.data.strengths || [],
+        weaknesses: aiResult.data.weaknesses || [],
+        recommendation: aiResult.data.recommendation || ''
+      };
       await application.save();
 
       return res.status(200).json({
         success: true,
         data: {
           matchPercent: application.matchPercent,
-          matchReason: application.matchReason
+          matchReason: application.matchReason,
+          matchDetails: application.matchDetails
         }
       });
     } else {
       return res.status(500).json({
         success: false,
-        message: aiResult.message
+        message: aiResult.message || 'Lỗi khi phân tích hồ sơ ứng viên.'
       });
     }
   } catch (error) {
     console.error('Lỗi controller AI matchApplicant:', error);
-    res.status(500).json({ success: false, message: 'Lỗi server khi phân tích CV' });
+    res.status(500).json({ success: false, message: 'Lỗi server khi phân tích ứng viên.' });
   }
 };
 

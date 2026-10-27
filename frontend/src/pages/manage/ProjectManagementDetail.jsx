@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Nav, Row, Col, Form } from 'react-bootstrap';
+import { Container, Nav, Row, Col, Form, Spinner } from 'react-bootstrap';
 import { FaArrowLeft, FaEdit, FaStar, FaRegFileAlt, FaDownload } from 'react-icons/fa';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -16,6 +16,7 @@ import {
   updateProjectStatus
 } from '../../services/projectService';
 import { initConversation } from '../../services/messageService';
+import { matchApplicant } from '../../services/aiService';
 import { APPLICATION_STATUS } from '../../constants/applicationEnum';
 import { PROJECT_STATUS } from '../../constants/projectEnum';
 import { formatDate } from '../../utils/formatDate';
@@ -23,6 +24,7 @@ import StatusBadge from '../../components/StatusBadge';
 import UpdateProjectModal from './UpdateProjectModal';
 import CustomTable from '../../components/CustomTable';
 import ReviewTab from './components/ReviewTab';
+import AiMatchModal from './components/AiMatchModal';
 
 const ACTION_TYPES = {
   APPROVE: 'approve', // Chấp nhận đơn đăng ký
@@ -53,6 +55,11 @@ export default function ProjectManagementDetail() {
 
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmAction, setConfirmAction] = useState({ type: null, appId: null, userId: null, name: '', newStatus: null });
+
+  // States cho tính năng AI Match phân tích ứng viên
+  const [analyzingAppId, setAnalyzingAppId] = useState(null);
+  const [selectedMatchApp, setSelectedMatchApp] = useState(null);
+  const [showMatchModal, setShowMatchModal] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -113,6 +120,37 @@ export default function ProjectManagementDetail() {
       toast.error('Không thể bắt đầu cuộc trò chuyện');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Kích hoạt Gemini AI phân tích hồ sơ CV và kỹ năng ứng viên
+  const handleRunAiMatch = async (app) => {
+    try {
+      setAnalyzingAppId(app._id);
+      const res = await matchApplicant(app._id);
+      if (res?.success && res.data) {
+        toast.success(`Đã phân tích xong: ${res.data.matchPercent}% phù hợp!`);
+
+        const updatedApp = {
+          ...app,
+          matchPercent: res.data.matchPercent,
+          matchReason: res.data.matchReason,
+          matchDetails: res.data.matchDetails
+        };
+
+        // Cập nhật danh sách ứng viên trong bộ nhớ
+        setApplications(prev => prev.map(a => a._id === app._id ? updatedApp : a));
+
+        // Mở modal hiển thị chi tiết đánh giá
+        setSelectedMatchApp(updatedApp);
+        setShowMatchModal(true);
+      } else {
+        toast.error(res?.message || 'Không thể phân tích ứng viên lúc này.');
+      }
+    } catch (error) {
+      toast.error(error?.message || error?.response?.data?.message || 'Lỗi khi gọi AI phân tích.');
+    } finally {
+      setAnalyzingAppId(null);
     }
   };
 
@@ -392,10 +430,49 @@ export default function ProjectManagementDetail() {
                       </div>
                     </td>
                     <td className="text-muted">{formatDate(app.createdAt)}</td>
-                    <td>
-                      <Button variant="cancel" size="sm" className="rounded-pill d-flex align-items-center gap-1 text-primary" disabled title="Tính năng VIP/Premium">
-                        <FaStar className="text-warning" /> Match
-                      </Button>
+                    <td className="text-center">
+                      {app.matchPercent !== undefined && app.matchPercent !== null ? (
+                        <Button
+                          variant="light"
+                          size="sm"
+                          className={`rounded-pill d-inline-flex align-items-center gap-1 shadow-sm border ${
+                            app.matchPercent >= 75
+                              ? 'text-success border-success-subtle bg-success-subtle'
+                              : app.matchPercent >= 50
+                              ? 'text-warning-emphasis border-warning-subtle bg-warning-subtle'
+                              : 'text-secondary border-secondary-subtle bg-light'
+                          }`}
+                          onClick={() => {
+                            setSelectedMatchApp(app);
+                            setShowMatchModal(true);
+                          }}
+                          title="Bấm để xem chi tiết đánh giá AI"
+                        >
+                          <FaStar className={app.matchPercent >= 50 ? 'text-warning' : 'text-secondary'} />
+                          <span className="fw-semibold">{app.matchPercent}% Match</span>
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="light"
+                          size="sm"
+                          className="rounded-pill d-inline-flex align-items-center gap-1 text-primary border shadow-sm"
+                          disabled={analyzingAppId === app._id}
+                          onClick={() => handleRunAiMatch(app)}
+                          title="Bấm để Gemini AI phân tích CV và kỹ năng ứng viên"
+                        >
+                          {analyzingAppId === app._id ? (
+                            <>
+                              <Spinner animation="border" size="sm" className="me-1" />
+                              <span>Đang tính...</span>
+                            </>
+                          ) : (
+                            <>
+                              <FaStar className="text-warning" />
+                              <span>Phân tích</span>
+                            </>
+                          )}
+                        </Button>
+                      )}
                     </td>
                     <td className="text-center">{getStatusBadge(app.status)}</td>
                     <td className="text-center">
@@ -572,6 +649,18 @@ export default function ProjectManagementDetail() {
         onHide={() => setShowUpdateModal(false)}
         project={project}
         onSuccess={(updatedData) => setProject({ ...project, ...updatedData })}
+      />
+
+      {/* Modal chi tiết kết quả phân tích AI Match */}
+      <AiMatchModal
+        show={showMatchModal}
+        application={selectedMatchApp}
+        onClose={() => {
+          setShowMatchModal(false);
+          setSelectedMatchApp(null);
+        }}
+        onReanalyze={handleRunAiMatch}
+        isAnalyzing={Boolean(analyzingAppId)}
       />
     </Container>
   );

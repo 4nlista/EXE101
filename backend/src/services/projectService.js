@@ -446,7 +446,7 @@ const getProjectApplicants = async (projectId, ownerId, query) => {
   const applications = await Application.find(filter)
     .populate({
       path: 'applicantId',
-      select: 'name avatar departmentId majorId',
+      select: 'name avatar departmentId majorId mainSkills semester',
       populate: [
         { path: 'departmentId', select: 'name' },
         { path: 'majorId', select: 'name' }
