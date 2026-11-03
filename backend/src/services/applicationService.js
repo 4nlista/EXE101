@@ -74,6 +74,20 @@ const createApplication = async (projectId, applicantId, cvFileUrl, note) => {
       application.note = note;
       application.status = APPLICATION_STATUS.PENDING;
       await application.save();
+
+      // Gửi thông báo cho chủ dự án khi ứng viên nộp lại hồ sơ
+      try {
+        await Notification.create({
+          userId: project.ownerId,
+          type: NOTIFICATION_TYPE.APPLICATION,
+          title: 'Hồ sơ ứng tuyển mới',
+          content: `${applicant.name} đã nộp lại hồ sơ ứng tuyển vào dự án "${project.title}".`,
+          referenceId: project._id,
+          referenceModel: 'Project'
+        });
+      } catch (err) {
+        console.error('Lỗi khi tạo thông báo nộp lại hồ sơ ứng tuyển:', err);
+      }
       
       return application;
     }
@@ -90,6 +104,20 @@ const createApplication = async (projectId, applicantId, cvFileUrl, note) => {
   });
 
   await newApplication.save();
+
+  // Gửi thông báo cho chủ dự án khi có người nộp hồ sơ mới
+  try {
+    await Notification.create({
+      userId: project.ownerId,
+      type: NOTIFICATION_TYPE.APPLICATION,
+      title: 'Hồ sơ ứng tuyển mới',
+      content: `${applicant.name} đã nộp hồ sơ ứng tuyển vào dự án "${project.title}".`,
+      referenceId: project._id,
+      referenceModel: 'Project'
+    });
+  } catch (err) {
+    console.error('Lỗi khi tạo thông báo hồ sơ ứng tuyển mới:', err);
+  }
 
   return newApplication;
 };
