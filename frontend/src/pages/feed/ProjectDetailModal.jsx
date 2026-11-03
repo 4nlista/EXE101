@@ -38,6 +38,9 @@ export default function ProjectDetailModal({ project, show, onHide }) {
   const navigate = useNavigate();
 
   const getStatusMessage = (status, rejectionCount) => {
+    if (status === 'OWNER') {
+      return 'Đây là dự án của bạn';
+    }
     if (status === APPLICATION_STATUS.PENDING) {
       return 'Hồ sơ của bạn đang được duyệt';
     }
@@ -60,7 +63,12 @@ export default function ProjectDetailModal({ project, show, onHide }) {
         try {
           const res = await checkApplicationStatus(project._id);
           if (isMounted && res.success) {
-            setAppStatus({ canApply: res.canApply, status: res.status, rejectionCount: res.rejectionCount });
+            setAppStatus({
+              canApply: res.canApply,
+              isOwner: res.isOwner || false,
+              status: res.status,
+              rejectionCount: res.rejectionCount
+            });
           }
         } catch (err) {
           console.error('Lỗi kiểm tra trạng thái:', err);
@@ -83,6 +91,15 @@ export default function ProjectDetailModal({ project, show, onHide }) {
   }, [show, project]);
 
   if (!project) return null;
+
+  // Kiểm tra xem user hiện tại có phải là chủ dự án hay không
+  const currentUserId = (currentUser?._id || currentUser?.id)?.toString();
+  const projectOwnerId = (project?.ownerId?._id || project?.ownerId)?.toString();
+  const isOwner = Boolean(
+    (currentUserId && projectOwnerId && currentUserId === projectOwnerId) ||
+    appStatus.isOwner ||
+    appStatus.status === 'OWNER'
+  );
 
   const departmentName = project.departmentIds && project.departmentIds.length > 0
     ? project.departmentIds[0].name
@@ -293,7 +310,9 @@ export default function ProjectDetailModal({ project, show, onHide }) {
         {/* ── Box 2: Form Nộp Hồ Sơ ── */}
         <Card>
           <Card.Body className="p-4">
-            <h5 className="fw-semibold mb-4 text-dark">Nộp Hồ Sơ Ứng Tuyển</h5>
+            <h5 className="fw-semibold mb-4 text-dark">
+              {isOwner ? 'Thông Tin Dự Án' : 'Nộp Hồ Sơ Ứng Tuyển'}
+            </h5>
 
             {errorMsg && (
               <Alert type="danger" className="mb-4">
@@ -301,7 +320,30 @@ export default function ProjectDetailModal({ project, show, onHide }) {
               </Alert>
             )}
 
-            {project?.status !== PROJECT_STATUS.OPEN ? (
+            {isOwner ? (
+              <div className="w-100 p-4 rounded text-center my-2 border bg-light">
+                <div className="d-flex align-items-center justify-content-center gap-2 text-dark fw-semibold mb-2">
+                  <AlertCircle size={20} className="text-secondary" />
+                  <span>Đây là dự án của bạn</span>
+                </div>
+                <p className="text-secondary small mb-3" style={{ lineHeight: '1.6' }}>
+                  Bạn không thể tự nộp hồ sơ ứng tuyển vào dự án do chính mình làm chủ sở hữu. Bạn có thể truy cập trang Quản lý dự án để xem danh sách ứng viên và phê duyệt hồ sơ.
+                </p>
+                <div className="d-flex justify-content-center">
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => {
+                      onHide();
+                      navigate(`/manage/${project._id}`);
+                    }}
+                    className="fw-medium px-4"
+                  >
+                    Quản lý dự án này →
+                  </Button>
+                </div>
+              </div>
+            ) : project?.status !== PROJECT_STATUS.OPEN ? (
               <div className="alert alert-secondary d-flex align-items-center justify-content-center gap-2 mb-0">
                 <AlertCircle size={18} />
                 {project?.status === PROJECT_STATUS.CANCELLED

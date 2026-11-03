@@ -123,6 +123,12 @@ const createApplication = async (projectId, applicantId, cvFileUrl, note) => {
 };
 
 const checkApplicationStatus = async (projectId, applicantId) => {
+  // Kiểm tra nếu người dùng là chủ dự án thì không được tự ứng tuyển
+  const project = await Project.findById(projectId);
+  if (project && project.ownerId && project.ownerId.toString() === applicantId.toString()) {
+    return { canApply: false, isOwner: true, status: 'OWNER', rejectionCount: 0 };
+  }
+
   const application = await Application.findOne({ projectId, applicantId });
   
   if (!application) {

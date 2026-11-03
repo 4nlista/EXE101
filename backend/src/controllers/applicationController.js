@@ -68,6 +68,7 @@ const checkApplicationStatus = async (req, res) => {
     return res.status(200).json({
       success: true,
       canApply: result.canApply,
+      isOwner: result.isOwner || false,
       status: result.status,
       rejectionCount: result.rejectionCount
     });
