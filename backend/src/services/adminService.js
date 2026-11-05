@@ -54,9 +54,9 @@ const getSystemStats = async () => {
     Application.aggregate([
       { $group: { _id: '$status', count: { $sum: 1 } } }
     ]),
-    Subscription.aggregate([
-      { $match: { status: SUBSCRIPTION_STATUS.ACTIVE } },
-      { $group: { _id: null, totalRevenue: { $sum: '$price' } } }
+    Transaction.aggregate([
+      { $match: { status: TRANSACTION_STATUS.SUCCESS } },
+      { $group: { _id: null, totalRevenue: { $sum: '$amount' } } }
     ]),
     // Người dùng mới trong 7 ngày qua
     User.countDocuments({
@@ -99,7 +99,14 @@ const getSystemStats = async () => {
     totalApplications += item.count;
   });
 
-  const totalRevenue = revenueData.length > 0 ? revenueData[0].totalRevenue : 0;
+  let totalRevenue = revenueData.length > 0 ? revenueData[0].totalRevenue : 0;
+  if (!totalRevenue) {
+    const fallbackSub = await Subscription.aggregate([
+      { $match: { status: { $in: [SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.EXPIRED] } } },
+      { $group: { _id: null, totalRevenue: { $sum: '$price' } } }
+    ]);
+    totalRevenue = fallbackSub.length > 0 ? fallbackSub[0].totalRevenue : 0;
+  }
 
   // Tính toán doanh thu theo từng tháng trong 12 tháng gần nhất
   const now = new Date();

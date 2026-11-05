@@ -2,10 +2,12 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const User = require('../models/User');
 const Project = require('../models/Project');
 const Subscription = require('../models/Subscription');
+const Transaction = require('../models/Transaction');
 const Major = require('../models/Major');
 const Skill = require('../models/Skill');
 const { IS_ACTIVE } = require('../constants/userEnum');
 const { SUBSCRIPTION_STATUS } = require('../constants/subscriptionEnum');
+const { TRANSACTION_STATUS } = require('../constants/transactionEnum');
 
 const apiKey = process.env.GEMINI_API_KEY;
 if (!apiKey) {
@@ -63,9 +65,9 @@ const getLiveSystemSnapshot = async () => {
       User.countDocuments({ currentPackage: 'free' }).catch(() => 0),
       Project.countDocuments().catch(() => 0),
       Project.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]).catch(() => []),
-      Subscription.aggregate([
-        { $match: { status: SUBSCRIPTION_STATUS.ACTIVE } },
-        { $group: { _id: null, totalRevenue: { $sum: '$price' } } }
+      Transaction.aggregate([
+        { $match: { status: TRANSACTION_STATUS.SUCCESS } },
+        { $group: { _id: null, totalRevenue: { $sum: '$amount' } } }
       ]).catch(() => []),
       Subscription.countDocuments({ status: SUBSCRIPTION_STATUS.ACTIVE }).catch(() => 0),
       Major.countDocuments().catch(() => 0),
